@@ -232,6 +232,13 @@ button {
     0 0 34px rgba(168, 140, 255, 0.14);
 }
 
+.card.focus {
+  border-color: #ffd37a;
+  box-shadow:
+    0 0 0 1px rgba(255, 211, 122, 0.65),
+    0 0 24px rgba(255, 211, 122, 0.24);
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;
@@ -259,6 +266,23 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+}
+
+.extra-result {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .result-box {

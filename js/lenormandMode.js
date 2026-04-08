@@ -207,9 +207,15 @@ const app = (() => {
   const numberInputEl = document.getElementById('numberInput');
   const showHousesEl = document.getElementById('showHouses');
   const highlightSigEl = document.getElementById('highlightSig');
+  const questionEl = document.getElementById('question');
+  const memoEl = document.getElementById('memo');
   const generateBtnEl = document.getElementById('generateBtn');
+  const saveBtnEl = document.getElementById('saveBtn');
+  const extraToggleBtnEl = document.getElementById('extraToggleBtn');
   const spreadContainerEl = document.getElementById('spreadContainer');
   const resultContainerEl = document.getElementById('resultContainer');
+  const extraResultContainerEl = document.getElementById('extraResultContainer');
+  const historyContainerEl = document.getElementById('historyContainer');
   const copyOutputEl = document.getElementById('copyOutput');
   const copyBtnEl = document.getElementById('copyBtn');
   const statusTextEl = document.getElementById('statusText');
@@ -217,6 +223,8 @@ const app = (() => {
   let deck = [];
   let houses = [];
   let currentState = null;
+  let focusCard = null;
+  let showExtra = false;
 
   const shuffleModeLabel = {
     full: '완전 랜덤',
@@ -248,10 +256,11 @@ const app = (() => {
       const position = index + 1;
       const shouldHighlight = options.highlightSignificator
         && (position === analysis.woman?.position || position === analysis.man?.position);
+      const isFocus = focusCard === position;
       const houseText = options.showHouses ? `<div class="card-house">하우스: ${houses[index]}</div>` : '';
 
       return `
-        <article class="card ${shouldHighlight ? 'highlight' : ''}">
+        <article class="card ${shouldHighlight ? 'highlight' : ''} ${isFocus ? 'focus' : ''}" data-position="${position}">
           <div class="card-head"><span>#${position}</span><span>${card.id}</span></div>
           <div class="card-name">${card.name}</div>
           ${houseText}
@@ -267,6 +276,13 @@ const app = (() => {
         ${bottomRow.map((card, idx) => renderCard(card, idx + 32)).join('')}
       </div>
     `;
+
+    spreadContainerEl.querySelectorAll('.card').forEach((cardEl) => {
+      cardEl.addEventListener('click', () => {
+        focusCard = Number(cardEl.dataset.position);
+        renderSpread();
+      });
+    });
   };
 
   const renderResults = () => {
@@ -293,6 +309,66 @@ const app = (() => {
         <p>TR→BL: ${analysis.mainDiagonals.trbl.join(' → ')}</p>
       </div>
     `;
+
+    if (!showExtra) {
+      extraResultContainerEl.classList.add('hidden');
+      extraResultContainerEl.innerHTML = '';
+      return;
+    }
+
+    const sortedTlbrParallel = sortDiagonalLines(analysis.parallelDiagonals.tlbr);
+    const sortedTrblParallel = sortDiagonalLines(analysis.parallelDiagonals.trbl);
+    extraResultContainerEl.classList.remove('hidden');
+    extraResultContainerEl.innerHTML = `
+      <div class="result-box">
+        <h3>보조 대각선</h3>
+        <p><strong>TLBR</strong></p>
+        <ul>${sortedTlbrParallel.map((line) => `<li>${line.join(' → ')}</li>`).join('')}</ul>
+        <p><strong>TRBL</strong></p>
+        <ul>${sortedTrblParallel.map((line) => `<li>${line.join(' → ')}</li>`).join('')}</ul>
+      </div>
+      <div class="result-box">
+        <h3>시그니피케이터 대각선</h3>
+        <p>여자 TLBR: ${analysis.significatorDiagonals.woman.tlbr.join(' → ')}</p>
+        <p>여자 TRBL: ${analysis.significatorDiagonals.woman.trbl.join(' → ')}</p>
+        <p>남자 TLBR: ${analysis.significatorDiagonals.man.tlbr.join(' → ')}</p>
+        <p>남자 TRBL: ${analysis.significatorDiagonals.man.trbl.join(' → ')}</p>
+      </div>
+    `;
+  };
+
+  const renderHistory = () => {
+    const history = JSON.parse(localStorage.getItem('lenormand_history') || '[]');
+    if (!history.length) {
+      historyContainerEl.innerHTML = '<div class="empty">저장된 배치가 없습니다.</div>';
+      return;
+    }
+    historyContainerEl.innerHTML = history.map((item) => `
+      <div class="result-box">
+        <h3>${new Date(item.timestamp).toLocaleString('ko-KR')}</h3>
+        <p>질문: ${item.question || '없음'}</p>
+        <p>메모: ${item.memo || '없음'}</p>
+        <p>카드: ${(item.cards || []).join(', ')}</p>
+      </div>
+    `).join('');
+  };
+
+  const saveSpread = () => {
+    if (!currentState) {
+      statusTextEl.textContent = '먼저 배치를 생성한 뒤 저장해 주세요.';
+      return;
+    }
+    const history = JSON.parse(localStorage.getItem('lenormand_history') || '[]');
+    const newItem = {
+      question: questionEl.value.trim(),
+      cards: currentState.spread.map((card) => card.name),
+      memo: memoEl.value.trim(),
+      timestamp: Date.now(),
+    };
+    const updated = [newItem, ...history].slice(0, 10);
+    localStorage.setItem('lenormand_history', JSON.stringify(updated));
+    renderHistory();
+    statusTextEl.textContent = '현재 배치를 저장했어요.';
   };
 
   const buildCopyText = () => {
@@ -377,6 +453,12 @@ const app = (() => {
     });
 
     generateBtnEl.addEventListener('click', generate);
+    saveBtnEl.addEventListener('click', saveSpread);
+    extraToggleBtnEl.addEventListener('click', () => {
+      showExtra = !showExtra;
+      extraToggleBtnEl.textContent = showExtra ? '확장 닫기' : '확장 보기';
+      renderResults();
+    });
     showHousesEl.addEventListener('change', () => {
       if (!currentState) return;
       currentState.options.showHouses = showHousesEl.checked;
@@ -412,6 +494,7 @@ const app = (() => {
 
       bindEvents();
       generate();
+      renderHistory();
     } catch (error) {
       statusTextEl.textContent = error.message;
     }
