@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regina Tarot Helper + Lenormand Grand Tableau</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Regina Reading Helper</h1>
+    <p class="muted">New mode added without AI interpretation.</p>
+
+    <section id="lenormand-grand-tableau" class="panel">
+      <h2>Lenormand Grand Tableau</h2>
+
+      <div class="controls-grid">
+        <label>
+          Deck
+          <input type="text" value="Lenormand 36" disabled />
+        </label>
+
+        <label>
+          Shuffle mode
+          <select id="shuffle-mode">
+            <option value="full_random">Full Random</option>
+            <option value="cut_shuffle">Cut Shuffle</option>
+            <option value="number_selection">Number Selection</option>
+          </select>
+        </label>
+
+        <label>
+          Number selection (1-36, comma separated)
+          <input id="number-selection-input" type="text" placeholder="e.g. 1,2,3,...,36" />
+        </label>
+
+        <label class="inline">
+          <input type="checkbox" id="show-houses" checked />
+          Show Houses
+        </label>
+
+        <label class="inline">
+          <input type="checkbox" id="highlight-significator" checked />
+          Highlight Significator
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="generate-btn">Generate Grand Tableau</button>
+        <button id="copy-btn" disabled>Copy Result</button>
+      </div>
+
+      <div id="tableau-grid" class="tableau-grid" aria-live="polite"></div>
+      <pre id="result-output" class="result-output"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="js/lenormandMode.js"></script>
+</body>
+</html>
