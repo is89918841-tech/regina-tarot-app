@@ -224,6 +224,7 @@ const app = (() => {
   let houses = [];
   let currentState = null;
   let focusCard = null;
+  let fixedFocusCard = null;
   let showExtra = false;
 
   const shuffleModeLabel = {
@@ -281,6 +282,11 @@ const app = (() => {
       cardEl.addEventListener('click', () => {
         focusCard = Number(cardEl.dataset.position);
         renderSpread();
+        renderResults();
+        if (focusCard) {
+          fixedFocusCard = focusCard;
+          copyOutputEl.value = buildCopyText();
+        }
       });
     });
   };
@@ -415,7 +421,17 @@ const app = (() => {
       `- 여자 TRBL: ${analysis.significatorDiagonals.woman.trbl.join(' → ')}`,
       `- 남자 TLBR: ${analysis.significatorDiagonals.man.tlbr.join(' → ')}`,
       `- 남자 TRBL: ${analysis.significatorDiagonals.man.trbl.join(' → ')}`,
-    ].join('\n');
+          '',
+          '[포커스 카드]',
+          focusCard
+            ? `${focusCard}: ${spread[focusCard - 1].name}`
+            : '선택 없음',
+          '',
+          '[고정 포커스 카드]',
+          fixedFocusCard
+            ? `${fixedFocusCard}: ${spread[fixedFocusCard - 1].name}`
+            : '선택 없음',
+        ].join('\n');
   };
 
   const generate = () => {
@@ -437,6 +453,7 @@ const app = (() => {
           highlightSignificator: highlightSigEl.checked,
         },
       };
+      fixedFocusCard = null;
 
       renderSpread();
       renderResults();
