@@ -26,9 +26,9 @@
       </div>
     </div>
     <div class="section panel"><div class="grid-title"><strong>그랑따블로 배치</strong><span id="statusText" class="desc">아직 펼쳐지지 않았어요.</span></div><div id="spreadContainer"><div class="empty">상단 버튼을 눌러 36장 그랑따블로를 펼쳐주세요.</div></div></div>
-    <div class="section panel"><div class="grid-title"><strong>구조 정보</strong><button id="extraToggleBtn" class="secondary" type="button">확장 보기</button></div><div id="resultContainer" class="result-grid"><div class="empty">배치를 생성하면 시그니피케이터 위치, 인접 주요 연결, 대각선 흐름이 표시됩니다.</div></div><div id="extraResultContainer" class="extra-result hidden"></div></div>
+    <div class="section panel"><div class="grid-title"><strong>구조 정보</strong><div><button id="pinFocusBtn" class="secondary" type="button">고정 포커스 저장</button><button id="clearFocusBtn" class="secondary" type="button">고정 포커스 해제</button><button id="extraToggleBtn" class="secondary" type="button">확장 보기</button></div></div><div id="resultContainer" class="result-grid"><div class="empty">배치를 생성하면 시그니피케이터 위치, 인접 주요 연결, 대각선 흐름이 표시됩니다.</div></div><div id="extraResultContainer" class="extra-result hidden"></div></div>
     <div class="section panel"><div class="grid-title"><strong>최근 저장 배치</strong></div><div id="historyContainer" class="history-list"><div class="empty">저장된 배치가 없습니다.</div></div></div>
-    <div class="section panel"><div class="grid-title"><strong>AI 복사용 결과</strong><button id="copyBtn" class="secondary">복사하기</button></div><textarea id="copyOutput" class="copy-area" readonly placeholder="배치를 생성하면 복사본이 여기에 정리됩니다."></textarea></div>
+    <div class="section panel"><div class="grid-title"><strong>AI 복사용 결과</strong><div><select id="copyMode"><option value="full">상세 복사</option><option value="summary">요약 복사</option></select><button id="copyBtn" class="secondary">복사하기</button></div></div><textarea id="copyOutput" class="copy-area" readonly placeholder="배치를 생성하면 복사본이 여기에 정리됩니다."></textarea></div>
   </div>
   <script src="js/lenormandMode.js"></script>
 </body>
