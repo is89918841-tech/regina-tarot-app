@@ -78,14 +78,50 @@ const lenormandMode = (() => {
       }));
   };
 
-  const getDiagonalTLBR = (spread) => {
-    const positions = [1, 10, 19, 28, 36];
-    return positions.map((p) => spread[p - 1].name);
+  const formatPositionCard = (spread, position) => `${position}: ${spread[position - 1].name}`;
+
+  const walkLine = (startPosition, stepRow, stepCol) => {
+    const out = [];
+    let cursor = startPosition;
+    while (cursor !== null) {
+      out.push(cursor);
+      const { row, col } = rowColFromPosition(cursor);
+      cursor = positionFromRowCol(row + stepRow, col + stepCol);
+    }
+    return out;
   };
 
-  const getDiagonalTRBL = (spread) => {
-    const positions = [8, 15, 22, 29, 33];
-    return positions.map((p) => spread[p - 1].name);
+  const getAllDiagonalLines = (stepRow, stepCol) => {
+    const lines = [];
+    for (let position = 1; position <= 36; position += 1) {
+      const { row, col } = rowColFromPosition(position);
+      const previous = positionFromRowCol(row - stepRow, col - stepCol);
+      if (previous !== null) continue;
+      lines.push(walkLine(position, stepRow, stepCol));
+    }
+    return lines;
+  };
+
+  const getMainDiagonal = (lines) => lines.reduce((best, line) => (line.length > best.length ? line : best), []);
+
+  const getLineThroughPosition = (position, stepRow, stepCol) => {
+    const backward = [];
+    let cursor = position;
+    while (cursor !== null) {
+      backward.push(cursor);
+      const { row, col } = rowColFromPosition(cursor);
+      cursor = positionFromRowCol(row - stepRow, col - stepCol);
+    }
+    backward.reverse();
+
+    const forward = [];
+    cursor = position;
+    while (cursor !== null) {
+      const { row, col } = rowColFromPosition(cursor);
+      cursor = positionFromRowCol(row + stepRow, col + stepCol);
+      if (cursor !== null) forward.push(cursor);
+    }
+    return [...backward, ...forward];
   };
 
   const generateSpread = ({ deck, mode, numberRaw }) => {
@@ -118,11 +154,44 @@ const lenormandMode = (() => {
       };
     };
 
+    const tlbrLines = getAllDiagonalLines(1, 1);
+    const trblLines = getAllDiagonalLines(1, -1);
+    const mainTlbr = getMainDiagonal(tlbrLines);
+    const mainTrbl = getMainDiagonal(trblLines);
+
+    const woman = findSignificator(29);
+    const man = findSignificator(28);
+
+    const mapLine = (line) => line.map((position) => formatPositionCard(spread, position));
+    const filterParallel = (lines, main) => lines
+      .filter((line) => line.length >= 3 && line.join(',') !== main.join(','))
+      .map(mapLine);
+
     return {
-      woman: findSignificator(29),
-      man: findSignificator(28),
-      diagonalTLBR: getDiagonalTLBR(spread),
-      diagonalTRBL: getDiagonalTRBL(spread),
+      woman,
+      man,
+      mainDiagonals: {
+        tlbr: mapLine(mainTlbr),
+        trbl: mapLine(mainTrbl),
+      },
+      parallelDiagonals: {
+        tlbr: filterParallel(tlbrLines, mainTlbr),
+        trbl: filterParallel(trblLines, mainTrbl),
+      },
+      significatorDiagonals: {
+        woman: woman
+          ? {
+              tlbr: mapLine(getLineThroughPosition(woman.position, 1, 1)),
+              trbl: mapLine(getLineThroughPosition(woman.position, 1, -1)),
+            }
+          : { tlbr: [], trbl: [] },
+        man: man
+          ? {
+              tlbr: mapLine(getLineThroughPosition(man.position, 1, 1)),
+              trbl: mapLine(getLineThroughPosition(man.position, 1, -1)),
+            }
+          : { tlbr: [], trbl: [] },
+      },
     };
   };
 
@@ -207,8 +276,8 @@ const app = (() => {
       ${sigBlock('남자 시그니피케이터', analysis.man)}
       <div class="result-box">
         <h3>대각선 흐름</h3>
-        <p>TL→BR: ${analysis.diagonalTLBR.join(' → ')}</p>
-        <p>TR→BL: ${analysis.diagonalTRBL.join(' → ')}</p>
+        <p>TL→BR: ${analysis.mainDiagonals.tlbr.join(' → ')}</p>
+        <p>TR→BL: ${analysis.mainDiagonals.trbl.join(' → ')}</p>
       </div>
     `;
   };
@@ -241,8 +310,18 @@ const app = (() => {
       `Man: ${(analysis.man?.adjacent || []).join(', ')}`,
       '',
       '[Diagonal]',
-      `TL→BR: ${analysis.diagonalTLBR.join(' → ')}`,
-      `TR→BL: ${analysis.diagonalTRBL.join(' → ')}`,
+      `TL→BR: ${analysis.mainDiagonals.tlbr.join(' → ')}`,
+      `TR→BL: ${analysis.mainDiagonals.trbl.join(' → ')}`,
+      '',
+      '[확장 대각선]',
+      ...analysis.parallelDiagonals.tlbr.map((line, idx) => `- TLBR 보조 대각선 ${idx + 1}: ${line.join(' → ')}`),
+      ...analysis.parallelDiagonals.trbl.map((line, idx) => `- TRBL 보조 대각선 ${idx + 1}: ${line.join(' → ')}`),
+      '',
+      '[시그니피케이터 대각선]',
+      `- 여자 TLBR: ${analysis.significatorDiagonals.woman.tlbr.join(' → ')}`,
+      `- 여자 TRBL: ${analysis.significatorDiagonals.woman.trbl.join(' → ')}`,
+      `- 남자 TLBR: ${analysis.significatorDiagonals.man.tlbr.join(' → ')}`,
+      `- 남자 TRBL: ${analysis.significatorDiagonals.man.trbl.join(' → ')}`,
     ].join('\n');
   };
 
