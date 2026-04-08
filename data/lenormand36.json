@@ -1,146 +1,38 @@
 [
-  {
-    "id": 1,
-    "name": "Rider"
-  },
-  {
-    "id": 2,
-    "name": "Clover"
-  },
-  {
-    "id": 3,
-    "name": "Ship"
-  },
-  {
-    "id": 4,
-    "name": "House"
-  },
-  {
-    "id": 5,
-    "name": "Tree"
-  },
-  {
-    "id": 6,
-    "name": "Clouds"
-  },
-  {
-    "id": 7,
-    "name": "Snake"
-  },
-  {
-    "id": 8,
-    "name": "Coffin"
-  },
-  {
-    "id": 9,
-    "name": "Bouquet"
-  },
-  {
-    "id": 10,
-    "name": "Scythe"
-  },
-  {
-    "id": 11,
-    "name": "Whip"
-  },
-  {
-    "id": 12,
-    "name": "Birds"
-  },
-  {
-    "id": 13,
-    "name": "Child"
-  },
-  {
-    "id": 14,
-    "name": "Fox"
-  },
-  {
-    "id": 15,
-    "name": "Bear"
-  },
-  {
-    "id": 16,
-    "name": "Stars"
-  },
-  {
-    "id": 17,
-    "name": "Stork"
-  },
-  {
-    "id": 18,
-    "name": "Dog"
-  },
-  {
-    "id": 19,
-    "name": "Tower"
-  },
-  {
-    "id": 20,
-    "name": "Garden"
-  },
-  {
-    "id": 21,
-    "name": "Mountain"
-  },
-  {
-    "id": 22,
-    "name": "Crossroads"
-  },
-  {
-    "id": 23,
-    "name": "Mice"
-  },
-  {
-    "id": 24,
-    "name": "Heart"
-  },
-  {
-    "id": 25,
-    "name": "Ring"
-  },
-  {
-    "id": 26,
-    "name": "Book"
-  },
-  {
-    "id": 27,
-    "name": "Letter"
-  },
-  {
-    "id": 28,
-    "name": "Man"
-  },
-  {
-    "id": 29,
-    "name": "Woman"
-  },
-  {
-    "id": 30,
-    "name": "Lily"
-  },
-  {
-    "id": 31,
-    "name": "Sun"
-  },
-  {
-    "id": 32,
-    "name": "Moon"
-  },
-  {
-    "id": 33,
-    "name": "Key"
-  },
-  {
-    "id": 34,
-    "name": "Fish"
-  },
-  {
-    "id": 35,
-    "name": "Cross"
-  },
-  {
-    "id": 36,
-    "name": "Anchor"
-  }
+  { "id": 1, "name": "기수" },
+  { "id": 2, "name": "클로버" },
+  { "id": 3, "name": "배" },
+  { "id": 4, "name": "집" },
+  { "id": 5, "name": "나무" },
+  { "id": 6, "name": "구름" },
+  { "id": 7, "name": "뱀" },
+  { "id": 8, "name": "관" },
+  { "id": 9, "name": "꽃다발" },
+  { "id": 10, "name": "낫" },
+  { "id": 11, "name": "채찍" },
+  { "id": 12, "name": "새" },
+  { "id": 13, "name": "아이" },
+  { "id": 14, "name": "여우" },
+  { "id": 15, "name": "곰" },
+  { "id": 16, "name": "별" },
+  { "id": 17, "name": "황새" },
+  { "id": 18, "name": "개" },
+  { "id": 19, "name": "탑" },
+  { "id": 20, "name": "정원" },
+  { "id": 21, "name": "산" },
+  { "id": 22, "name": "갈림길" },
+  { "id": 23, "name": "쥐" },
+  { "id": 24, "name": "심장" },
+  { "id": 25, "name": "반지" },
+  { "id": 26, "name": "책" },
+  { "id": 27, "name": "편지" },
+  { "id": 28, "name": "남자" },
+  { "id": 29, "name": "여자" },
+  { "id": 30, "name": "백합" },
+  { "id": 31, "name": "태양" },
+  { "id": 32, "name": "달" },
+  { "id": 33, "name": "열쇠" },
+  { "id": 34, "name": "물고기" },
+  { "id": 35, "name": "닻" },
+  { "id": 36, "name": "십자가" }
 ]

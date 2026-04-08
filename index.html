@@ -1,59 +1,78 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regina Tarot Helper + Lenormand Grand Tableau</title>
+  <title>레지나 레노먼드 그랑따블로</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>Regina Reading Helper</h1>
-    <p class="muted">New mode added without AI interpretation.</p>
+  <div class="wrap">
+    <div class="panel">
+      <h1>레지나 레노먼드 그랑따블로</h1>
+      <p class="desc">질문 입력 없이 36장 그랑따블로를 펼치고, 카드 이름·시그니피케이터 위치·인접 연결·대각선 흐름을 정리합니다.</p>
 
-    <section id="lenormand-grand-tableau" class="panel">
-      <h2>Lenormand Grand Tableau</h2>
-
-      <div class="controls-grid">
-        <label>
-          Deck
-          <input type="text" value="Lenormand 36" disabled />
-        </label>
-
-        <label>
-          Shuffle mode
-          <select id="shuffle-mode">
-            <option value="full_random">Full Random</option>
-            <option value="cut_shuffle">Cut Shuffle</option>
-            <option value="number_selection">Number Selection</option>
+      <div class="controls">
+        <div class="field">
+          <label for="deckSelect">덱</label>
+          <select id="deckSelect" disabled>
+            <option>레노먼드 36장</option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          Number selection (1-36, comma separated)
-          <input id="number-selection-input" type="text" placeholder="e.g. 1,2,3,...,36" />
-        </label>
+        <div class="field">
+          <label for="shuffleMode">셔플 방식</label>
+          <select id="shuffleMode">
+            <option value="full">완전 랜덤</option>
+            <option value="cut">컷 포함 셔플</option>
+            <option value="number">번호 지정 추출</option>
+          </select>
+          <div id="numberSelectBox" class="number-select-box">
+            <input id="numberInput" type="text" placeholder="1~36 숫자를 쉼표로 입력. 예: 3,7,12,25" />
+          </div>
+        </div>
 
-        <label class="inline">
-          <input type="checkbox" id="show-houses" checked />
-          Show Houses
-        </label>
+        <fieldset class="check-group field">
+          <legend>표시 옵션</legend>
+          <div class="check-grid">
+            <label class="inline"><input id="showHouses" type="checkbox" checked /> 하우스 표시</label>
+            <label class="inline"><input id="highlightSig" type="checkbox" checked /> 시그니피케이터 강조</label>
+          </div>
+        </fieldset>
 
-        <label class="inline">
-          <input type="checkbox" id="highlight-significator" checked />
-          Highlight Significator
-        </label>
+        <div class="field">
+          <button id="generateBtn" class="primary">그랑따블로 펼치기</button>
+        </div>
       </div>
+    </div>
 
-      <div class="actions">
-        <button id="generate-btn">Generate Grand Tableau</button>
-        <button id="copy-btn" disabled>Copy Result</button>
+    <div class="section panel">
+      <div class="grid-title">
+        <strong>그랑따블로 배치</strong>
+        <span id="statusText" class="desc">아직 펼쳐지지 않았어요.</span>
       </div>
+      <div id="spreadContainer">
+        <div class="empty">상단 버튼을 눌러 36장 그랑따블로를 펼쳐주세요.</div>
+      </div>
+    </div>
 
-      <div id="tableau-grid" class="tableau-grid" aria-live="polite"></div>
-      <pre id="result-output" class="result-output"></pre>
-    </section>
-  </main>
+    <div class="section panel">
+      <div class="grid-title">
+        <strong>구조 정보</strong>
+      </div>
+      <div id="resultContainer" class="result-grid">
+        <div class="empty">배치를 생성하면 시그니피케이터 위치, 인접 주요 연결, 대각선 흐름이 표시됩니다.</div>
+      </div>
+    </div>
+
+    <div class="section panel">
+      <div class="grid-title">
+        <strong>AI 복사용 결과</strong>
+        <button id="copyBtn" class="secondary">복사하기</button>
+      </div>
+      <textarea id="copyOutput" class="copy-area" readonly placeholder="배치를 생성하면 복사본이 여기에 정리됩니다."></textarea>
+    </div>
+  </div>
 
   <script type="module" src="js/lenormandMode.js"></script>
 </body>
