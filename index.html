@@ -3,102 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>레지나 레노먼드 그랑따블로</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <title>레지나 레노먼드 그랑따블로</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+:root { --bg: #0f0c14; --bg-2:#171220; --panel: rgba(20,16,28,.84); --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.12); --text:#ece7f5; --muted:#a196b3; --accent:#a88cff; --accent-2:#7d5ce0; --shadow: rgba(0,0,0,.48);}*{box-sizing:border-box}body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at top,#1f1730 0%,#120f1b 35%,#0b0911 100%);color:var(--text)}.wrap{max-width:1400px;margin:0 auto;padding:32px 24px 48px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;backdrop-filter:blur(14px);box-shadow:0 16px 42px var(--shadow),inset 0 0 24px rgba(255,255,255,.02)}h1{margin:0 0 10px;font-size:32px;line-height:1.15;font-family:"Playfair Display",serif;font-weight:700;letter-spacing:.6px;color:#f4efff}.desc{margin:0;color:var(--muted);line-height:1.65}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px;align-items:end}.field{display:flex;flex-direction:column;gap:8px}.field label,.check-group legend{font-weight:600;font-size:14px;color:#ddd5ea}select,input[type="text"],button,textarea{font:inherit}select,input[type="text"]{width:100%;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:12px 14px;color:var(--text);outline:none;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}select:focus,input[type="text"]:focus,.copy-area:focus{border-color:rgba(168,140,255,.6);box-shadow:0 0 0 3px rgba(168,140,255,.12)}select option{background:#171220;color:var(--text)}.check-group{border:1px solid var(--line);border-radius:13px;padding:12px 14px;min-height:110px;background:rgba(255,255,255,.02)}.check-grid{display:grid;gap:10px;margin-top:8px}.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted)}.number-select-box{display:none;margin-top:8px}.number-select-box.active{display:block}button{border:none;border-radius:14px;padding:14px 16px;cursor:pointer;font-weight:700;transition:transform .2s ease,filter .2s ease,background .2s ease,box-shadow .2s ease}.primary{background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#fff;box-shadow:0 8px 24px rgba(125,92,224,.28)}.primary:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 10px 28px rgba(125,92,224,.36)}.secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}.secondary:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}.section{margin-top:20px}.grid-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}.spread-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:12px}.bottom-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}.card{border-radius:18px;padding:14px;background:linear-gradient(145deg,#1b1526,#0f0c14);border:1px solid var(--line);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease;box-shadow:0 0 14px rgba(168,140,255,.08)}.card:hover{transform:translateY(-4px);box-shadow:0 0 20px rgba(168,140,255,.18);border-color:var(--line-strong)}.card.highlight{border-color:rgba(168,140,255,.78);box-shadow:0 0 16px rgba(168,140,255,.42),0 0 34px rgba(168,140,255,.14)}.card.focus{border-color:#ffd37a;box-shadow:0 0 0 1px rgba(255,211,122,.65),0 0 24px rgba(255,211,122,.24)}.card-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:#b7abc9}.card-name{font-size:18px;font-weight:700;text-align:center;line-height:1.3;color:#f1ecfa}.card-house{font-size:12px;text-align:center;color:var(--muted)}.result-grid,.extra-result,.history-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.extra-result{margin-top:14px}.hidden{display:none!important}.result-box{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:inset 0 0 14px rgba(255,255,255,.01)}.result-box h3{margin:0 0 10px;font-size:16px;color:#f2edfb}.result-box p,.result-box li{margin:0;line-height:1.72;color:#d9d1e8}.result-box ul{margin:0;padding-left:18px}.copy-area{width:100%;min-height:280px;border-radius:16px;padding:14px;background:rgba(8,6,12,.72);color:#ece7f5;border:1px solid var(--line);box-shadow:inset 0 0 18px rgba(255,255,255,.02);font-size:14px;line-height:1.68;white-space:pre-wrap;resize:vertical;outline:none}.empty{text-align:center;padding:22px;color:var(--muted);border:1px dashed var(--line);border-radius:16px;background:rgba(255,255,255,.025)}@media (max-width:1100px){.spread-grid{grid-template-columns:repeat(4,minmax(120px,1fr))}.bottom-grid{grid-template-columns:repeat(4,minmax(120px,1fr))}}@media (max-width:640px){.wrap{padding:16px 14px 32px}h1{font-size:27px}.panel{padding:18px}.spread-grid,.bottom-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
+  </style>
 </head>
 <body>
   <div class="wrap">
     <div class="panel">
       <h1>레지나 레노먼드 그랑따블로</h1>
       <p class="desc">질문 입력 없이 36장 그랑따블로를 펼치고, 카드 이름·시그니피케이터 위치·인접 연결·대각선 흐름을 정리합니다.</p>
-
       <div class="controls">
-        <div class="field">
-          <label for="deckSelect">덱</label>
-          <select id="deckSelect" disabled>
-            <option>레노먼드 36장</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="shuffleMode">셔플 방식</label>
-          <select id="shuffleMode">
-            <option value="full">완전 랜덤</option>
-            <option value="cut">컷 포함 셔플</option>
-            <option value="number">번호 지정 추출</option>
-          </select>
-          <div id="numberSelectBox" class="number-select-box">
-            <input id="numberInput" type="text" placeholder="1~36 숫자를 쉼표로 입력. 예: 3,7,12,25" />
-          </div>
-        </div>
-
-        <fieldset class="check-group field">
-          <legend>표시 옵션</legend>
-          <div class="check-grid">
-            <label class="inline"><input id="showHouses" type="checkbox" checked /> 하우스 표시</label>
-            <label class="inline"><input id="highlightSig" type="checkbox" checked /> 시그니피케이터 강조</label>
-          </div>
-        </fieldset>
-
-        <div class="field">
-          <label for="question">질문(선택)</label>
-          <input id="question" type="text" placeholder="저장할 질문을 입력하세요." />
-        </div>
-
-        <div class="field">
-          <label for="memo">메모(선택)</label>
-          <input id="memo" type="text" placeholder="저장할 메모를 입력하세요." />
-        </div>
-
-        <div class="field">
-          <button id="generateBtn" class="primary">그랑따블로 펼치기</button>
-          <button id="saveBtn" class="secondary" type="button">현재 배치 저장</button>
-        </div>
+        <div class="field"><label for="deckSelect">덱</label><select id="deckSelect" disabled><option>레노먼드 36장</option></select></div>
+        <div class="field"><label for="shuffleMode">셔플 방식</label><select id="shuffleMode"><option value="full">완전 랜덤</option><option value="cut">컷 포함 셔플</option><option value="number">번호 지정 추출</option></select><div id="numberSelectBox" class="number-select-box"><input id="numberInput" type="text" placeholder="1~36 숫자를 쉼표로 입력. 예: 3,7,12,25" /></div></div>
+        <fieldset class="check-group field"><legend>표시 옵션</legend><div class="check-grid"><label class="inline"><input id="showHouses" type="checkbox" checked /> 하우스 표시</label><label class="inline"><input id="highlightSig" type="checkbox" checked /> 시그니피케이터 강조</label></div></fieldset>
+        <div class="field"><label for="question">질문(선택)</label><input id="question" type="text" placeholder="저장할 질문을 입력하세요." /></div>
+        <div class="field"><label for="memo">메모(선택)</label><input id="memo" type="text" placeholder="저장할 메모를 입력하세요." /></div>
+        <div class="field"><button id="generateBtn" class="primary">그랑따블로 펼치기</button><button id="saveBtn" class="secondary" type="button">현재 배치 저장</button></div>
       </div>
     </div>
-
-    <div class="section panel">
-      <div class="grid-title">
-        <strong>그랑따블로 배치</strong>
-        <span id="statusText" class="desc">아직 펼쳐지지 않았어요.</span>
-      </div>
-      <div id="spreadContainer">
-        <div class="empty">상단 버튼을 눌러 36장 그랑따블로를 펼쳐주세요.</div>
-      </div>
-    </div>
-
-    <div class="section panel">
-      <div class="grid-title">
-        <strong>구조 정보</strong>
-        <button id="extraToggleBtn" class="secondary" type="button">확장 보기</button>
-      </div>
-      <div id="resultContainer" class="result-grid">
-        <div class="empty">배치를 생성하면 시그니피케이터 위치, 인접 주요 연결, 대각선 흐름이 표시됩니다.</div>
-      </div>
-      <div id="extraResultContainer" class="extra-result hidden"></div>
-    </div>
-
-    <div class="section panel">
-      <div class="grid-title">
-        <strong>최근 저장 배치</strong>
-      </div>
-      <div id="historyContainer" class="history-list">
-        <div class="empty">저장된 배치가 없습니다.</div>
-      </div>
-    </div>
-
-    <div class="section panel">
-      <div class="grid-title">
-        <strong>AI 복사용 결과</strong>
-        <button id="copyBtn" class="secondary">복사하기</button>
-      </div>
-      <textarea id="copyOutput" class="copy-area" readonly placeholder="배치를 생성하면 복사본이 여기에 정리됩니다."></textarea>
-    </div>
+    <div class="section panel"><div class="grid-title"><strong>그랑따블로 배치</strong><span id="statusText" class="desc">아직 펼쳐지지 않았어요.</span></div><div id="spreadContainer"><div class="empty">상단 버튼을 눌러 36장 그랑따블로를 펼쳐주세요.</div></div></div>
+    <div class="section panel"><div class="grid-title"><strong>구조 정보</strong><button id="extraToggleBtn" class="secondary" type="button">확장 보기</button></div><div id="resultContainer" class="result-grid"><div class="empty">배치를 생성하면 시그니피케이터 위치, 인접 주요 연결, 대각선 흐름이 표시됩니다.</div></div><div id="extraResultContainer" class="extra-result hidden"></div></div>
+    <div class="section panel"><div class="grid-title"><strong>최근 저장 배치</strong></div><div id="historyContainer" class="history-list"><div class="empty">저장된 배치가 없습니다.</div></div></div>
+    <div class="section panel"><div class="grid-title"><strong>AI 복사용 결과</strong><button id="copyBtn" class="secondary">복사하기</button></div><textarea id="copyOutput" class="copy-area" readonly placeholder="배치를 생성하면 복사본이 여기에 정리됩니다."></textarea></div>
   </div>
-
-  <script type="module" src="js/lenormandMode.js"></script>
+  <script src="js/lenormandMode.js"></script>
 </body>
 </html>
