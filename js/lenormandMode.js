@@ -22,11 +22,20 @@ const lenormandMode = (() => {
 
   const parseNumberSelection = (raw) => {
     if (!raw.trim()) return [];
-    const parsed = raw
-      .split(',')
-      .map((v) => Number(v.trim()))
-      .filter((v) => Number.isInteger(v) && v >= 1 && v <= 36);
-    return [...new Set(parsed)];
+    const tokens = raw.split(',').map((v) => v.trim()).filter(Boolean);
+    const parsed = tokens.map((token) => {
+      const value = Number(token);
+      if (!Number.isInteger(value) || value < 1 || value > 36) {
+        throw new Error(`번호 입력 오류: "${token}"는 1~36 정수가 아니에요.`);
+      }
+      return value;
+    });
+
+    if (new Set(parsed).size !== parsed.length) {
+      throw new Error('번호 입력 오류: 중복 숫자는 사용할 수 없어요.');
+    }
+
+    return parsed;
   };
 
   const rowColFromPosition = (position) => {
@@ -299,11 +308,17 @@ const app = (() => {
   };
 
   const init = async () => {
-    const response = await fetch('./data/lenormand36.json');
-    deck = await response.json();
-    houses = deck.map((card) => card.name);
+    try {
+      const response = await fetch('./data/lenormand36.json');
+      if (!response.ok) throw new Error('레노먼드 데이터 로드에 실패했어요.');
+      deck = await response.json();
+      houses = deck.map((card) => card.name);
 
-    bindEvents();
+      bindEvents();
+      generate();
+    } catch (error) {
+      statusTextEl.textContent = error.message;
+    }
   };
 
   return { init };

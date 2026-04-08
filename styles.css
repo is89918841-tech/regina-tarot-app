@@ -55,18 +55,27 @@ button { border: 0; border-radius: 12px; padding: 13px 16px; cursor: pointer; fo
 .bottom-grid { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 10px; margin-top: 10px; max-width: calc((100% - 30px) / 2); }
 .card {
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 12px;
-  background: white;
+  background: linear-gradient(145deg, #fffdf9, #f8f2ea);
   min-height: 108px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 8px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.card.highlight { background: var(--accent-soft); border-color: var(--accent); }
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+.card.highlight {
+  background: linear-gradient(145deg, #f6effd, #efe5fb);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(106, 75, 120, 0.15);
+}
 .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
-.card-name { font-size: 18px; font-weight: 700; line-height: 1.3; }
+.card-name { font-size: 18px; font-weight: 700; line-height: 1.3; text-align: center; }
 .card-house { font-size: 12px; color: var(--muted); }
 .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .result-box { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: #fff; }
@@ -76,12 +85,12 @@ button { border: 0; border-radius: 12px; padding: 13px 16px; cursor: pointer; fo
 .copy-area {
   width: 100%;
   min-height: 280px;
-  border: 1px solid var(--line);
+  border: 2px solid rgba(106, 75, 120, 0.22);
   border-radius: 14px;
   padding: 14px;
   resize: vertical;
   background: #fff;
-  font: 14px/1.6 "Pretendard", "Noto Sans KR", sans-serif;
+  font: 14px/1.65 "Pretendard", "Noto Sans KR", sans-serif;
   white-space: pre-wrap;
 }
 .empty {
