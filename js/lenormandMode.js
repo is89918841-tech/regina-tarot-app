@@ -224,6 +224,19 @@ const app = (() => {
     number: '번호 지정 추출',
   };
 
+  const sortDiagonalLines = (lines) => {
+    const getFirstPosition = (line) => {
+      const head = line[0] || '';
+      const [numText] = head.split(':');
+      const n = Number(numText.trim());
+      return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+    };
+    return [...lines].sort((a, b) => {
+      if (b.length !== a.length) return b.length - a.length;
+      return getFirstPosition(a) - getFirstPosition(b);
+    });
+  };
+
   const renderSpread = () => {
     if (!currentState) return;
 
@@ -272,8 +285,8 @@ const app = (() => {
     };
 
     resultContainerEl.innerHTML = `
-      ${sigBlock('여자 시그니피케이터', analysis.woman)}
-      ${sigBlock('남자 시그니피케이터', analysis.man)}
+      ${sigBlock('여자 카드 위치', analysis.woman)}
+      ${sigBlock('남자 카드 위치', analysis.man)}
       <div class="result-box">
         <h3>대각선 흐름</h3>
         <p>TL→BR: ${analysis.mainDiagonals.tlbr.join(' → ')}</p>
@@ -285,37 +298,41 @@ const app = (() => {
   const buildCopyText = () => {
     if (!currentState) return '';
     const { spread, analysis, shuffleMode } = currentState;
+    const sortedTlbrParallel = sortDiagonalLines(analysis.parallelDiagonals.tlbr);
+    const sortedTrblParallel = sortDiagonalLines(analysis.parallelDiagonals.trbl);
 
     const spreadLines = spread.map((card, idx) => `${idx + 1}: ${card.name}`).join('\n');
-    const houseLines = spread.map((card, idx) => `${idx + 1}: ${card.name} / ${houses[idx]} House`).join('\n');
+    const houseLines = spread.map((card, idx) => `${idx + 1}: ${card.name} / ${houses[idx]} 하우스`).join('\n');
 
     return [
-      'Lenormand Grand Tableau',
+      '레노먼드 그랑따블로',
       '',
-      `Shuffle: ${shuffleModeLabel[shuffleMode]}`,
-      'Layout: 8x4 + 4',
+      `셔플 방식: ${shuffleModeLabel[shuffleMode]}`,
+      '배치: 8x4 + 4',
       '',
-      '[Spread]',
+      '[배치 카드]',
       spreadLines,
       '',
-      '[Houses]',
+      '[하우스]',
       houseLines,
       '',
-      '[Significators]',
-      `Woman: position ${analysis.woman?.position ?? 'N/A'} (House: ${analysis.woman?.house ?? 'N/A'})`,
-      `Man: position ${analysis.man?.position ?? 'N/A'} (House: ${analysis.man?.house ?? 'N/A'})`,
+      '[시그니피케이터]',
+      `여자: ${analysis.woman?.position ?? '없음'}번 (하우스: ${analysis.woman?.house ?? '없음'})`,
+      `남자: ${analysis.man?.position ?? '없음'}번 (하우스: ${analysis.man?.house ?? '없음'})`,
       '',
-      '[Adjacent]',
-      `Woman: ${(analysis.woman?.adjacent || []).join(', ')}`,
-      `Man: ${(analysis.man?.adjacent || []).join(', ')}`,
+      '[인접 카드]',
+      `여자: ${(analysis.woman?.adjacent || []).join(', ')}`,
+      `남자: ${(analysis.man?.adjacent || []).join(', ')}`,
       '',
-      '[Diagonal]',
+      '[메인 대각선]',
       `TL→BR: ${analysis.mainDiagonals.tlbr.join(' → ')}`,
       `TR→BL: ${analysis.mainDiagonals.trbl.join(' → ')}`,
       '',
       '[확장 대각선]',
-      ...analysis.parallelDiagonals.tlbr.map((line, idx) => `- TLBR 보조 대각선 ${idx + 1}: ${line.join(' → ')}`),
-      ...analysis.parallelDiagonals.trbl.map((line, idx) => `- TRBL 보조 대각선 ${idx + 1}: ${line.join(' → ')}`),
+      '- TLBR 보조 대각선',
+      ...sortedTlbrParallel.map((line, idx) => `  ${idx + 1}) ${line.join(' → ')}`),
+      '- TRBL 보조 대각선',
+      ...sortedTrblParallel.map((line, idx) => `  ${idx + 1}) ${line.join(' → ')}`),
       '',
       '[시그니피케이터 대각선]',
       `- 여자 TLBR: ${analysis.significatorDiagonals.woman.tlbr.join(' → ')}`,
