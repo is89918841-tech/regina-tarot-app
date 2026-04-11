@@ -247,8 +247,9 @@ export default function ReginaReadingApp() {
       `인접 | 나: ${cardNames(analysis.adjacency.self) || '없음'}`,
       `인접 | 상대: ${cardNames(analysis.adjacency.partner) || '없음'}`,
       `메인 대각선: ${cardNames(analysis.mainDiagonal) || '없음'}`,
+      chainResult ? `선택 카드 체인: ${chainResult.chain.map((c) => c.name).join(' → ')}` : null,
       `포커스: ${cardNames(mergedFocus) || '없음'}`,
-    ].join('\n');
+    ].filter(Boolean).join('\n');
 
     await navigator.clipboard.writeText(text);
   };
@@ -334,9 +335,13 @@ export default function ReginaReadingApp() {
             onClick={() => setSelectedCardId(card.id)}
           >
             {showHouseNumbers && (
-              <span className="absolute top-1 right-1 text-[10px] text-slate-400">H{card.house}</span>
+              <span className="absolute top-1 right-1 text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                H{card.house}
+              </span>
             )}
-            <div className="text-[11px] text-slate-400">#{card.id}</div>
+            <div className="inline-block text-[10px] px-1 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">
+              카드 #{card.id}
+            </div>
             <div className="text-xs leading-tight mt-1">{card.name}</div>
           </button>
         ))}
@@ -344,6 +349,9 @@ export default function ReginaReadingApp() {
 
       <div className="mt-5 bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
         <h2 className="font-semibold">체인 추적</h2>
+        <p className="text-xs text-slate-400">
+          시작 기준: 선택한 카드 번호(#)에서 시작해, 해당 카드가 놓인 하우스(H) 번호의 카드를 다음으로 추적합니다.
+        </p>
         <p className="text-sm text-slate-300">
           시작 카드: {selectedCardId ? CARD_BY_ID[selectedCardId]?.label : '선택 없음'}
         </p>
