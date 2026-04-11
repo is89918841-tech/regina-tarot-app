@@ -35,6 +35,42 @@ const generateSpread = () => SHUFFLE(LENORMAND_CARDS).map((card, i) => ({
   ...getRowCol(i + 1),
 }));
 
+function getSignificatorDiagonals(spread, source) {
+  if (!source) return { downRight: [], downLeft: [] };
+
+  const byCoord = spread.reduce((acc, card) => {
+    acc[`${card.row},${card.col}`] = card;
+    return acc;
+  }, {});
+
+  const collectLine = (dr, dc) => {
+    const line = [];
+
+    let row = source.row + dr;
+    let col = source.col + dc;
+    while (byCoord[`${row},${col}`]) {
+      line.push(byCoord[`${row},${col}`]);
+      row += dr;
+      col += dc;
+    }
+
+    row = source.row - dr;
+    col = source.col - dc;
+    while (byCoord[`${row},${col}`]) {
+      line.unshift(byCoord[`${row},${col}`]);
+      row -= dr;
+      col -= dc;
+    }
+
+    return line;
+  };
+
+  return {
+    downRight: collectLine(1, 1),
+    downLeft: collectLine(1, -1),
+  };
+}
+
 function analyze(spread, significatorConfig) {
   const byHouse = spread.reduce((acc, card) => {
     acc[card.house] = card;
@@ -64,6 +100,11 @@ function analyze(spread, significatorConfig) {
   const partnerAdj = getAdjacent(partner);
 
   const mainDiagonal = spread.filter((card) => card.row === card.col);
+  const secondaryDiagonal = spread.filter((card) => card.row + card.col === 8);
+  const significatorDiagonals = {
+    self: getSignificatorDiagonals(spread, self),
+    partner: getSignificatorDiagonals(spread, partner),
+  };
 
   const focusCards = [self, partner, ...selfAdj].filter(Boolean);
   const fixedFocusCards = [...partnerAdj, byHouse[1], byHouse[36]].filter(Boolean);
@@ -76,6 +117,8 @@ function analyze(spread, significatorConfig) {
       partner: partnerAdj,
     },
     mainDiagonal,
+    secondaryDiagonal,
+    significatorDiagonals,
     focusCards,
     fixedFocusCards,
   };
@@ -172,6 +215,20 @@ export default function ReginaReadingApp() {
       '',
       '■ 메인 대각선',
       cardNames(analysis.mainDiagonal) || '없음',
+      '',
+      '■ 보조 대각선',
+      cardNames(analysis.secondaryDiagonal) || '없음',
+      '',
+      '■ 시그니피케이터 대각선',
+      `나 (↘︎): ${cardNames(analysis.significatorDiagonals.self.downRight) || '없음'}`,
+      `나 (↙︎): ${cardNames(analysis.significatorDiagonals.self.downLeft) || '없음'}`,
+      `상대 (↘︎): ${cardNames(analysis.significatorDiagonals.partner.downRight) || '없음'}`,
+      `상대 (↙︎): ${cardNames(analysis.significatorDiagonals.partner.downLeft) || '없음'}`,
+      '',
+      '■ 체인 추적',
+      selectedCardId ? `시작 카드: ${CARD_BY_ID[selectedCardId]?.label || selectedCardId}` : '시작 카드: (선택 없음)',
+      chainResult ? `체인: ${chainResult.chain.map((c) => c.name).join(' → ')}` : '체인: (선택 없음)',
+      chainResult ? `루프 여부: ${chainResult.isLoop ? '루프 감지' : '정상 종료'}` : '루프 여부: (선택 없음)',
       '',
       '■ 포커스(중복 제거)',
       cardNames(mergedFocus) || '없음',
@@ -311,6 +368,11 @@ export default function ReginaReadingApp() {
         <div>나 인접: {cardNames(analysis.adjacency.self) || '없음'}</div>
         <div>상대 인접: {cardNames(analysis.adjacency.partner) || '없음'}</div>
         <div>메인 대각선: {cardNames(analysis.mainDiagonal) || '없음'}</div>
+        <div>보조 대각선: {cardNames(analysis.secondaryDiagonal) || '없음'}</div>
+        <div>나 대각선(↘︎): {cardNames(analysis.significatorDiagonals.self.downRight) || '없음'}</div>
+        <div>나 대각선(↙︎): {cardNames(analysis.significatorDiagonals.self.downLeft) || '없음'}</div>
+        <div>상대 대각선(↘︎): {cardNames(analysis.significatorDiagonals.partner.downRight) || '없음'}</div>
+        <div>상대 대각선(↙︎): {cardNames(analysis.significatorDiagonals.partner.downLeft) || '없음'}</div>
         <div>포커스(중복 제거): {cardNames(mergedFocus) || '없음'}</div>
       </div>
     </div>
