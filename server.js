@@ -1,7 +1,10 @@
 const express = require("express");
 const OpenAI = require("openai");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({
