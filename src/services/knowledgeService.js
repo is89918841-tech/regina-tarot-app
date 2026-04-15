@@ -89,9 +89,9 @@ async function indexUpload({ file }) {
 
   try {
     const uploaded = await openai.files.create({
-      file: await fs.open(file.path, 'r').then((handle) => handle.createReadStream()),
-      purpose: 'assistants',
-    });
+  file: fs.createReadStream(file.path),
+  purpose: 'user_data'
+});
 
     await updateStoredEntry(entry.id, {
       openaiFileId: uploaded.id,
