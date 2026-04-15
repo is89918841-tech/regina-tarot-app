@@ -12,7 +12,11 @@ const {
 } = require('../services/knowledgeService');
 const {
   SESSION_COOKIE_NAME,
+  parseCookies,
   createAdminSessionToken,
+  buildSessionCookieHeader,
+  buildClearSessionCookieHeader,
+  revokeSessionToken,
 } = require('../utils/adminSession');
 
 const router = express.Router();
@@ -44,24 +48,19 @@ router.post('/session', (req, res) => {
   }
 
   const session = createAdminSessionToken();
-  const cookieParts = [
-    `${SESSION_COOKIE_NAME}=${encodeURIComponent(session)}`,
-    'HttpOnly',
-    'Path=/',
-    'SameSite=Strict',
-    'Max-Age=43200',
-  ];
-  if (env.secureCookie) cookieParts.push('Secure');
-
-  res.setHeader('Set-Cookie', cookieParts.join('; '));
-  return res.json({ ok: true });
+  res.setHeader('Set-Cookie', buildSessionCookieHeader(session));
+  return res.json({ ok: true, authenticated: true });
 });
 
-router.post('/logout', (_, res) => {
-  res.setHeader(
-    'Set-Cookie',
-    `${SESSION_COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Strict; Max-Age=0`,
-  );
+router.get('/session', adminAuth, (_, res) => {
+  return res.json({ ok: true, authenticated: true });
+});
+
+router.post('/logout', (req, res) => {
+  const cookies = parseCookies(req);
+  const token = cookies[SESSION_COOKIE_NAME];
+  revokeSessionToken(token);
+  res.setHeader('Set-Cookie', buildClearSessionCookieHeader());
   return res.json({ ok: true });
 });
 

@@ -38,6 +38,15 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 - `PATCH /api/admin/files/:id`
 - `DELETE /api/admin/files/:id`
 
+
+### Admin Session 흐름
+
+1. `POST /api/admin/session`에 admin token을 보내면 HttpOnly 세션 쿠키를 발급합니다.
+2. 브라우저는 이후 `credentials: include`로 쿠키를 자동 전송합니다.
+3. `GET /api/admin/session`으로 세션 복원/검증을 수행합니다.
+4. 서버는 서명 검증 + 세션 만료 시간(`ADMIN_SESSION_MAX_AGE_SEC`)을 모두 검사합니다.
+5. `POST /api/admin/logout`은 쿠키를 즉시 만료시키고(클리어), 내부 revoke hook에 토큰을 등록합니다.
+
 ## 벡터스토어 처리 상태 로직
 
 업로드 시 상태가 아래처럼 전이됩니다.
@@ -58,6 +67,7 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 - `OPENAI_VECTOR_STORE_ID`
 - `ADMIN_TOKEN` (필수)
 - `ADMIN_SESSION_SECRET` (권장, 미지정 시 ADMIN_TOKEN 사용)
+- `ADMIN_SESSION_MAX_AGE_SEC` (기본 43200초 = 12시간, 쿠키 Max-Age + 서버 검증에 동시 사용)
 - `SECURE_COOKIE` (`true` 권장: HTTPS 환경에서 세션 쿠키 보안 강화)
 - `UPLOAD_PATH` (기본: `/data/uploads`)
 - `METADATA_STORE_PATH` (기본: `/data/uploads/metadata.json`)

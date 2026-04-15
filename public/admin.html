@@ -32,7 +32,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script>
-      const { useState } = React;
+      const { useState, useEffect } = React;
       const MAX_FILE_MB = 100;
 
       function formatBytes(bytes) {
@@ -52,6 +52,27 @@
 
         function setError(text) { setStatus({ type: 'error', text }); }
         function setInfo(text) { setStatus({ type: 'info', text }); }
+
+
+        useEffect(() => {
+          (async () => {
+            try {
+              const res = await fetch('/api/admin/session', { credentials: 'include' });
+              if (!res.ok) {
+                setAuthenticated(false);
+                return;
+              }
+              const data = await res.json();
+              if (data.ok && data.authenticated) {
+                setAuthenticated(true);
+                setInfo('기존 관리자 세션이 복원되었어요.');
+                await fetchFiles();
+              }
+            } catch (_) {
+              setAuthenticated(false);
+            }
+          })();
+        }, []);
 
         async function login() {
           try {

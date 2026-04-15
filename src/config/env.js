@@ -7,6 +7,7 @@ module.exports = {
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   adminToken: process.env.ADMIN_TOKEN || '',
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_TOKEN || '',
+  adminSessionMaxAgeSec: Number(process.env.ADMIN_SESSION_MAX_AGE_SEC || 60 * 60 * 12),
   secureCookie: process.env.SECURE_COOKIE === 'true',
   uploadRoot: path.resolve(UPLOAD_ROOT),
   metadataStorePath:
