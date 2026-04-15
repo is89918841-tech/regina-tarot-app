@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regina Divination Platform</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+      .wrap { max-width: 860px; margin: 0 auto; padding: 20px; }
+      .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+      input, textarea, select, button { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+      button { background: #4338ca; border: 0; cursor: pointer; margin-top: 12px; }
+      pre { white-space: pre-wrap; line-height: 1.5; }
+      .grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+      const { useState } = React;
+
+      function App() {
+        const [question, setQuestion] = useState('');
+        const [deck, setDeck] = useState('유니버셜 타로');
+        const [topic, setTopic] = useState('');
+        const [spreadText, setSpreadText] = useState('과거\n현재\n미래');
+        const [result, setResult] = useState('');
+        const [loading, setLoading] = useState(false);
+
+        async function onGenerate() {
+          setLoading(true);
+          setResult('');
+          try {
+            const spread = spreadText.split('\n').map((v) => v.trim()).filter(Boolean);
+            const res = await fetch('/api/reading/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ question, spread, deck, topic }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || 'Failed to generate reading');
+            setResult(data.reading);
+          } catch (err) {
+            setResult(`오류: ${err.message}`);
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        return React.createElement('div', { className: 'wrap' },
+          React.createElement('h1', null, 'Regina Divination Platform'),
+          React.createElement('div', { className: 'card' },
+            React.createElement('div', { className: 'grid' },
+              React.createElement('div', null,
+                React.createElement('label', null, '덱'),
+                React.createElement('select', { value: deck, onChange: (e) => setDeck(e.target.value) },
+                  React.createElement('option', { value: '유니버셜 타로' }, '유니버셜 타로'),
+                  React.createElement('option', { value: '나전의 빛 타로' }, '나전의 빛 타로'),
+                  React.createElement('option', { value: '로제딕 타로' }, '로제딕 타로')
+                )
+              ),
+              React.createElement('div', null,
+                React.createElement('label', null, '토픽(선택)'),
+                React.createElement('input', { value: topic, onChange: (e) => setTopic(e.target.value), placeholder: '연애, 재물, 건강 등' })
+              )
+            ),
+            React.createElement('label', null, '질문'),
+            React.createElement('textarea', { rows: 3, value: question, onChange: (e) => setQuestion(e.target.value), placeholder: '내담자님의 질문을 입력하세요.' }),
+            React.createElement('label', null, '스프레드(줄바꿈으로 구분)'),
+            React.createElement('textarea', { rows: 4, value: spreadText, onChange: (e) => setSpreadText(e.target.value) }),
+            React.createElement('button', { onClick: onGenerate, disabled: loading }, loading ? '생성 중...' : '리딩 생성')
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', null, '결과'),
+            React.createElement('pre', null, result || '아직 생성된 리딩이 없어요.')
+          )
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+  </body>
+</html>
