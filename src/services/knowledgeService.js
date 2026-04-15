@@ -90,7 +90,7 @@ async function indexUpload({ file }) {
   try {
     const uploaded = await openai.files.create({
       file: await fs.open(file.path, 'r').then((handle) => handle.createReadStream()),
-      purpose: 'assistants',
+      purpose: 'fine-tune',
     });
 
     await updateStoredEntry(entry.id, {
