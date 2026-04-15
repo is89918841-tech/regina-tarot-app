@@ -80,6 +80,7 @@ async function indexUpload({ file }) {
     vectorStoreFileId: null,
     vectorStoreFileStatus: null,
     error: null,
+    errorDetail: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -92,7 +93,7 @@ async function indexUpload({ file }) {
   try {
     const uploaded = await openai.files.create({
       file: await fs.open(file.path, 'r').then((handle) => handle.createReadStream()),
-      purpose: 'assistants',
+      purpose: 'user_data',
     });
 
     await updateStoredEntry(entry.id, {
@@ -118,9 +119,11 @@ async function indexUpload({ file }) {
     const updated = await updateStoredEntry(entry.id, processingResult);
     return updated;
   } catch (error) {
+    const apiErrorDetail = error?.response?.data || error?.error || null;
     const failed = await updateStoredEntry(entry.id, {
       status: 'error',
       error: error.message,
+      errorDetail: apiErrorDetail ? JSON.stringify(apiErrorDetail) : null,
     });
     return failed;
   }

@@ -273,7 +273,8 @@
                   ),
                   React.createElement('td', null,
                     React.createElement('span', { className: statusClass(f.status) }, f.status || '-'),
-                    f.error ? React.createElement('div', { className: 'muted msg-error' }, f.error) : null
+                    f.error ? React.createElement('div', { className: 'muted msg-error' }, f.error) : null,
+                    f.errorDetail ? React.createElement('div', { className: 'muted msg-error' }, f.errorDetail) : null
                   ),
                   React.createElement('td', null,
                     React.createElement('button', { className: 'primary', onClick: () => updateRow(f), disabled: !authenticated }, '저장'),
