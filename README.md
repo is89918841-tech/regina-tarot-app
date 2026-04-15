@@ -38,7 +38,6 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 - `PATCH /api/admin/files/:id`
 - `DELETE /api/admin/files/:id`
 
-
 ### Admin Session 흐름
 
 1. `POST /api/admin/session`에 admin token을 보내면 HttpOnly 세션 쿠키를 발급합니다.
@@ -46,8 +45,6 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 3. `GET /api/admin/session`으로 세션 복원/검증을 수행합니다.
 4. 서버는 서명 검증 + 세션 만료 시간(`ADMIN_SESSION_MAX_AGE_SEC`)을 모두 검사합니다.
 5. `POST /api/admin/logout`은 쿠키를 즉시 만료시키고(클리어), 내부 revoke hook에 토큰을 등록합니다.
-
-
 
 ### 업로드 파일명/타입 처리
 
