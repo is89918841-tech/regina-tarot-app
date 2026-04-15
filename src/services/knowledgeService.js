@@ -1,5 +1,6 @@
 const path = require('path');
-const fs = require('fs/promises');
+const fs = require('fs')
+const fsp = require('fs').promises
 const OpenAI = require('openai');
 const env = require('../config/env');
 const { ensureDir, readJson, writeJson } = require('../utils/fileStore');
