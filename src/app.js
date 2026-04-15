@@ -13,7 +13,8 @@ ensureDir(env.uploadRoot).catch((error) => {
 });
 
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/healthz', (_, res) => {
   res.status(200).json({ ok: true, status: 'healthy' });
@@ -30,7 +31,10 @@ app.get('/admin', (_, res) => {
 
 app.use((error, _, res, __) => {
   console.error(error);
-  res.status(500).json({ ok: false, error: 'Internal server error', detail: error.message });
+  res.status(error.status || 500).json({
+    ok: false,
+    error: error.message || 'Internal server error',
+  });
 });
 
 module.exports = app;

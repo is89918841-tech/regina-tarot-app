@@ -9,46 +9,58 @@ const {
   deleteFile,
   updateFileMetadata,
 } = require('../services/knowledgeService');
+const { extractBoundary, parseMultipartBuffer } = require('../utils/multipart');
 
 const router = express.Router();
 
 router.use(adminAuth);
 
-router.post('/upload', async (req, res, next) => {
-  try {
-    const { filename, contentBase64, mimeType, deck, topic, priority, type } = req.body || {};
+const rawMultipart = express.raw({
+  type: (req) => (req.headers['content-type'] || '').includes('multipart/form-data'),
+  limit: `${env.maxUploadSizeMb}mb`,
+});
 
-    if (!filename || !contentBase64) {
-      return res.status(400).json({
-        ok: false,
-        error: 'filename and contentBase64 are required',
-      });
+router.post('/upload', rawMultipart, async (req, res, next) => {
+  try {
+    const boundary = extractBoundary(req.headers['content-type'] || '');
+    if (!boundary) {
+      return res.status(400).json({ ok: false, error: 'Invalid multipart boundary' });
     }
 
-    const safe = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const { fields, file } = parseMultipartBuffer(req.body, boundary);
+    if (!file) {
+      return res.status(400).json({ ok: false, error: 'file field is required' });
+    }
+
+    const safe = file.filename.replace(/[^a-zA-Z0-9._-]/g, '_');
     const storedName = `${Date.now()}_${safe}`;
     const localPath = path.join(env.uploadRoot, storedName);
 
-    const buffer = Buffer.from(contentBase64, 'base64');
     await fs.mkdir(env.uploadRoot, { recursive: true });
-    await fs.writeFile(localPath, buffer);
+    await fs.writeFile(localPath, file.buffer);
 
     const saved = await indexUpload({
       file: {
-        originalname: filename,
+        originalname: file.filename,
         filename: storedName,
         path: localPath,
-        mimetype: mimeType || 'application/octet-stream',
-        size: buffer.length,
-        deck,
-        topic,
-        priority,
-        type,
+        mimetype: file.mimetype,
+        size: file.buffer.length,
+        deck: fields.deck,
+        topic: fields.topic,
+        priority: fields.priority,
+        type: fields.type,
       },
     });
 
     return res.status(201).json({ ok: true, file: saved });
   } catch (error) {
+    if (error.type === 'entity.too.large') {
+      return res.status(413).json({
+        ok: false,
+        error: `Upload exceeds limit (${env.maxUploadSizeMb}MB).`,
+      });
+    }
     return next(error);
   }
 });

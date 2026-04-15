@@ -11,4 +11,7 @@ module.exports = {
     process.env.METADATA_STORE_PATH || path.join(UPLOAD_ROOT, 'metadata.json'),
   vectorStoreId: process.env.OPENAI_VECTOR_STORE_ID || '',
   model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+  maxUploadSizeMb: Number(process.env.MAX_UPLOAD_SIZE_MB || 100),
+  vectorProcessingTimeoutMs: Number(process.env.VECTOR_PROCESSING_TIMEOUT_MS || 180000),
+  vectorProcessingPollMs: Number(process.env.VECTOR_PROCESSING_POLL_MS || 3000),
 };

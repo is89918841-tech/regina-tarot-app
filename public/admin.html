@@ -6,15 +6,24 @@
     <title>Regina Admin Dashboard</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 0; background: #020617; color: #e2e8f0; }
-      .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
       .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
       input, select, button { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+      button { cursor: pointer; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; border-bottom: 1px solid #334155; padding: 8px; font-size: 14px; }
+      th, td { text-align: left; border-bottom: 1px solid #334155; padding: 8px; font-size: 14px; vertical-align: top; }
       .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
       .row > * { flex: 1; min-width: 140px; }
       .danger { background: #b91c1c; border: 0; }
       .primary { background: #2563eb; border: 0; }
+      .muted { color: #94a3b8; font-size: 12px; }
+      .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+      .s-processed { background: #065f46; }
+      .s-processing { background: #92400e; }
+      .s-error { background: #7f1d1d; }
+      .s-uploaded, .s-saved { background: #1e3a8a; }
+      .msg-error { color: #fecaca; }
+      .msg-info { color: #bfdbfe; }
     </style>
   </head>
   <body>
@@ -24,11 +33,19 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script>
       const { useState, useEffect } = React;
+      const MAX_FILE_MB = 100;
+
+      function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return '-';
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      }
 
       function App() {
         const [token, setToken] = useState(localStorage.getItem('regina_admin_token') || '');
         const [files, setFiles] = useState([]);
-        const [status, setStatus] = useState('');
+        const [status, setStatus] = useState({ type: 'info', text: '' });
         const [uploading, setUploading] = useState(false);
         const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
 
@@ -38,54 +55,58 @@
           localStorage.setItem('regina_admin_token', token);
         }, [token]);
 
+        function setError(text) {
+          setStatus({ type: 'error', text });
+        }
+
+        function setInfo(text) {
+          setStatus({ type: 'info', text });
+        }
+
         async function fetchFiles() {
           try {
             const res = await fetch('/api/admin/files', { headers });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '조회 실패');
             setFiles(data.files);
+            setInfo(`총 ${data.files.length}개 파일`);
           } catch (e) {
-            setStatus(e.message);
+            setError(e.message);
           }
         }
 
         async function upload() {
-          if (!form.file) return setStatus('파일을 선택해주세요.');
+          if (!form.file) return setError('파일을 선택해주세요.');
+          if (!token) return setError('Admin token을 먼저 입력해주세요.');
+          const fileMb = form.file.size / (1024 * 1024);
+          if (fileMb > MAX_FILE_MB) {
+            return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요. 현재 ${fileMb.toFixed(2)}MB`);
+          }
+
           setUploading(true);
-          setStatus('업로드 중...');
+          setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
 
           try {
-            const contentBase64 = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const result = String(reader.result || '');
-                resolve(result.split(',')[1] || '');
-              };
-              reader.onerror = () => reject(new Error('파일 읽기 실패'));
-              reader.readAsDataURL(form.file);
-            });
+            const body = new FormData();
+            body.append('file', form.file);
+            body.append('deck', form.deck);
+            body.append('topic', form.topic);
+            body.append('priority', form.priority);
+            body.append('type', form.type);
 
             const res = await fetch('/api/admin/upload', {
               method: 'POST',
-              headers: { ...headers, 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                filename: form.file.name,
-                mimeType: form.file.type,
-                contentBase64,
-                deck: form.deck,
-                topic: form.topic,
-                priority: form.priority,
-                type: form.type,
-              }),
+              headers,
+              body,
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '업로드 실패');
 
-            setStatus('업로드 완료');
+            setInfo(`업로드 완료: 상태=${data.file.status}`);
             setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
             await fetchFiles();
           } catch (e) {
-            setStatus(e.message);
+            setError(e.message);
           } finally {
             setUploading(false);
           }
@@ -100,10 +121,10 @@
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '수정 실패');
-            setStatus('메타데이터 수정 완료');
+            setInfo('메타데이터 수정 완료');
             await fetchFiles();
           } catch (e) {
-            setStatus(e.message);
+            setError(e.message);
           }
         }
 
@@ -113,10 +134,18 @@
             const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE', headers });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '삭제 실패');
+            setInfo('삭제 완료');
             await fetchFiles();
           } catch (e) {
-            setStatus(e.message);
+            setError(e.message);
           }
+        }
+
+        function statusClass(status) {
+          if (status === 'processed') return 'status s-processed';
+          if (status === 'processing') return 'status s-processing';
+          if (status === 'error') return 'status s-error';
+          return 'status s-uploaded';
         }
 
         return React.createElement('div', { className: 'wrap' },
@@ -124,13 +153,16 @@
           React.createElement('div', { className: 'card' },
             React.createElement('label', null, 'Admin Token'),
             React.createElement('input', { value: token, onChange: (e) => setToken(e.target.value), placeholder: 'x-admin-token 값' }),
-            React.createElement('button', { className: 'primary', onClick: fetchFiles, style: { marginTop: '8px' } }, '파일 목록 새로고침')
+            React.createElement('div', { className: 'row' },
+              React.createElement('button', { className: 'primary', onClick: fetchFiles }, '파일 목록 새로고침'),
+              React.createElement('div', { className: 'muted' }, `권장 최대 파일 크기: ${MAX_FILE_MB}MB (PDF/TXT/DOCX)`)
+            )
           ),
           React.createElement('div', { className: 'card' },
             React.createElement('h3', null, '지식 파일 업로드'),
             React.createElement('div', { className: 'row' },
-              React.createElement('input', { value: form.deck, placeholder: 'deck', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
-              React.createElement('input', { value: form.topic, placeholder: 'topic', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
+              React.createElement('input', { value: form.deck, placeholder: 'deck (예: 나전의 빛 타로)', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
+              React.createElement('input', { value: form.topic, placeholder: 'topic (예: 연애)', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
               React.createElement('select', { value: form.priority, onChange: (e) => setForm({ ...form, priority: e.target.value }) },
                 React.createElement('option', { value: 'core' }, 'core'),
                 React.createElement('option', { value: 'support' }, 'support'),
@@ -143,25 +175,35 @@
                 React.createElement('option', { value: 'rule' }, 'rule')
               )
             ),
-            React.createElement('input', { type: 'file', onChange: (e) => setForm({ ...form, file: e.target.files[0] }) }),
-            React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading }, uploading ? '업로드 중...' : '업로드')
+            React.createElement('input', {
+              type: 'file',
+              onChange: (e) => {
+                const file = e.target.files[0] || null;
+                setForm({ ...form, file });
+                if (file) setInfo(`선택 파일: ${file.name} (${formatBytes(file.size)})`);
+              }
+            }),
+            React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading }, uploading ? '처리 중...' : '업로드')
           ),
           React.createElement('div', { className: 'card' },
             React.createElement('h3', null, '파일 목록'),
-            React.createElement('div', null, status),
+            status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null,
             React.createElement('table', null,
               React.createElement('thead', null,
                 React.createElement('tr', null,
-                  React.createElement('th', null, '파일명'),
+                  React.createElement('th', null, '파일명/크기'),
                   React.createElement('th', null, 'deck/topic'),
                   React.createElement('th', null, 'priority/type'),
-                  React.createElement('th', null, 'status'),
+                  React.createElement('th', null, '상태'),
                   React.createElement('th', null, '작업')
                 )
               ),
               React.createElement('tbody', null,
                 ...files.map((f) => React.createElement('tr', { key: f.id },
-                  React.createElement('td', null, f.originalName),
+                  React.createElement('td', null,
+                    React.createElement('div', null, f.originalName),
+                    React.createElement('div', { className: 'muted' }, formatBytes(f.size))
+                  ),
                   React.createElement('td', null,
                     React.createElement('input', { value: f.deck || '', onChange: (e) => f.deck = e.target.value }),
                     React.createElement('input', { value: f.topic || '', onChange: (e) => f.topic = e.target.value, style: { marginTop: '4px' } })
@@ -179,7 +221,10 @@
                       React.createElement('option', { value: 'rule' }, 'rule')
                     )
                   ),
-                  React.createElement('td', null, f.status),
+                  React.createElement('td', null,
+                    React.createElement('span', { className: statusClass(f.status) }, f.status || '-'),
+                    f.error ? React.createElement('div', { className: 'muted msg-error' }, f.error) : null
+                  ),
                   React.createElement('td', null,
                     React.createElement('button', { className: 'primary', onClick: () => updateRow(f) }, '저장'),
                     React.createElement('button', { className: 'danger', onClick: () => removeRow(f.id), style: { marginTop: '4px' } }, '삭제')

@@ -14,6 +14,50 @@ async function saveMetadata(items) {
   await writeJson(env.metadataStorePath, items);
 }
 
+async function updateStoredEntry(entryId, patch) {
+  const metadataList = await loadMetadata();
+  const idx = metadataList.findIndex((item) => item.id === entryId);
+  if (idx < 0) return null;
+  metadataList[idx] = {
+    ...metadataList[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  await saveMetadata(metadataList);
+  return metadataList[idx];
+}
+
+async function waitForVectorProcessing(vectorStoreFileId) {
+  const timeoutAt = Date.now() + env.vectorProcessingTimeoutMs;
+
+  while (Date.now() < timeoutAt) {
+    const state = await openai.vectorStores.files.retrieve(
+      env.vectorStoreId,
+      vectorStoreFileId,
+    );
+
+    if (state.status === 'completed') {
+      return { status: 'processed', vectorStoreFileStatus: state.status };
+    }
+
+    if (state.status === 'failed' || state.status === 'cancelled') {
+      return {
+        status: 'error',
+        vectorStoreFileStatus: state.status,
+        error: state.last_error?.message || `Vector file status: ${state.status}`,
+      };
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, env.vectorProcessingPollMs));
+  }
+
+  return {
+    status: 'processing',
+    vectorStoreFileStatus: 'in_progress',
+    error: 'Vector processing timeout exceeded; still processing.',
+  };
+}
+
 async function indexUpload({ file }) {
   await ensureDir(env.uploadRoot);
   const metadataList = await loadMetadata();
@@ -31,34 +75,53 @@ async function indexUpload({ file }) {
     type: file.type || 'guidebook',
     status: 'saved',
     openaiFileId: null,
+    vectorStoreFileId: null,
+    vectorStoreFileStatus: null,
+    error: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 
-  if (openai) {
-    try {
-      const uploaded = await openai.files.create({
-        file: await fs.open(file.path, 'r').then((handle) => handle.createReadStream()),
-        purpose: 'assistants',
-      });
-      entry.openaiFileId = uploaded.id;
-      entry.status = 'uploaded';
-
-      if (env.vectorStoreId) {
-        await openai.vectorStores.files.create(env.vectorStoreId, {
-          file_id: uploaded.id,
-        });
-        entry.status = 'processed';
-      }
-    } catch (error) {
-      entry.status = 'error';
-      entry.error = error.message;
-    }
-  }
-
   metadataList.push(entry);
   await saveMetadata(metadataList);
-  return entry;
+
+  if (!openai) return entry;
+
+  try {
+    const uploaded = await openai.files.create({
+      file: await fs.open(file.path, 'r').then((handle) => handle.createReadStream()),
+      purpose: 'assistants',
+    });
+
+    await updateStoredEntry(entry.id, {
+      openaiFileId: uploaded.id,
+      status: env.vectorStoreId ? 'processing' : 'uploaded',
+    });
+
+    if (!env.vectorStoreId) {
+      return (await loadMetadata()).find((item) => item.id === entry.id);
+    }
+
+    const vsFile = await openai.vectorStores.files.create(env.vectorStoreId, {
+      file_id: uploaded.id,
+    });
+
+    await updateStoredEntry(entry.id, {
+      vectorStoreFileId: vsFile.id,
+      vectorStoreFileStatus: vsFile.status || 'in_progress',
+    });
+
+    const processingResult = await waitForVectorProcessing(vsFile.id);
+
+    const updated = await updateStoredEntry(entry.id, processingResult);
+    return updated;
+  } catch (error) {
+    const failed = await updateStoredEntry(entry.id, {
+      status: 'error',
+      error: error.message,
+    });
+    return failed;
+  }
 }
 
 async function listFiles() {
@@ -72,7 +135,10 @@ async function updateFileMetadata(id, patch) {
 
   list[idx] = {
     ...list[idx],
-    ...patch,
+    deck: patch.deck ?? list[idx].deck,
+    topic: patch.topic ?? list[idx].topic,
+    priority: patch.priority ?? list[idx].priority,
+    type: patch.type ?? list[idx].type,
     updatedAt: new Date().toISOString(),
   };
   await saveMetadata(list);
@@ -97,7 +163,7 @@ async function deleteFile(id) {
     try {
       await openai.files.del(target.openaiFileId);
     } catch (_) {
-      // Keep local delete successful even if remote delete fails.
+      // keep local delete successful
     }
   }
 
@@ -111,42 +177,63 @@ function scorePriority(priority) {
 }
 
 function scoreType(type) {
-  if (type === 'tone' || type === 'rule') return 4;
-  if (type === 'guidebook' || type === 'interpretation') return 2;
+  if (type === 'tone' || type === 'rule') return 5;
+  if (type === 'guidebook' || type === 'interpretation') return 3;
   return 1;
 }
 
-async function retrieveKnowledge({ deck, topic }) {
+async function retrieveKnowledge({ question, deck, topic, intent }) {
   const items = await loadMetadata();
+
   const scored = items
     .map((item) => {
       let score = scorePriority(item.priority) + scoreType(item.type);
       if (item.type === 'tone' || item.type === 'rule') score += 8;
-      if (deck && item.deck === deck) score += 5;
-      if (topic && item.topic === topic) score += 4;
+      if (deck && item.deck === deck) score += 6;
+      if (topic && item.topic === topic) score += 5;
+      if (intent && item.topic === intent) score += 4;
       if (!item.deck && !item.topic) score += 1;
       return { ...item, score };
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, 8);
+    .slice(0, 12);
 
-  if (!openai || !env.vectorStoreId) {
-    return scored.map((item) => ({
+  const query = [question, deck, topic, intent]
+    .filter(Boolean)
+    .join(' | ')
+    .trim();
+
+  if (!openai || !env.vectorStoreId || !query) {
+    return scored.slice(0, 8).map((item) => ({
       source: item.originalName,
-      excerpt: `${item.type}/${item.priority} 자료로 등록됨`,
+      excerpt: `${item.type}/${item.priority} 자료`,
+      deck: item.deck,
+      topic: item.topic,
     }));
   }
 
-  // If vector search is configured, use top metadata IDs as hints and still limit chunk count.
-  const query = [deck, topic].filter(Boolean).join(' ') || '타로 리딩 기본 규칙';
-  const searchResult = await openai.vectorStores.search(env.vectorStoreId, {
-    query,
-    max_num_results: 8,
-  });
+  try {
+    const searchResult = await openai.vectorStores.search(env.vectorStoreId, {
+      query,
+      max_num_results: 8,
+    });
 
-  return (searchResult.data || []).map((chunk) => ({
-    source: chunk.filename || 'vector_store',
-    excerpt: chunk.content?.[0]?.text || '',
+    const vectorChunks = (searchResult.data || []).map((chunk) => ({
+      source: chunk.filename || 'vector_store',
+      excerpt: chunk.content?.[0]?.text || '',
+      score: chunk.score || 0,
+    }));
+
+    if (vectorChunks.length > 0) return vectorChunks;
+  } catch (_) {
+    // fallback below
+  }
+
+  return scored.slice(0, 8).map((item) => ({
+    source: item.originalName,
+    excerpt: `${item.type}/${item.priority} 자료`,
+    deck: item.deck,
+    topic: item.topic,
   }));
 }
 
