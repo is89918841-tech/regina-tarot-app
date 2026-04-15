@@ -6,6 +6,38 @@ const SECTION_HEADERS = [
   '[후속 질문]',
 ];
 
+const HEADER_ALIAS_RULES = [
+  {
+    canonical: '[상황]',
+    patterns: [/^\[?\s*상황\s*\]?[:：]?\s*$/i],
+  },
+  {
+    canonical: '[감정/에너지 흐름]',
+    patterns: [
+      /^\[?\s*감정\s*\/\s*에너지\s*흐름\s*\]?[:：]?\s*$/i,
+      /^\[?\s*감정\s*에너지\s*흐름\s*\]?[:：]?\s*$/i,
+      /^\[?\s*감정\s*흐름\s*\]?[:：]?\s*$/i,
+      /^\[?\s*에너지\s*흐름\s*\]?[:：]?\s*$/i,
+    ],
+  },
+  {
+    canonical: '[해석]',
+    patterns: [/^\[?\s*해석\s*\]?[:：]?\s*$/i, /^\[?\s*종합\s*해석\s*\]?[:：]?\s*$/i],
+  },
+  {
+    canonical: '[조언]',
+    patterns: [/^\[?\s*조언\s*\]?[:：]?\s*$/i, /^\[?\s*제안\s*\]?[:：]?\s*$/i],
+  },
+  {
+    canonical: '[후속 질문]',
+    patterns: [
+      /^\[?\s*후속\s*질문\s*\]?[:：]?\s*$/i,
+      /^\[?\s*추가\s*질문\s*\]?[:：]?\s*$/i,
+      /^\[?\s*다음\s*질문\s*\]?[:：]?\s*$/i,
+    ],
+  },
+];
+
 function buildSystemPrompt() {
   return [
     'You are the structured reading engine for "Regina Divination Platform".',
@@ -81,12 +113,39 @@ function fallbackReading() {
   ].join('\n\n');
 }
 
-function extractSectionBody(text, header, nextHeader) {
-  const start = text.indexOf(header);
-  if (start < 0) return '';
-  const from = start + header.length;
-  const end = nextHeader ? text.indexOf(nextHeader, from) : text.length;
-  return text.slice(from, end < 0 ? text.length : end).trim();
+function detectCanonicalHeader(line) {
+  const trimmed = String(line || '').trim();
+  for (const rule of HEADER_ALIAS_RULES) {
+    if (rule.patterns.some((pattern) => pattern.test(trimmed))) {
+      return rule.canonical;
+    }
+  }
+  return null;
+}
+
+function parseSections(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  const sections = {};
+  let current = null;
+
+  for (const line of lines) {
+    const canonical = detectCanonicalHeader(line);
+    if (canonical) {
+      current = canonical;
+      if (!sections[current]) sections[current] = [];
+      continue;
+    }
+
+    if (current) {
+      sections[current].push(line);
+    }
+  }
+
+  const normalized = {};
+  for (const header of SECTION_HEADERS) {
+    normalized[header] = (sections[header] || []).join('\n').trim();
+  }
+  return normalized;
 }
 
 function normalizeReading(rawText) {
@@ -95,22 +154,15 @@ function normalizeReading(rawText) {
 
   if (!raw) return fallback;
 
-  const fallbackBodies = {};
-  for (let i = 0; i < SECTION_HEADERS.length; i += 1) {
-    const h = SECTION_HEADERS[i];
-    const next = SECTION_HEADERS[i + 1] || null;
-    fallbackBodies[h] = extractSectionBody(fallback, h, next);
-  }
+  const parsed = parseSections(raw);
+  const fallbackParsed = parseSections(fallback);
 
-  const bodies = {};
-  for (let i = 0; i < SECTION_HEADERS.length; i += 1) {
-    const h = SECTION_HEADERS[i];
-    const next = SECTION_HEADERS[i + 1] || null;
-    const body = extractSectionBody(raw, h, next);
-    bodies[h] = body || fallbackBodies[h];
-  }
+  const completed = SECTION_HEADERS.map((header) => {
+    const body = parsed[header] || fallbackParsed[header] || '';
+    return `${header} ${body}`.trim();
+  }).join('\n\n');
 
-  return SECTION_HEADERS.map((h) => `${h} ${bodies[h]}`.trim()).join('\n\n');
+  return completed;
 }
 
 module.exports = {

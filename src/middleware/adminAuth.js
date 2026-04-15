@@ -1,4 +1,9 @@
 const env = require('../config/env');
+const {
+  SESSION_COOKIE_NAME,
+  parseCookies,
+  verifyAdminSessionToken,
+} = require('../utils/adminSession');
 
 function adminAuth(req, res, next) {
   if (!env.adminToken) {
@@ -9,7 +14,13 @@ function adminAuth(req, res, next) {
   }
 
   const headerToken = req.get('x-admin-token');
-  if (!headerToken || headerToken !== env.adminToken) {
+  const cookies = parseCookies(req);
+  const sessionToken = cookies[SESSION_COOKIE_NAME];
+
+  const headerAuthed = headerToken && headerToken === env.adminToken;
+  const cookieAuthed = verifyAdminSessionToken(sessionToken);
+
+  if (!headerAuthed && !cookieAuthed) {
     return res.status(401).json({
       ok: false,
       error: 'Unauthorized admin request.',

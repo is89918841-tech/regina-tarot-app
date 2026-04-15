@@ -29,7 +29,9 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 
 ### Admin API (x-admin-token 필수)
 
-- `POST /api/admin/upload` (`multipart/form-data`)
+- `POST /api/admin/session` (admin token으로 HttpOnly 세션 생성)
+- `POST /api/admin/logout`
+- `POST /api/admin/upload` (`multipart/form-data`, multer 기반)
   - 필수: `file`
   - 선택: `deck`, `topic`, `priority(core|support|optional)`, `type(guidebook|interpretation|tone|rule)`
 - `GET /api/admin/files`
@@ -55,6 +57,8 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 - `OPENAI_MODEL` (기본: `gpt-4.1-mini`)
 - `OPENAI_VECTOR_STORE_ID`
 - `ADMIN_TOKEN` (필수)
+- `ADMIN_SESSION_SECRET` (권장, 미지정 시 ADMIN_TOKEN 사용)
+- `SECURE_COOKIE` (`true` 권장: HTTPS 환경에서 세션 쿠키 보안 강화)
 - `UPLOAD_PATH` (기본: `/data/uploads`)
 - `METADATA_STORE_PATH` (기본: `/data/uploads/metadata.json`)
 - `MAX_UPLOAD_SIZE_MB` (기본: `100`)

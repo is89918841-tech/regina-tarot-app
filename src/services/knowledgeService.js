@@ -159,6 +159,14 @@ async function deleteFile(id) {
     if (error.code !== 'ENOENT') throw error;
   }
 
+  if (openai && env.vectorStoreId && target.vectorStoreFileId) {
+    try {
+      await openai.vectorStores.files.del(env.vectorStoreId, target.vectorStoreFileId);
+    } catch (_) {
+      // continue cleanup even if detach fails
+    }
+  }
+
   if (openai && target.openaiFileId) {
     try {
       await openai.files.del(target.openaiFileId);
@@ -182,6 +190,26 @@ function scoreType(type) {
   return 1;
 }
 
+function getAlwaysIncludeKnowledge(items) {
+  return items
+    .filter((item) => item.type === 'tone' || item.type === 'rule')
+    .sort((a, b) => scorePriority(b.priority) - scorePriority(a.priority))
+    .slice(0, 3)
+    .map((item) => ({
+      source: item.originalName,
+      excerpt: `${item.type}/${item.priority} 자료`,
+      deck: item.deck,
+      topic: item.topic,
+    }));
+}
+
+function dedupeKnowledge(rows) {
+  return rows.filter(
+    (item, idx, arr) =>
+      arr.findIndex((x) => x.source === item.source && x.excerpt === item.excerpt) === idx,
+  );
+}
+
 async function retrieveKnowledge({ question, deck, topic, intent }) {
   const items = await loadMetadata();
 
@@ -198,18 +226,22 @@ async function retrieveKnowledge({ question, deck, topic, intent }) {
     .sort((a, b) => b.score - a.score)
     .slice(0, 12);
 
+  const alwaysInclude = getAlwaysIncludeKnowledge(items);
+
   const query = [question, deck, topic, intent]
     .filter(Boolean)
     .join(' | ')
     .trim();
 
+  const fallbackResults = scored.slice(0, 8).map((item) => ({
+    source: item.originalName,
+    excerpt: `${item.type}/${item.priority} 자료`,
+    deck: item.deck,
+    topic: item.topic,
+  }));
+
   if (!openai || !env.vectorStoreId || !query) {
-    return scored.slice(0, 8).map((item) => ({
-      source: item.originalName,
-      excerpt: `${item.type}/${item.priority} 자료`,
-      deck: item.deck,
-      topic: item.topic,
-    }));
+    return dedupeKnowledge([...alwaysInclude, ...fallbackResults]).slice(0, 10);
   }
 
   try {
@@ -224,17 +256,10 @@ async function retrieveKnowledge({ question, deck, topic, intent }) {
       score: chunk.score || 0,
     }));
 
-    if (vectorChunks.length > 0) return vectorChunks;
+    return dedupeKnowledge([...alwaysInclude, ...vectorChunks, ...fallbackResults]).slice(0, 12);
   } catch (_) {
-    // fallback below
+    return dedupeKnowledge([...alwaysInclude, ...fallbackResults]).slice(0, 10);
   }
-
-  return scored.slice(0, 8).map((item) => ({
-    source: item.originalName,
-    excerpt: `${item.type}/${item.priority} 자료`,
-    deck: item.deck,
-    topic: item.topic,
-  }));
 }
 
 module.exports = {

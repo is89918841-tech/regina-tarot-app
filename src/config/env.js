@@ -6,6 +6,8 @@ module.exports = {
   port: Number(process.env.PORT || 3000),
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   adminToken: process.env.ADMIN_TOKEN || '',
+  adminSessionSecret: process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_TOKEN || '',
+  secureCookie: process.env.SECURE_COOKIE === 'true',
   uploadRoot: path.resolve(UPLOAD_ROOT),
   metadataStorePath:
     process.env.METADATA_STORE_PATH || path.join(UPLOAD_ROOT, 'metadata.json'),
