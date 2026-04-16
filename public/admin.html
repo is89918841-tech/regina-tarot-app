@@ -48,7 +48,7 @@
         const [files, setFiles] = useState([]);
         const [status, setStatus] = useState({ type: 'info', text: '' });
         const [uploading, setUploading] = useState(false);
-        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: [] });
+        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
 
         function setError(text) { setStatus({ type: 'error', text }); }
         function setInfo(text) { setStatus({ type: 'info', text }); }
@@ -215,14 +215,15 @@
                 React.createElement('option', { value: 'rule' }, 'rule')
               )
             ),
-            React.createElement('input', {
-              type: 'file',
-              onChange: (e) => {
-                const file = e.target.files[0] || null;
-                setForm({ ...form, file });
-                if (file) setInfo(`선택 파일: ${file.name} (${formatBytes(file.size)})`);
-              }
-            }),
+          React.createElement('input', {
+  type: 'file',
+  multiple: true,
+  onChange: (e) => {
+    const files = Array.from(e.target.files || []);
+    setForm({ ...form, files });
+    if (files.length > 0) setInfo(`선택 파일: ${files.length}개`);
+  }
+}),
             React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading || !authenticated }, uploading ? '처리 중...' : '업로드')
           ),
           React.createElement('div', { className: 'card' },
