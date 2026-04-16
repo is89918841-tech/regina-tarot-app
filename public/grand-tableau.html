@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>레지나 그랑따블로 리딩 도구</title>
+    <style>
+      :root{--bg:#080b16;--panel:#10182b;--line:#2d3652;--text:#ece3d5;--muted:#bdb29f;--gold:#c8a56f;--indigo:#5c57b7}
+      *{box-sizing:border-box} body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at top,#121b35 0%,var(--bg) 55%);color:var(--text)}
+      .wrap{max-width:1300px;margin:0 auto;padding:20px 14px 36px}.nav a{color:var(--muted);font-size:13px;text-decoration:none;margin-right:10px}
+      .toolbar,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}.toolbar{padding:14px;margin:10px 0 14px}
+      .toolbar-grid{display:grid;gap:10px;grid-template-columns:1.5fr 1.2fr auto auto auto}.toolbar input,.toolbar textarea,.toolbar button{border-radius:10px;border:1px solid #3a4464;background:#161f36;color:var(--text);padding:10px}
+      .toolbar textarea{min-height:42px;resize:vertical}.primary{background:linear-gradient(180deg,#c8a56f,#9e7c4b);border:0;color:#231b0e;font-weight:700}
+      .layout{display:grid;grid-template-columns:2fr 1fr;gap:14px}.panel{padding:14px}
+      .grid{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}.slot{border:1px solid #394468;background:#141d33;border-radius:10px;padding:8px;min-height:78px;cursor:pointer}
+      .slot:hover{border-color:#606ea0}.slot.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(200,165,111,.45)}
+      .tiny{font-size:11px;color:var(--muted)}.name{margin-top:5px;font-size:13px;line-height:1.3}
+      h2,h3{margin:0 0 10px} .section{margin-bottom:12px}
+      .chip{display:inline-block;padding:5px 9px;border:1px solid #43507a;border-radius:999px;font-size:12px;margin:0 6px 6px 0;background:#1d2642}
+      pre{white-space:pre-wrap;line-height:1.5;margin:0;font-family:inherit;font-size:13px}
+      @media(max-width:1100px){.layout{grid-template-columns:1fr}.toolbar-grid{grid-template-columns:1fr}}
+      @media(max-width:800px){.grid{grid-template-columns:repeat(6,1fr)}}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+      const { useMemo, useState } = React;
+      const cards = ["기수","클로버","배","집","나무","구름","뱀","관","꽃다발","낫","채찍","새","아이","여우","곰","별","황새","개","탑","정원","산","갈림길","쥐","심장","반지","책","편지","남자","여자","백합","태양","달","열쇠","물고기","닻","십자가"];
+
+      function App(){
+        const [question,setQuestion]=useState('');
+        const [memo,setMemo]=useState('');
+        const [showHouse,setShowHouse]=useState(true);
+        const [selected,setSelected]=useState(0);
+        const [history,setHistory]=useState([0]);
+        const layout = useMemo(()=> Array.from({length:36},(_,i)=>({idx:i,card:cards[i]})),[]);
+
+        function reshuffle(){
+          const shuffled=[...cards].sort(()=>Math.random()-0.5);
+          for(let i=0;i<36;i++) layout[i].card = shuffled[i];
+          setSelected(0); setHistory([0]);
+        }
+        function choose(i){ setSelected(i); setHistory((prev)=>[...prev.slice(-5),i]); }
+        function copySummary(){
+          const text=`[질문]\n${question||'-'}\n\n[선택 카드]\n${layout[selected].card} (위치 ${selected+1})\n\n[메모]\n${memo||'-'}`;
+          navigator.clipboard.writeText(text); alert('요약 복사 완료');
+        }
+        function copyDetail(){
+          const chain=history.map((i)=>`${i+1}.${layout[i].card}`).join(' → ');
+          const list=layout.map((v,i)=>`${i+1}번: ${v.card}`).join('\n');
+          navigator.clipboard.writeText(`[그랑따블로 상세]\n${list}\n\n체인: ${chain}`); alert('상세 복사 완료');
+        }
+
+        return React.createElement('div',{className:'wrap'},
+          React.createElement('div',{className:'nav'},React.createElement('a',{href:'/'},'리딩 보조앱'),React.createElement('a',{href:'/consultation.html'},'상담 접수'),React.createElement('a',{href:'/grand-tableau.html'},'그랑따블로 도구')),
+          React.createElement('section',{className:'toolbar'},
+            React.createElement('div',{className:'toolbar-grid'},
+              React.createElement('input',{value:question,onChange:(e)=>setQuestion(e.target.value),placeholder:'질문 입력'}),
+              React.createElement('textarea',{value:memo,onChange:(e)=>setMemo(e.target.value),placeholder:'분석 메모'}),
+              React.createElement('button',{className:'primary',onClick:reshuffle},'새 배치 생성'),
+              React.createElement('button',{onClick:copyDetail},'상세 복사'),
+              React.createElement('button',{onClick:copySummary},'요약 복사')
+            ),
+            React.createElement('label',{className:'tiny',style:{display:'block',marginTop:'8px'}},
+              React.createElement('input',{type:'checkbox',checked:showHouse,onChange:(e)=>setShowHouse(e.target.checked),style:{marginRight:'6px'}}),'하우스 번호 표시'
+            )
+          ),
+          React.createElement('main',{className:'layout'},
+            React.createElement('section',{className:'panel'},
+              React.createElement('h2',null,'배치 영역'),
+              React.createElement('div',{className:'grid'},...layout.map((slot)=>React.createElement('article',{key:slot.idx,className:`slot ${selected===slot.idx?'active':''}`,onClick:()=>choose(slot.idx)},
+                React.createElement('div',{className:'tiny'},showHouse?`하우스 ${slot.idx+1}`:`위치 ${slot.idx+1}`),
+                React.createElement('div',{className:'name'},slot.card)
+              )))
+            ),
+            React.createElement('aside',{className:'panel'},
+              React.createElement('div',{className:'section'},
+                React.createElement('h3',null,'체인 추적 영역'),
+                ...history.map((i,idx)=>React.createElement('span',{key:`${i}-${idx}`,className:'chip'},`${i+1}. ${layout[i].card}`))
+              ),
+              React.createElement('div',{className:'section'},
+                React.createElement('h3',null,'분석 미리보기 영역'),
+                React.createElement('pre',null,`현재 선택: ${layout[selected].card} (${selected+1}번 위치)\n\n핵심 포인트\n- 중심축: ${layout[selected].card}가 질문과 가장 직접 연결됩니다.\n- 인접 흐름: 최근 체인 카드와의 상호작용을 우선 판독하세요.\n- 실무 팁: 질문 문장을 1줄로 다시 정리 후 요약 복사 권장.`)
+              )
+            )
+          )
+        )
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+  </body>
+</html>
