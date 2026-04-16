@@ -100,16 +100,16 @@
         }
 
         async function fetchFiles() {
-          try {
-            const res = await fetch('/api/admin/files', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '조회 실패');
-            setFiles(data.files);
-            setInfo(`총 ${data.files.length}개 파일`);
-          } catch (e) {
-            setError(e.message);
-          }
-        
+  try {
+    const res = await fetch('/api/admin/files', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '조회 실패');
+    setFiles(data.files);
+    setInfo(`총 ${data.files.length}개 파일`);
+  } catch (e) {
+    setError(e.message);
+  }
+}
 
 async function upload() {
   if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
