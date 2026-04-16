@@ -48,7 +48,7 @@
         const [files, setFiles] = useState([]);
         const [status, setStatus] = useState({ type: 'info', text: '' });
         const [uploading, setUploading] = useState(false);
-        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
+        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: [] });
 
         function setError(text) { setStatus({ type: 'error', text }); }
         function setInfo(text) { setStatus({ type: 'info', text }); }
