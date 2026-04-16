@@ -109,7 +109,7 @@
           } catch (e) {
             setError(e.message);
           }
-        }
+        
 
 async function upload() {
   if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
@@ -153,9 +153,8 @@ async function upload() {
     setUploading(false);
   }
 }
-       
 
-        async function updateRow(file) {
+async function updateRow(file) {
           try {
             const res = await fetch(`/api/admin/files/${file.id}`, {
               method: 'PATCH',
