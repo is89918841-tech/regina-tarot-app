@@ -115,34 +115,45 @@
           if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
           if (!authenticated) return setError('먼저 인증해주세요.');
 
-          const fileMb = form.file.size / (1024 * 1024);
+          const fileMb = form.files[0].size / (1024 * 1024);
           if (fileMb > MAX_FILE_MB) {
             return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요. 현재 ${fileMb.toFixed(2)}MB`);
           }
 
           setUploading(true);
-          setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
+setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
 
-         for (const file of form.files) {
-  const body = new FormData()
-  body.append('file', file)
-  body.append('deck', form.deck)
-  body.append('topic', form.topic)
-  body.append('priority', form.priority)
-  body.append('type', form.type)
+try {
+  for (const file of form.files) {
+    const body = new FormData()
+    body.append('file', file)
+    body.append('deck', form.deck)
+    body.append('topic', form.topic)
+    body.append('priority', form.priority)
+    body.append('type', form.type)
 
-  const res = await fetch('/api/admin/upload', {
-    method: 'POST',
-    credentials: 'include',
-    body,
-  })
+    const res = await fetch('/api/admin/upload', {
+      method: 'POST',
+      credentials: 'include',
+      body,
+    })
 
-  const data = await res.json()
-  if (!data.ok) throw new Error(`${file.name} 업로드 실패`)
-};
+    const data = await res.json()
+    if (!data.ok) throw new Error(`${file.name} 업로드 실패`)
+  }
 
-            setInfo(`업로드 완료: 상태=${data.file.status}`);
-            setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
+  setInfo(`업로드 완료: ${form.files.length}개 파일`);
+
+  setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
+
+  await fetchFiles();
+
+} catch (e) {
+  setError(e.message);
+} finally {
+  setUploading(false);
+}
+            setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: [] });
             await fetchFiles();
           } catch (e) {
             setError(e.message);
