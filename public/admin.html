@@ -143,6 +143,15 @@ try {
   }
 
   setInfo(`업로드 완료: ${form.files.length}개 파일`);
+  setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
+
+  await fetchFiles();
+
+} catch (e) {
+  setError(e.message);
+} finally {
+  setUploading(false);
+}
 
   setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
 
