@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 업로드</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; }
+    .row { display: grid; gap: 8px; margin-bottom: 12px; }
+    input, select, button { padding: 10px 12px; font-size: 14px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .error { color: #c62828; }
+    .info { color: #1565c0; }
+  </style>
+</head>
+<body>
+  <h1>파일 업로드 관리자</h1>
+
+  <div class="row">
+    <label for="deck">덱</label>
+    <input id="deck" type="text" placeholder="예: 유니버셜 타로" />
+  </div>
+
+  <div class="row">
+    <label for="topic">토픽</label>
+    <input id="topic" type="text" placeholder="예: 메이저 아르카나" />
+  </div>
+
+  <div class="row">
+    <label for="priority">우선순위</label>
+    <select id="priority">
+      <option value="core">core</option>
+      <option value="high">high</option>
+      <option value="low">low</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="type">타입</label>
+    <select id="type">
+      <option value="guidebook">guidebook</option>
+      <option value="keywords">keywords</option>
+      <option value="notes">notes</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="files">파일 선택 (다중 업로드)</label>
+    <input id="files" type="file" multiple />
+  </div>
+
+  <div class="actions">
+    <button id="auth-btn" type="button">인증 완료 처리</button>
+    <button id="upload-btn" type="button">업로드 시작</button>
+  </div>
+
+  <p id="error" class="error"></p>
+  <p id="info" class="info"></p>
+
+  <script>
+    const form = {
+      deck: '',
+      topic: '',
+      priority: 'core',
+      type: 'guidebook',
+      files: [],
+    };
+
+    let authenticated = false;
+    let uploading = false;
+
+    const deckEl = document.getElementById('deck');
+    const topicEl = document.getElementById('topic');
+    const priorityEl = document.getElementById('priority');
+    const typeEl = document.getElementById('type');
+    const filesEl = document.getElementById('files');
+    const errorEl = document.getElementById('error');
+    const infoEl = document.getElementById('info');
+    const uploadBtn = document.getElementById('upload-btn');
+
+    const setError = (msg) => {
+      errorEl.textContent = msg || '';
+      return msg;
+    };
+
+    const setInfo = (msg) => {
+      infoEl.textContent = msg || '';
+      return msg;
+    };
+
+    const setUploading = (value) => {
+      uploading = value;
+      uploadBtn.disabled = value;
+    };
+
+    async function fetchFiles() {
+      // 목록 갱신 API가 있는 경우 여기에서 호출하세요.
+      return Promise.resolve();
+    }
+
+    function setForm(next) {
+      form.deck = next.deck;
+      form.topic = next.topic;
+      form.priority = next.priority;
+      form.type = next.type;
+      form.files = next.files;
+
+      deckEl.value = form.deck;
+      topicEl.value = form.topic;
+      priorityEl.value = form.priority;
+      typeEl.value = form.type;
+      filesEl.value = '';
+    }
+
+    deckEl.addEventListener('input', (e) => {
+      form.deck = e.target.value;
+    });
+
+    topicEl.addEventListener('input', (e) => {
+      form.topic = e.target.value;
+    });
+
+    priorityEl.addEventListener('change', (e) => {
+      form.priority = e.target.value;
+    });
+
+    typeEl.addEventListener('change', (e) => {
+      form.type = e.target.value;
+    });
+
+    filesEl.addEventListener('change', (e) => {
+      form.files = Array.from(e.target.files || []);
+      setInfo(`${form.files.length}개 파일 선택됨`);
+      setError('');
+    });
+
+    document.getElementById('auth-btn').addEventListener('click', () => {
+      authenticated = true;
+      setError('');
+      setInfo('인증 상태가 활성화되었어요.');
+    });
+
+    async function upload() {
+      if (!form.files || form.files.length === 0) {
+        return setError('파일을 선택해주세요.')
+      }
+
+      if (!authenticated) return setError('먼저 인증해주세요.')
+
+      setUploading(true)
+      setInfo(`총 ${form.files.length}개 업로드 시작...`)
+      setError('')
+
+      try {
+        for (const file of form.files) {
+          const body = new FormData()
+          body.append('file', file)
+          body.append('deck', form.deck)
+          body.append('topic', form.topic)
+          body.append('priority', form.priority)
+          body.append('type', form.type)
+
+          const res = await fetch('/api/admin/upload', {
+            method: 'POST',
+            credentials: 'include',
+            body,
+          })
+
+          const data = await res.json()
+
+          if (!data.ok) {
+            throw new Error(`${file.name} 업로드 실패: ${data.error}`)
+          }
+        }
+
+        setInfo(`모든 파일 업로드 완료`)
+        setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] })
+
+        await fetchFiles()
+      } catch (e) {
+        setError(e.message)
+      } finally {
+        setUploading(false)
+      }
+    }
+
+    uploadBtn.addEventListener('click', () => {
+      if (uploading) return;
+      upload();
+    });
+  </script>
+</body>
+</html>

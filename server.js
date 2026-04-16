@@ -1,8 +1,10 @@
 const express = require("express");
+const path = require("path");
 const OpenAI = require("openai");
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,12 +16,95 @@ const MODE_GUIDE = {
   deep: "질문을 세부 포인트로 나눠 깊이 있게 여러 문단으로 답하고 마지막에 총평을 작성하세요.",
 };
 
+const SUBMISSION_COMPLETE_PAGE = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>접수 완료 | 레지나타로썰</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: linear-gradient(180deg, #0f1117 0%, #171b25 100%);
+      color: #f3efe6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 680px;
+      padding: 34px 28px;
+      border-radius: 24px;
+      background: rgba(18, 20, 28, 0.94);
+      border: 1px solid rgba(212,175,110,0.22);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 14px;
+      color: #f5d08a;
+      font-size: 30px;
+    }
+    p {
+      margin: 10px 0;
+      color: #ddd6c8;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+    .notice {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: #0b1020;
+      border: 1px solid rgba(127, 153, 255, 0.18);
+      color: #dbe3ff;
+      line-height: 1.7;
+      font-size: 15px;
+      text-align: left;
+    }
+    .home {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #d4af6e 0%, #c79a49 100%);
+      color: #151515;
+      text-decoration: none;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>질문 접수가 완료되었어요</h1>
+    <p>내담자님 질문은 정상적으로 접수되었어요.</p>
+    <p>결제 확인 후 순서대로 상담이 진행되며, 접수 즉시 결과가 바로 제공되지는 않아요.</p>
+
+    <div class="notice">
+      결제 안내가 따로 있는 구조라면 안내된 방식에 따라 진행해주시면 되고,
+      상담 순서가 되면 개별 안내 또는 결과 전달이 이어지게 하면 돼요.
+    </div>
+
+    <a class="home" href="/">처음으로 돌아가기</a>
+  </div>
+</body>
+</html>`;
+
 app.get("/", (req, res) => {
   res.send("레지나 서버 정상 작동 중");
 });
 
 app.get("/healthz", (req, res) => {
   res.status(200).send("ok");
+});
+
+app.get("/submission-complete", (req, res) => {
+  res.status(200).type("html").send(SUBMISSION_COMPLETE_PAGE);
 });
 
 app.post("/reading", async (req, res) => {
