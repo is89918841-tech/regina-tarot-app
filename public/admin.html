@@ -112,7 +112,7 @@
         }
 
         async function upload() {
-          if (!form.file) return setError('파일을 선택해주세요.');
+          if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
           if (!authenticated) return setError('먼저 인증해주세요.');
 
           const fileMb = form.file.size / (1024 * 1024);
@@ -123,21 +123,23 @@
           setUploading(true);
           setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
 
-          try {
-            const body = new FormData();
-            body.append('file', form.file);
-            body.append('deck', form.deck);
-            body.append('topic', form.topic);
-            body.append('priority', form.priority);
-            body.append('type', form.type);
+         for (const file of form.files) {
+  const body = new FormData()
+  body.append('file', file)
+  body.append('deck', form.deck)
+  body.append('topic', form.topic)
+  body.append('priority', form.priority)
+  body.append('type', form.type)
 
-            const res = await fetch('/api/admin/upload', {
-              method: 'POST',
-              credentials: 'include',
-              body,
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '업로드 실패');
+  const res = await fetch('/api/admin/upload', {
+    method: 'POST',
+    credentials: 'include',
+    body,
+  })
+
+  const data = await res.json()
+  if (!data.ok) throw new Error(`${file.name} 업로드 실패`)
+};
 
             setInfo(`업로드 완료: 상태=${data.file.status}`);
             setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
@@ -215,7 +217,7 @@
                 React.createElement('option', { value: 'rule' }, 'rule')
               )
             ),
-          React.createElement('input', {
+React.createElement('input', {
   type: 'file',
   multiple: true,
   onChange: (e) => {
