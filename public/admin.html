@@ -153,13 +153,7 @@ async function upload() {
     setUploading(false);
   }
 }
-            setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: [] });
-            await fetchFiles();
-          } catch (e) {
-            setError(e.message);
-          } finally {
-            setUploading(false);
-          }
+       
         }
 
         async function updateRow(file) {
