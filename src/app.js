@@ -45,6 +45,8 @@ app.get('/admin/helper', adminAuth, (_, res) => {
 app.get('/admin/grand-tableau', adminAuth, (_, res) => {
   res.sendFile(path.join(process.cwd(), 'private', 'admin-grand-tableau.html'));
 });
+
+app.use((error, _req, res, _next) => {
   res.status(error.status || 500).json({
     ok: false,
     error: error.message || 'Internal server error',
