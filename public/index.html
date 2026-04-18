@@ -5,27 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>레지나타로썰 상담 접수</title>
     <style>
-      :root { --bg:#090c18; --panel:#11182a; --line:#2e3854; --text:#ece5d8; --muted:#bcb29f; --gold:#cba871; }
+      :root { --bg:#090c18; --panel:#11182a; --line:#2e3854; --text:#ece5d8; --muted:#bcb29f; --gold:#cba871; --indigo:#5e58b7; }
       *{box-sizing:border-box} body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at top,#171f39 0%,var(--bg) 58%);color:var(--text)}
-      .wrap{max-width:980px;margin:0 auto;padding:24px 16px 56px}
-      .hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}
-      .hero{padding:24px;margin:12px 0 16px}
-      h1{margin:0;font-size:30px}.desc{margin-top:8px;color:var(--muted);line-height:1.6}
-      .badge{display:inline-block;margin-top:10px;padding:6px 12px;border:1px solid #495376;border-radius:999px;background:#212a44;font-size:12px}
-      .card{padding:16px;margin-bottom:12px;transition:all .3s ease}
-      .step-title{font-weight:700;margin-bottom:8px;color:#f0d5a2}
-      .option-grid,.menu-grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
-      .option,.menu-card{cursor:pointer;border:1px solid #3a4569;background:#141c32;border-radius:12px;padding:12px;transition:.2s}
-      .option.active,.menu-card.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(203,168,113,.45)}
-      .menu-title{font-weight:700;margin-bottom:4px}.meta{font-size:13px;color:var(--muted);line-height:1.5}
-      label{font-size:13px;color:#ded5c3;display:block;margin-bottom:6px}
-      input,textarea,button{width:100%;border-radius:10px;border:1px solid #3b4566;background:#171f36;color:var(--text);padding:11px;font-size:14px}
-      textarea.question{min-height:150px;resize:vertical} textarea.memo{min-height:72px;resize:vertical}
-      .submit{margin-top:12px;background:linear-gradient(180deg,#c9a570,#9e7c49);border:0;color:#261d0c;font-weight:700}
-      .hint{font-size:12px;color:var(--muted)} .ok{color:#86efac} .err{color:#fecaca}
-      .payment-box{margin-top:12px;padding:12px;border:1px solid #6e5732;background:#2a2115;border-radius:12px;color:#f5ddb3}
-      .row{display:flex;gap:8px;align-items:center;margin-top:8px}.row input{width:auto}
-      @media(max-width:900px){.option-grid,.menu-grid{grid-template-columns:1fr}}
+      .wrap{max-width:980px;margin:0 auto;padding:24px 16px 56px}.nav a{color:var(--muted);margin-right:10px;text-decoration:none;font-size:13px}
+      .hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}.hero{padding:24px;margin:12px 0 16px}
+      h1{margin:0;font-size:30px}.desc{margin-top:8px;color:var(--muted);line-height:1.6}.badge{display:inline-block;margin-top:10px;padding:6px 12px;border:1px solid #495376;border-radius:999px;background:#212a44;font-size:12px}
+      .grid{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)} .card{padding:16px}
+      .menu-card{cursor:pointer;transition:.2s}.menu-card:hover{border-color:#5b6591}.menu-card.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(203,168,113,.45)}
+      .menu-title{font-weight:700;margin-bottom:6px}.meta{font-size:13px;color:var(--muted);line-height:1.5}
+      .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.step{border:1px solid #3a4569;border-radius:12px;padding:10px;background:#141c32;font-size:13px}
+      label{font-size:13px;color:#ded5c3;display:block;margin-bottom:6px}input,textarea,button{width:100%;border-radius:10px;border:1px solid #3b4566;background:#171f36;color:var(--text);padding:11px;font-size:14px}
+      textarea{min-height:140px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:6px}.agree{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#d8cebc;margin-top:8px}
+      .agree input{width:auto;margin-top:2px}.submit{margin-top:12px;background:linear-gradient(180deg,#c9a570,#9e7c49);border:0;color:#261d0c;font-weight:700}
+      @media(max-width:900px){.grid{grid-template-columns:1fr}}  
     </style>
   </head>
   <body>
@@ -33,159 +25,59 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script>
-      const { useEffect, useMemo, useState } = React;
-      const MENU_CONFIG_URL = '/data/consultation-products.json';
-      const fallbackMenus = [
-        { id: 'line-direction', title: '한 줄 방향 리딩', rec: '빠른 방향 점검이 필요할 때', duration: '약 5~10분', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
-        { id: 'core-summary', title: '핵심 정리 리딩', rec: '복잡한 상황을 핵심만 정리하고 싶을 때', duration: '약 15~20분', price: 7000, desc: '핵심 포인트를 간결하게 정리해 드립니다.' },
-        { id: 'decision-flow', title: '결정 흐름 리딩', rec: '선택지 비교와 실행 순서가 필요할 때', duration: '약 25~35분', price: 18000, desc: '결정 흐름과 리스크를 구조적으로 안내합니다.' },
-        { id: 'deep-decision', title: '심층 결정 리딩', rec: '복합 이슈를 깊이 분석하고 싶을 때', duration: '약 45~60분', price: 30000, desc: '핵심 질문을 중심으로 심층 리딩을 진행합니다.' },
+      const { useState } = React;
+      const menus = [
+        { id: 'love', title: '연애 집중 리딩', rec: '관계 방향/재회 고민', price: '35분 / 59,000원', desc: '현재 감정 흐름과 향후 관계 변화를 집중 분석합니다.' },
+        { id: 'career', title: '진로/재물 리딩', rec: '이직·사업·금전 결정', price: '40분 / 69,000원', desc: '선택지별 리스크와 실행 타이밍을 구조적으로 점검합니다.' },
+        { id: 'deep', title: '심층 종합 리딩', rec: '반복 이슈 정리 필요', price: '60분 / 99,000원', desc: '핵심 질문 1개를 중심으로 보조 도구까지 확장하여 봅니다.' },
       ];
-      const formatPrice = (p) => `${Number(p || 0).toLocaleString('ko-KR')}원`;
 
       function App() {
-        const [serviceType, setServiceType] = useState('');
-        const [menus, setMenus] = useState(fallbackMenus);
-        const [selectedMenu, setSelectedMenu] = useState(null);
-        const [form, setForm] = useState({ name: '', contact: '', question: '', memo: '' });
-        const [submitting, setSubmitting] = useState(false);
-        const [status, setStatus] = useState({ type: '', text: '' });
-        const [submitted, setSubmitted] = useState(false);
-        const [paymentChecked, setPaymentChecked] = useState(false);
-        const [paymentMessage, setPaymentMessage] = useState('');
-
-        const visibleMenus = useMemo(() => {
-          if (serviceType === 'fortune') return menus.filter((m) => Number(m.price) === 3000);
-          return menus;
-        }, [menus, serviceType]);
-
-        const step1Open = Boolean(serviceType);
-        const step2Open = step1Open && form.name.trim() && form.contact.trim();
-        const step3Open = step2Open && selectedMenu;
-        const step4Open = step3Open && form.question.trim().length > 0;
-
-        useEffect(() => {
-          async function loadMenus() {
-            try {
-              const res = await fetch(MENU_CONFIG_URL);
-              const data = await res.json();
-              if (Array.isArray(data.products) && data.products.length) setMenus(data.products);
-            } catch (_) {}
-          }
-          loadMenus();
-        }, []);
-
-        useEffect(() => {
-          if (selectedMenu && !visibleMenus.some((m) => m.id === selectedMenu.id)) setSelectedMenu(null);
-        }, [visibleMenus, selectedMenu]);
-
-        async function onSubmit(e) {
+        const [selected, setSelected] = useState(menus[0].id);
+        const [form, setForm] = useState({ name: '', contact: '', question: '', agree: false });
+        function onSubmit(e) {
           e.preventDefault();
-          if (!selectedMenu) return;
-          setSubmitting(true); setStatus({ type: '', text: '' });
-          try {
-            const res = await fetch('/api/consultations', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                serviceType,
-                menuId: selectedMenu.id,
-                menuTitle: selectedMenu.title,
-                price: Number(selectedMenu.price),
-                name: form.name,
-                contactChannel: form.contact,
-                question: form.question,
-                memo: form.memo,
-              }),
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '접수 실패');
-            setSubmitted(true);
-            setStatus({ type: 'ok', text: `접수 완료 (접수번호: ${data.consultation.id})` });
-          } catch (err) {
-            setStatus({ type: 'err', text: err.message });
-          } finally {
-            setSubmitting(false);
-          }
-        }
-
-        function onConfirmPayment() {
-          if (!paymentChecked) return setPaymentMessage('입금 완료 체크 후 진행해 주세요.');
-          setPaymentMessage('입금 완료 확인 요청이 접수되었습니다.');
+          if (!form.agree) return alert('동의 후 접수 가능합니다.');
+          alert('상담 접수가 완료되었습니다. 결제 안내를 순차 발송드립니다.');
         }
 
         return React.createElement('div', { className:'wrap' },
+          React.createElement('div', { className:'nav' },
+            React.createElement('a', { href:'/' }, '상담 접수 홈')
+          ),
           React.createElement('section', { className:'hero' },
             React.createElement('h1', null, '레지나타로썰 상담 접수'),
-            React.createElement('p', { className:'desc' }, '사용자 선택에 따라 단계적으로 아래가 열리는 상담 접수 흐름입니다.'),
-            React.createElement('span', { className:'badge' }, '단계형 상담 접수')
+            React.createElement('p', { className:'desc' }, '상담 접수 전용 페이지입니다. 핵심 질문을 먼저 남겨주시면 결제 안내 확인 후 리더가 순차적으로 상담을 진행합니다.'),
+            React.createElement('span', { className:'badge' }, '공식 접수 채널 · 예약제 운영')
           ),
-
-          React.createElement('form', { onSubmit },
-            React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '1) 서비스 선택'),
-              React.createElement('div', { className:'option-grid' },
-                React.createElement('div', { className:`option ${serviceType==='question'?'active':''}`, onClick:()=>setServiceType('question') },
-                  React.createElement('div', { className:'menu-title' }, '상담 질문'),
-                  React.createElement('div', { className:'meta' }, '질문 중심 상담 접수')
-                ),
-                React.createElement('div', { className:`option ${serviceType==='fortune'?'active':''}`, onClick:()=>setServiceType('fortune') },
-                  React.createElement('div', { className:'menu-title' }, '오늘의 운세'),
-                  React.createElement('div', { className:'meta' }, '오늘 흐름 간단 점검')
-                )
-              )
+          React.createElement('section', { className:'grid' }, ...menus.map((m) => React.createElement('article', { key:m.id, className:`card menu-card ${selected===m.id?'active':''}`, onClick:() => setSelected(m.id) },
+            React.createElement('div', { className:'menu-title' }, m.title),
+            React.createElement('div', { className:'meta' }, m.desc),
+            React.createElement('div', { className:'meta' }, `추천 대상: ${m.rec}`),
+            React.createElement('div', { className:'meta' }, `안내: ${m.price}`)
+          ))),
+          React.createElement('section', { className:'steps' },
+            React.createElement('div', { className:'step' }, '1) 질문 접수'),
+            React.createElement('div', { className:'step' }, '2) 결제 안내 확인'),
+            React.createElement('div', { className:'step' }, '3) 상담 진행')
+          ),
+          React.createElement('form', { className:'card', onSubmit },
+            React.createElement('label', null, '이름/닉네임'),
+            React.createElement('input', { value:form.name, onChange:(e)=>setForm({...form,name:e.target.value}), placeholder:'상담 시 불릴 이름을 입력하세요.' }),
+            React.createElement('label', { style:{marginTop:'10px'} }, '연락처'),
+            React.createElement('input', { value:form.contact, onChange:(e)=>setForm({...form,contact:e.target.value}), placeholder:'카카오톡 ID 또는 연락 가능한 채널' }),
+            React.createElement('label', { style:{marginTop:'10px'} }, '핵심 질문'),
+            React.createElement('textarea', { value:form.question, onChange:(e)=>setForm({...form,question:e.target.value}), placeholder:'예) 현재 관계에서 상대의 진심이 무엇인지, 3개월 안에 관계 진전 가능성이 있는지 알고 싶어요.' }),
+            React.createElement('div', { className:'hint' }, '가이드: 상황 배경은 짧게, 지금 가장 궁금한 핵심 질문 1개를 먼저 작성해 주세요.'),
+            React.createElement('label', { className:'agree' },
+              React.createElement('input', { type:'checkbox', checked:form.agree, onChange:(e)=>setForm({...form,agree:e.target.checked}) }),
+              React.createElement('span', null, '상담 안내 및 결제/환불 규정을 확인했으며, 접수 후 순차 진행에 동의합니다.')
             ),
-
-            step1Open ? React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '2) 기본 정보 입력'),
-              React.createElement('label', null, '이름 또는 닉네임'),
-              React.createElement('input', { value: form.name, onChange:(e)=>setForm({...form,name:e.target.value}) }),
-              React.createElement('label', { style:{marginTop:'10px'} }, '카카오톡 ID 또는 연락 가능한 전화번호'),
-              React.createElement('input', { value: form.contact, onChange:(e)=>setForm({...form,contact:e.target.value}) })
-            ) : null,
-
-            step2Open ? React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '3) 상담 메뉴 선택'),
-              React.createElement('div', { className:'menu-grid' }, ...visibleMenus.map((m) => React.createElement('article', {
-                key:m.id, className:`menu-card ${selectedMenu && selectedMenu.id===m.id?'active':''}`, onClick:()=>setSelectedMenu(m)
-              },
-                React.createElement('div', { className:'menu-title' }, `${m.title} (${formatPrice(m.price)})`)
-              )))
-            ) : null,
-
-            step3Open ? React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '4) 질문 내용'),
-              React.createElement('div', { className:'meta' }, `설명: ${selectedMenu.desc}`),
-              React.createElement('div', { className:'meta' }, `추천 상황: ${selectedMenu.rec}`),
-              React.createElement('div', { className:'meta' }, `예상 소요 시간: ${selectedMenu.duration}`),
-              React.createElement('label', { style:{marginTop:'10px'} }, '핵심 질문 (필수)'),
-              React.createElement('textarea', { className:'question', value: form.question, onChange:(e)=>setForm({...form,question:e.target.value}) }),
-              React.createElement('label', { style:{marginTop:'10px'} }, '추가 메모 (선택)'),
-              React.createElement('textarea', { className:'memo', value: form.memo, onChange:(e)=>setForm({...form,memo:e.target.value}) })
-            ) : null,
-
-            step4Open ? React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '5) 접수하기'),
-              React.createElement('button', { className:'submit', type:'submit', disabled:submitting }, submitting ? '접수 중...' : '상담 접수 제출'),
-              status.text ? React.createElement('div', { className: status.type === 'ok' ? 'ok' : 'err', style:{marginTop:'10px'} }, status.text) : null
-            ) : null,
-
-            (submitted || step4Open) ? React.createElement('section', { className:'card' },
-              React.createElement('div', { className:'step-title' }, '6) 결제 안내'),
-              React.createElement('div', { className:'payment-box' },
-                React.createElement('div', null, `입금 금액: ${selectedMenu ? formatPrice(selectedMenu.price) : '-'}`),
-                React.createElement('div', { className:'hint' }, '입금 계좌: 국민은행 000000-00-000000 (예금주: 레지나타로썰)'),
-                React.createElement('div', { className:'hint' }, '※ 현재 상담 대기 중 / 입금 순서대로 진행됩니다.'),
-                React.createElement('div', { className:'row' },
-                  React.createElement('input', { type:'checkbox', checked:paymentChecked, onChange:(e)=>setPaymentChecked(e.target.checked) }),
-                  React.createElement('span', null, '입금을 완료했어요')
-                ),
-                React.createElement('button', { type:'button', onClick:onConfirmPayment, style:{marginTop:'8px'} }, '입금 완료 확인'),
-                paymentMessage ? React.createElement('div', { className:'hint', style:{marginTop:'8px'} }, paymentMessage) : null
-              )
-            ) : null
+            React.createElement('button', { className:'submit', type:'submit' }, '상담 접수 제출')
           )
-        );
+        )
       }
+
       ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     </script>
   </body>
