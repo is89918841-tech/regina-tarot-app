@@ -43,11 +43,11 @@ app.get('/admin', adminAuth, (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-app.get('/admin/helper', adminAuth, (_, res) => {
+app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get('/admin/grand-tableau', adminAuth, (_, res) => {
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
