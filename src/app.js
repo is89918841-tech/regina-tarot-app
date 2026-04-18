@@ -27,23 +27,24 @@ app.use('/api/admin', adminRoutes);
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.get('/', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public/consultation.html'));
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
-app.get('/admin', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public/admin.html'));
+app.get('/consultation.html', (_, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'consultation.html'));
+});
+
+app.get('/admin', adminAuth, (_, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'admin.html'));
 });
 
 app.get('/admin/helper', adminAuth, (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'private/admin-helper.html'));
+  res.sendFile(path.join(process.cwd(), 'private', 'admin-helper.html'));
 });
 
 app.get('/admin/grand-tableau', adminAuth, (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'private/admin-grand-tableau.html'));
+  res.sendFile(path.join(process.cwd(), 'private', 'admin-grand-tableau.html'));
 });
-
-app.use((error, _, res, __) => {
-  console.error(error);
   res.status(error.status || 500).json({
     ok: false,
     error: error.message || 'Internal server error',
