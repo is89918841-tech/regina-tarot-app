@@ -4,7 +4,9 @@ const path = require('path');
 const { ensureDir } = require('./utils/fileStore');
 const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
+const consultationRoutes = require('./routes/consultationRoutes'); // 🔥 이거 추가
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
