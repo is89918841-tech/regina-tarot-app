@@ -21,6 +21,8 @@
       .row > * { flex: 1; min-width: 120px; }
       .danger { background: #b91c1c; border: 0; }
       .primary { background: #2563eb; border: 0; }
+      .tool-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: #0b3b2e; color: #d1fae5; border: 1px solid #065f46; padding: 10px 14px; border-radius: 10px; font-weight: 600; }
+      .tool-btn:hover { background: #0f513f; }
       .muted { color: #94a3b8; font-size: 12px; }
       .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
       .s-processed { background: #065f46; }
@@ -69,6 +71,10 @@
         finalized: '최종리딩',
         sent: '전송완료',
       };
+      const INTERNAL_TOOLS = [
+        { label: '리딩 보조앱 열기', url: 'https://regina-tarot-app.onrender.com/admin/helper' },
+        { label: '그랑따블로 열기', url: 'https://regina-tarot-app.onrender.com/admin/grand-tableau' },
+      ];
 
       const MOCK_TAROT_CARDS = [
         'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
@@ -568,6 +574,18 @@
               React.createElement('button', { className: 'primary', onClick: fetchConsultations, disabled: !authenticated }, '접수 목록 새로고침')
             ),
             status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
+            React.createElement('div', { className: 'row' },
+              ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
+                key: tool.url,
+                href: tool.url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                className: 'tool-btn',
+              }, tool.label))
+            )
           ),
 
           React.createElement('div', { className: 'layout-2col' },
