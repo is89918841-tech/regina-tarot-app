@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post('/', async (req, res, next) => {
   try {
-    const { menuId, menuTitle, price, name, contactChannel, question } = req.body || {};
+    const { menuId, menuTitle, price, name, contactChannel, question, memo, serviceType } = req.body || {};
 
     if (!menuId || typeof menuId !== 'string') {
       return res.status(400).json({ ok: false, error: 'menuId is required string' });
@@ -33,7 +33,7 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ ok: false, error: 'question is required string' });
     }
 
-    const created = await createConsultation({ menuId, menuTitle, price, name, contactChannel, question });
+    const created = await createConsultation({ menuId, menuTitle, price, name, contactChannel, question, memo, serviceType });
     return res.status(201).json({
       ok: true,
       consultation: {

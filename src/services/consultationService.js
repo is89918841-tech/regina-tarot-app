@@ -84,6 +84,8 @@ async function createConsultation(payload) {
     name: payload.name,
     contactChannel: payload.contactChannel,
     question: payload.question,
+    memo: payload.memo || '',
+    serviceType: payload.serviceType || 'consultation',
   };
 
   records.unshift(item);
