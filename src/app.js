@@ -39,12 +39,24 @@ app.get('/consultation.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
+app.get('/', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+app.get('/consultation.html', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
+});
+
 app.get('/admin', adminAuth, (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
 app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
+});
+
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
 app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
