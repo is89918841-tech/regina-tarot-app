@@ -30,10 +30,19 @@
       const { useEffect, useMemo, useState } = React;
       const MENU_CONFIG_URL = '/data/consultation-products.json';
       const fallbackMenus = [
-        { id: 'chat-love', title: '연애 리딩', rec: '관계 흐름/재회/감정 확인', price: '39,000원', desc: '현재 관계 흐름과 핵심 변수를 채팅 상담으로 정리합니다.' },
-        { id: 'chat-career', title: '진로·재물 리딩', rec: '이직/사업/금전 선택', price: '49,000원', desc: '선택지별 흐름과 주의 포인트를 채팅 기반으로 안내합니다.' },
-        { id: 'chat-deep', title: '심층 종합 리딩', rec: '복합 이슈·장기 흐름 점검', price: '69,000원', desc: '핵심 질문 중심으로 확장 리딩을 진행하는 채팅 상담입니다.' },
+        { id: 'auto-basic', title: '자동 리딩', rec: '빠른 결과 확인', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
+        { id: 'chat-love', title: '연애 리딩', rec: '관계 흐름/재회/감정 확인', price: 39000, desc: '현재 관계 흐름과 핵심 변수를 채팅 상담으로 정리합니다.' },
+        { id: 'chat-career', title: '진로·재물 리딩', rec: '이직/사업/금전 선택', price: 49000, desc: '선택지별 흐름과 주의 포인트를 채팅 기반으로 안내합니다.' },
       ];
+
+      function asNumberPrice(value) {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : 0;
+      }
+
+      function formatPrice(price) {
+        return `${price.toLocaleString('ko-KR')}원`;
+      }
 
       function App() {
         const [menus, setMenus] = useState(fallbackMenus);
@@ -46,6 +55,8 @@
           () => menus.find((menu) => menu.id === selected) || menus[0],
           [menus, selected]
         );
+        const selectedPrice = asNumberPrice(selectedMenu?.price);
+        const selectedProductType = selectedPrice === 3000 ? 'auto' : 'reserve';
 
         useEffect(() => {
           async function loadMenus() {
@@ -83,6 +94,7 @@
               body: JSON.stringify({
                 menuId: selectedMenu.id,
                 menuTitle: selectedMenu.title,
+                price: selectedPrice,
                 name: form.name,
                 contactChannel: form.contactChannel,
                 question: form.question,
@@ -116,12 +128,15 @@
               React.createElement('div', { className:'menu-title' }, m.title),
               React.createElement('div', { className:'meta' }, m.desc),
               React.createElement('div', { className:'meta' }, `추천 대상: ${m.rec}`),
-              React.createElement('div', { className:'meta' }, `안내: ${m.price}`)
+              React.createElement('div', { className:'meta' }, `안내: ${formatPrice(asNumberPrice(m.price))}`)
             )))
           ),
           selectedMenu ? React.createElement('section', { className:'selected' },
             React.createElement('div', { className:'menu-title' }, `선택된 메뉴: ${selectedMenu.title}`),
-            React.createElement('div', { className:'meta' }, `${selectedMenu.desc} / ${selectedMenu.price}`)
+            React.createElement('div', { className:'meta' }, `${selectedMenu.desc} / ${formatPrice(selectedPrice)}`),
+            selectedProductType === 'auto'
+              ? React.createElement('div', { className:'meta' }, '입금 확인 후 자동으로 결과가 전달됩니다.')
+              : React.createElement('div', { className:'meta' }, '예약 가능 시간은 평일 오후 8시·9시·10시 / 주말 오전 10시~오후 10시입니다.')
           ) : null,
           React.createElement('section', { className:'steps' },
             React.createElement('div', { className:'step' }, '1) 상담 메뉴 선택'),
@@ -135,7 +150,9 @@
             React.createElement('input', { value:form.contactChannel, onChange:(e)=>setForm({...form,contactChannel:e.target.value}), placeholder:'예) 카카오톡 ID, 오픈채팅 링크' }),
             React.createElement('label', { style:{marginTop:'10px'} }, '핵심 질문'),
             React.createElement('textarea', { value:form.question, onChange:(e)=>setForm({...form,question:e.target.value}), placeholder:'예) 현재 관계에서 상대의 진심이 무엇인지, 3개월 안에 관계 진전 가능성이 있는지 알고 싶어요.' }),
-            React.createElement('div', { className:'hint' }, '접수 데이터는 서버의 상담 접수 저장소에 기록되며, 관리자 페이지에서 접수 목록으로 확인할 수 있습니다.'),
+            React.createElement('div', { className:'hint' }, selectedProductType === 'auto'
+              ? '자동형 상품은 입금 확인 후 자동으로 리딩 결과가 전달됩니다.'
+              : '예약형 상품은 접수 후 예약 시간 선택 또는 별도 안내로 확정됩니다.'),
             React.createElement('label', { className:'agree' },
               React.createElement('input', { type:'checkbox', checked:form.agree, onChange:(e)=>setForm({...form,agree:e.target.checked}) }),
               React.createElement('span', null, '상담 안내를 확인했으며, 접수 후 확인 순서에 따라 채팅으로 안내받는 데 동의합니다.')
