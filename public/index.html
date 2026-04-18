@@ -3,74 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>레지나 리딩 보조앱</title>
+    <title>레지나타로썰 상담 접수</title>
     <style>
-      :root {
-        --bg: #080b16;
-        --panel: #11182a;
-        --panel-2: #171f34;
-        --line: #2d3650;
-        --text: #ece4d7;
-        --muted: #b7af9d;
-        --gold: #c9a46d;
-        --gold-2: #9b7a49;
-        --indigo: #5b56b8;
-        --danger: #a8484b;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: radial-gradient(circle at top, #131a32 0%, var(--bg) 55%);
-        color: var(--text);
-        font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
-      }
-      .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 40px; }
-      .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-      .brand a { color: var(--muted); text-decoration: none; margin-right: 10px; font-size: 13px; }
-      .hero, .card { background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent), var(--panel); border: 1px solid var(--line); border-radius: 16px; }
-      .hero { padding: 22px; margin-bottom: 16px; }
-      h1 { margin: 0; font-size: 29px; }
-      .sub { color: var(--muted); margin-top: 8px; }
-      .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-      .badge { background: #202943; color: #dfd6c8; border: 1px solid #3a4464; border-radius: 999px; font-size: 12px; padding: 6px 10px; }
-      .layout { display: grid; gap: 16px; grid-template-columns: 1.05fr 1fr; }
-      .stack { display: grid; gap: 12px; }
-      .card { padding: 16px; }
-      .card h3 { margin: 0 0 10px; font-size: 17px; }
-      .muted { color: var(--muted); font-size: 13px; }
-      .row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-      .field { display: grid; gap: 6px; }
-      label { font-size: 13px; color: #dfd5c3; }
-      input, textarea, select, button {
-        width: 100%;
-        border-radius: 10px;
-        border: 1px solid #384362;
-        background: var(--panel-2);
-        color: var(--text);
-        padding: 10px 11px;
-        font-size: 14px;
-      }
-      textarea { min-height: 80px; resize: vertical; }
-      .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .mode-btn.active { border-color: var(--gold); box-shadow: inset 0 0 0 1px rgba(201,164,109,.5); }
-      .action-primary { background: linear-gradient(180deg, #c8a56f, #9d7a49); color: #221a0c; border: 0; font-weight: 700; }
-      .action-secondary { background: #1f2741; color: var(--text); }
-      .number-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 8px; }
-      .number-grid button { padding: 7px; font-size: 12px; }
-      .number-grid button.active { background: var(--indigo); border-color: #8b88df; }
-      .result-block { background: #0f1629; border: 1px solid #2f3a5b; border-radius: 12px; padding: 12px; margin-top: 10px; }
-      .result-title { margin: 0 0 8px; color: #e6cfaa; font-size: 14px; }
-      pre { white-space: pre-wrap; line-height: 1.5; margin: 0; font-family: inherit; }
-      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-      .chip { border: 1px solid #3a466b; border-radius: 999px; padding: 5px 10px; font-size: 12px; }
-      .chip.on { border-color: #9d8ce6; background: rgba(91,86,184,0.24); }
-      .warning { color: #f2b2b3; }
-      @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
-      @media (max-width: 680px) {
-        .row { grid-template-columns: 1fr; }
-        .number-grid { grid-template-columns: repeat(6, 1fr); }
-        h1 { font-size: 24px; }
-      }
+      :root { --bg:#090c18; --panel:#11182a; --line:#2e3854; --text:#ece5d8; --muted:#bcb29f; --gold:#cba871; }
+      *{box-sizing:border-box} body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at top,#171f39 0%,var(--bg) 58%);color:var(--text)}
+      .wrap{max-width:980px;margin:0 auto;padding:24px 16px 56px}
+      .hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+      .hero{padding:24px;margin:12px 0 16px}
+      h1{margin:0;font-size:30px}.desc{margin-top:8px;color:var(--muted);line-height:1.6}
+      .badge{display:inline-block;margin-top:10px;padding:6px 12px;border:1px solid #495376;border-radius:999px;background:#212a44;font-size:12px}
+      .card{padding:16px;margin-bottom:12px;transition:all .3s ease}
+      .step-title{font-weight:700;margin-bottom:8px;color:#f0d5a2}
+      .option-grid,.menu-grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+      .option,.menu-card{cursor:pointer;border:1px solid #3a4569;background:#141c32;border-radius:12px;padding:12px;transition:.2s}
+      .option.active,.menu-card.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(203,168,113,.45)}
+      .menu-title{font-weight:700;margin-bottom:4px}.meta{font-size:13px;color:var(--muted);line-height:1.5}
+      label{font-size:13px;color:#ded5c3;display:block;margin-bottom:6px}
+      input,textarea,button{width:100%;border-radius:10px;border:1px solid #3b4566;background:#171f36;color:var(--text);padding:11px;font-size:14px}
+      textarea.question{min-height:150px;resize:vertical} textarea.memo{min-height:72px;resize:vertical}
+      .submit{margin-top:12px;background:linear-gradient(180deg,#c9a570,#9e7c49);border:0;color:#261d0c;font-weight:700}
+      .hint{font-size:12px;color:var(--muted)} .ok{color:#86efac} .err{color:#fecaca}
+      .payment-box{margin-top:12px;padding:12px;border:1px solid #6e5732;background:#2a2115;border-radius:12px;color:#f5ddb3}
+      .row{display:flex;gap:8px;align-items:center;margin-top:8px}.row input{width:auto}
+      @media(max-width:900px){.option-grid,.menu-grid{grid-template-columns:1fr}}
     </style>
   </head>
   <body>
@@ -78,177 +33,156 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script>
-      const { useMemo, useState } = React;
-      const tarotDecks = ['유니버셜 타로', '나전의 빛 타로', '로제딕 타로'];
-      const oracleDecks = ['문 오라클', '스타 오라클', '위스퍼 오라클'];
-      const supportDecks = ['레노먼드', '룬스톤', '주역', '주역육효괘', '오간기/오방기'];
-      const tarotCards = Array.from({ length: 78 }, (_, i) => `${i + 1}번 카드`);
-
-      function pickCards(count, mode, selectedNumbers) {
-        if (mode === 'number' && selectedNumbers.length) {
-          return selectedNumbers.slice(0, count).map((n) => tarotCards[(n - 1) % tarotCards.length]);
-        }
-        const pool = [...tarotCards].sort(() => Math.random() - 0.5);
-        return pool.slice(0, count);
-      }
+      const { useEffect, useMemo, useState } = React;
+      const MENU_CONFIG_URL = '/data/consultation-products.json';
+      const fallbackMenus = [
+        { id: 'line-direction', title: '한 줄 방향 리딩', rec: '빠른 방향 점검이 필요할 때', duration: '약 5~10분', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
+        { id: 'core-summary', title: '핵심 정리 리딩', rec: '복잡한 상황을 핵심만 정리하고 싶을 때', duration: '약 15~20분', price: 7000, desc: '핵심 포인트를 간결하게 정리해 드립니다.' },
+        { id: 'decision-flow', title: '결정 흐름 리딩', rec: '선택지 비교와 실행 순서가 필요할 때', duration: '약 25~35분', price: 18000, desc: '결정 흐름과 리스크를 구조적으로 안내합니다.' },
+        { id: 'deep-decision', title: '심층 결정 리딩', rec: '복합 이슈를 깊이 분석하고 싶을 때', duration: '약 45~60분', price: 30000, desc: '핵심 질문을 중심으로 심층 리딩을 진행합니다.' },
+      ];
+      const formatPrice = (p) => `${Number(p || 0).toLocaleString('ko-KR')}원`;
 
       function App() {
-        const [question, setQuestion] = useState('');
-        const [topic, setTopic] = useState('');
-        const [deck, setDeck] = useState(tarotDecks[0]);
-        const [allowReverse, setAllowReverse] = useState(true);
-        const [reverseRatio, setReverseRatio] = useState(30);
-        const [count, setCount] = useState(3);
-        const [mode, setMode] = useState('random');
-        const [selectedNumbers, setSelectedNumbers] = useState([]);
-        const [tools, setTools] = useState({ lenormand: true, rune: false, iching: false, yukhyo: false, oracle: true, subdeck: false, ogan: false });
-        const [result, setResult] = useState({ main: [], support: {}, ai: '', copy: '' });
-        const [loading, setLoading] = useState(false);
-        const [error, setError] = useState('');
+        const [serviceType, setServiceType] = useState('');
+        const [menus, setMenus] = useState(fallbackMenus);
+        const [selectedMenu, setSelectedMenu] = useState(null);
+        const [form, setForm] = useState({ name: '', contact: '', question: '', memo: '' });
+        const [submitting, setSubmitting] = useState(false);
+        const [status, setStatus] = useState({ type: '', text: '' });
+        const [submitted, setSubmitted] = useState(false);
+        const [paymentChecked, setPaymentChecked] = useState(false);
+        const [paymentMessage, setPaymentMessage] = useState('');
 
-        const badges = useMemo(() => ([
-          `타로 덱 ${tarotDecks.length}종`,
-          `오라클 덱 ${oracleDecks.length}종`,
-          `보조덱 ${supportDecks.length}종`,
-          loading ? '데이터 로딩 중' : '데이터 준비 완료',
-        ]), [loading]);
+        const visibleMenus = useMemo(() => {
+          if (serviceType === 'fortune') return menus.filter((m) => Number(m.price) === 3000);
+          return menus;
+        }, [menus, serviceType]);
 
-        function toggleNumber(num) {
-          if (mode !== 'number') return;
-          setSelectedNumbers((prev) => prev.includes(num) ? prev.filter((v) => v !== num) : [...prev, num].slice(0, count));
-        }
+        const step1Open = Boolean(serviceType);
+        const step2Open = step1Open && form.name.trim() && form.contact.trim();
+        const step3Open = step2Open && selectedMenu;
+        const step4Open = step3Open && form.question.trim().length > 0;
 
-        function buildSupport() {
-          const support = {};
-          if (tools.lenormand) support['레노먼드'] = ['기수', '정원'][Math.floor(Math.random() * 2)];
-          if (tools.rune) support['룬'] = ['Fehu', 'Algiz'][Math.floor(Math.random() * 2)];
-          if (tools.iching) support['주역'] = ['31 택산함', '24 지뢰복'][Math.floor(Math.random() * 2)];
-          if (tools.yukhyo) support['주역육효괘'] = ['풍천소축', '수뢰둔'][Math.floor(Math.random() * 2)];
-          if (tools.oracle) support['오라클'] = oracleDecks[Math.floor(Math.random() * oracleDecks.length)] + ' - Renewal';
-          if (tools.subdeck) support['보조덱'] = '달빛의 지혜';
-          if (tools.ogan) support['오간기/오방기'] = '동쪽/목기 상승';
-          return support;
-        }
+        useEffect(() => {
+          async function loadMenus() {
+            try {
+              const res = await fetch(MENU_CONFIG_URL);
+              const data = await res.json();
+              if (Array.isArray(data.products) && data.products.length) setMenus(data.products);
+            } catch (_) {}
+          }
+          loadMenus();
+        }, []);
 
-        async function onDraw() {
-          setLoading(true); setError('');
-          const main = pickCards(count, mode, selectedNumbers).map((card) => {
-            const reversed = allowReverse && Math.random() * 100 < reverseRatio;
-            return reversed ? `${card} (역)` : `${card} (정)`;
-          });
-          const support = buildSupport();
-          let ai = '';
+        useEffect(() => {
+          if (selectedMenu && !visibleMenus.some((m) => m.id === selectedMenu.id)) setSelectedMenu(null);
+        }, [visibleMenus, selectedMenu]);
+
+        async function onSubmit(e) {
+          e.preventDefault();
+          if (!selectedMenu) return;
+          setSubmitting(true); setStatus({ type: '', text: '' });
           try {
-            const spread = main.map((_, i) => `${i + 1}번 포지션`);
-            const res = await fetch('/api/reading/generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ question, spread, deck, topic }),
+            const res = await fetch('/api/consultations', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                serviceType,
+                menuId: selectedMenu.id,
+                menuTitle: selectedMenu.title,
+                price: Number(selectedMenu.price),
+                name: form.name,
+                contactChannel: form.contact,
+                question: form.question,
+                memo: form.memo,
+              }),
             });
             const data = await res.json();
-            if (data.ok) ai = data.reading;
-          } catch (_) {
-            ai = 'AI 리딩 생성은 현재 건너뛰고, 카드 결과만 우선 표시합니다.';
+            if (!data.ok) throw new Error(data.error || '접수 실패');
+            setSubmitted(true);
+            setStatus({ type: 'ok', text: `접수 완료 (접수번호: ${data.consultation.id})` });
+          } catch (err) {
+            setStatus({ type: 'err', text: err.message });
           } finally {
-            const supportText = Object.entries(support).map(([k,v]) => `- ${k}: ${v}`).join('\n');
-            const copy = `[메인 덱]\n${deck} / ${count}장\n${main.join('\n')}\n\n[보조 결과]\n${supportText || '- 없음'}\n\n[질문]\n${question || '-'}\n\n[AI 리딩]\n${ai || '-'} `;
-            setResult({ main, support, ai, copy });
-            setLoading(false);
+            setSubmitting(false);
           }
         }
 
-        async function onCopy() {
-          if (!result.copy) return;
-          await navigator.clipboard.writeText(result.copy);
-          alert('결과를 복사했습니다.');
+        function onConfirmPayment() {
+          if (!paymentChecked) return setPaymentMessage('입금 완료 체크 후 진행해 주세요.');
+          setPaymentMessage('입금 완료 확인 요청이 접수되었습니다.');
         }
 
-        return React.createElement('div', { className: 'wrap' },
-          React.createElement('div', { className: 'topbar' },
-            React.createElement('div', { className: 'brand' },
-              React.createElement('a', { href: '/' }, '리딩 보조앱'),
-              React.createElement('a', { href: '/consultation.html' }, '상담 접수 페이지'),
-              React.createElement('a', { href: '/grand-tableau.html' }, '그랑따블로 도구')
-            )
+        return React.createElement('div', { className:'wrap' },
+          React.createElement('section', { className:'hero' },
+            React.createElement('h1', null, '레지나타로썰 상담 접수'),
+            React.createElement('p', { className:'desc' }, '사용자 선택에 따라 단계적으로 아래가 열리는 상담 접수 흐름입니다.'),
+            React.createElement('span', { className:'badge' }, '단계형 상담 접수')
           ),
-          React.createElement('section', { className: 'hero' },
-            React.createElement('h1', null, '레지나 리딩 보조앱'),
-            React.createElement('p', { className: 'sub' }, '질문에 맞는 카드 드로우와 보조도구 결과를 빠르게 정리하는 내부 도구'),
-            React.createElement('div', { className: 'badge-row' }, ...badges.map((badge) => React.createElement('span', { className: 'badge', key: badge }, badge)))
-          ),
-          React.createElement('main', { className: 'layout' },
-            React.createElement('section', { className: 'stack' },
-              React.createElement('article', { className: 'card' },
-                React.createElement('h3', null, '드로우 방식'),
-                React.createElement('div', { className: 'btn-row' },
-                  React.createElement('button', { className: `mode-btn ${mode === 'random' ? 'active' : ''}`, onClick: () => setMode('random') }, '랜덤 드로우'),
-                  React.createElement('button', { className: `mode-btn ${mode === 'number' ? 'active' : ''}`, onClick: () => setMode('number') }, '숫자 뽑기')
+
+          React.createElement('form', { onSubmit },
+            React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '1) 서비스 선택'),
+              React.createElement('div', { className:'option-grid' },
+                React.createElement('div', { className:`option ${serviceType==='question'?'active':''}`, onClick:()=>setServiceType('question') },
+                  React.createElement('div', { className:'menu-title' }, '상담 질문'),
+                  React.createElement('div', { className:'meta' }, '질문 중심 상담 접수')
                 ),
-                mode === 'number' ? React.createElement(React.Fragment, null,
-                  React.createElement('p', { className: 'muted' }, `선택된 숫자 ${selectedNumbers.length}/${count}`),
-                  React.createElement('div', { className: 'number-grid' }, ...Array.from({ length: 36 }, (_, i) => i + 1).map((num) =>
-                    React.createElement('button', { key: num, className: selectedNumbers.includes(num) ? 'active' : '', onClick: () => toggleNumber(num) }, num)
-                  ))
-                ) : React.createElement('p', { className: 'muted' }, '랜덤 모드에서는 자동 셔플로 카드를 추출합니다.')
-              ),
-              React.createElement('article', { className: 'card' },
-                React.createElement('h3', null, '메인 덱 설정'),
-                React.createElement('div', { className: 'row' },
-                  React.createElement('div', { className: 'field' },
-                    React.createElement('label', null, '메인 타로 덱'),
-                    React.createElement('select', { value: deck, onChange: (e) => setDeck(e.target.value) }, ...tarotDecks.map((d) => React.createElement('option', { key: d, value: d }, d)))
-                  ),
-                  React.createElement('div', { className: 'field' },
-                    React.createElement('label', null, '장수'),
-                    React.createElement('select', { value: count, onChange: (e) => setCount(Number(e.target.value)) }, [1,2,3,4,5,6,7,8,9,10].map((n) => React.createElement('option', { key: n, value: n }, `${n}장`)))
-                  )
-                ),
-                React.createElement('div', { className: 'row' },
-                  React.createElement('div', { className: 'field' },
-                    React.createElement('label', null, '역방향 허용'),
-                    React.createElement('select', { value: allowReverse ? 'yes' : 'no', onChange: (e) => setAllowReverse(e.target.value === 'yes') },
-                      React.createElement('option', { value: 'yes' }, '허용'), React.createElement('option', { value: 'no' }, '비허용'))
-                  ),
-                  React.createElement('div', { className: 'field' },
-                    React.createElement('label', null, `역방향 비율 ${reverseRatio}%`),
-                    React.createElement('input', { type: 'range', min: 0, max: 80, value: reverseRatio, onChange: (e) => setReverseRatio(Number(e.target.value)) })
-                  )
+                React.createElement('div', { className:`option ${serviceType==='fortune'?'active':''}`, onClick:()=>setServiceType('fortune') },
+                  React.createElement('div', { className:'menu-title' }, '오늘의 운세'),
+                  React.createElement('div', { className:'meta' }, '오늘 흐름 간단 점검')
                 )
-              ),
-              React.createElement('article', { className: 'card' },
-                React.createElement('h3', null, '보조도구 설정'),
-                React.createElement('div', { className: 'chips' }, ...Object.entries({ lenormand: '레노먼드', rune: '룬스톤', iching: '주역', yukhyo: '주역육효괘', oracle: '오라클', subdeck: '보조덱', ogan: '오간기/오방기' }).map(([key, label]) =>
-                  React.createElement('button', { key, className: `chip ${tools[key] ? 'on' : ''}`, onClick: () => setTools({ ...tools, [key]: !tools[key] }) }, label)
-                ))
               )
             ),
-            React.createElement('section', { className: 'stack' },
-              React.createElement('article', { className: 'card' },
-                React.createElement('h3', null, '실행 / 출력'),
-                React.createElement('div', { className: 'field' }, React.createElement('label', null, '질문'), React.createElement('textarea', { value: question, onChange: (e) => setQuestion(e.target.value), placeholder: '핵심 질문을 먼저 입력하세요.' })),
-                React.createElement('div', { className: 'field' }, React.createElement('label', null, '토픽(선택)'), React.createElement('input', { value: topic, onChange: (e) => setTopic(e.target.value), placeholder: '연애/재물/관계 등' })),
-                React.createElement('div', { className: 'btn-row' },
-                  React.createElement('button', { className: 'action-primary', onClick: onDraw, disabled: loading }, loading ? '카드 뽑는 중...' : '카드 뽑기'),
-                  React.createElement('button', { className: 'action-secondary', onClick: onCopy, disabled: !result.copy }, '결과 복사')
+
+            step1Open ? React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '2) 기본 정보 입력'),
+              React.createElement('label', null, '이름 또는 닉네임'),
+              React.createElement('input', { value: form.name, onChange:(e)=>setForm({...form,name:e.target.value}) }),
+              React.createElement('label', { style:{marginTop:'10px'} }, '카카오톡 ID 또는 연락 가능한 전화번호'),
+              React.createElement('input', { value: form.contact, onChange:(e)=>setForm({...form,contact:e.target.value}) })
+            ) : null,
+
+            step2Open ? React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '3) 상담 메뉴 선택'),
+              React.createElement('div', { className:'menu-grid' }, ...visibleMenus.map((m) => React.createElement('article', {
+                key:m.id, className:`menu-card ${selectedMenu && selectedMenu.id===m.id?'active':''}`, onClick:()=>setSelectedMenu(m)
+              },
+                React.createElement('div', { className:'menu-title' }, `${m.title} (${formatPrice(m.price)})`)
+              )))
+            ) : null,
+
+            step3Open ? React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '4) 질문 내용'),
+              React.createElement('div', { className:'meta' }, `설명: ${selectedMenu.desc}`),
+              React.createElement('div', { className:'meta' }, `추천 상황: ${selectedMenu.rec}`),
+              React.createElement('div', { className:'meta' }, `예상 소요 시간: ${selectedMenu.duration}`),
+              React.createElement('label', { style:{marginTop:'10px'} }, '핵심 질문 (필수)'),
+              React.createElement('textarea', { className:'question', value: form.question, onChange:(e)=>setForm({...form,question:e.target.value}) }),
+              React.createElement('label', { style:{marginTop:'10px'} }, '추가 메모 (선택)'),
+              React.createElement('textarea', { className:'memo', value: form.memo, onChange:(e)=>setForm({...form,memo:e.target.value}) })
+            ) : null,
+
+            step4Open ? React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '5) 접수하기'),
+              React.createElement('button', { className:'submit', type:'submit', disabled:submitting }, submitting ? '접수 중...' : '상담 접수 제출'),
+              status.text ? React.createElement('div', { className: status.type === 'ok' ? 'ok' : 'err', style:{marginTop:'10px'} }, status.text) : null
+            ) : null,
+
+            (submitted || step4Open) ? React.createElement('section', { className:'card' },
+              React.createElement('div', { className:'step-title' }, '6) 결제 안내'),
+              React.createElement('div', { className:'payment-box' },
+                React.createElement('div', null, `입금 금액: ${selectedMenu ? formatPrice(selectedMenu.price) : '-'}`),
+                React.createElement('div', { className:'hint' }, '입금 계좌: 국민은행 000000-00-000000 (예금주: 레지나타로썰)'),
+                React.createElement('div', { className:'hint' }, '※ 현재 상담 대기 중 / 입금 순서대로 진행됩니다.'),
+                React.createElement('div', { className:'row' },
+                  React.createElement('input', { type:'checkbox', checked:paymentChecked, onChange:(e)=>setPaymentChecked(e.target.checked) }),
+                  React.createElement('span', null, '입금을 완료했어요')
                 ),
-                error ? React.createElement('p', { className: 'warning' }, error) : null
-              ),
-              React.createElement('article', { className: 'card' },
-                React.createElement('h3', null, '결과 영역'),
-                React.createElement('div', { className: 'result-block' },
-                  React.createElement('h4', { className: 'result-title' }, `메인 결과 카드 (${deck} / ${count}장)`),
-                  React.createElement('pre', null, result.main.length ? result.main.join('\n') : '아직 결과가 없습니다.')
-                ),
-                React.createElement('div', { className: 'result-block' },
-                  React.createElement('h4', { className: 'result-title' }, '보조 결과 카드'),
-                  React.createElement('pre', null, Object.keys(result.support).length ? Object.entries(result.support).map(([k,v]) => `${k}: ${v}`).join('\n') : '선택된 보조도구가 없거나 결과가 없습니다.')
-                ),
-                React.createElement('div', { className: 'result-block' },
-                  React.createElement('h4', { className: 'result-title' }, '복사용 결과 미리보기'),
-                  React.createElement('pre', null, result.copy || '복사 가능한 결과가 아직 없습니다.')
-                )
+                React.createElement('button', { type:'button', onClick:onConfirmPayment, style:{marginTop:'8px'} }, '입금 완료 확인'),
+                paymentMessage ? React.createElement('div', { className:'hint', style:{marginTop:'8px'} }, paymentMessage) : null
               )
-            )
+            ) : null
           )
         );
       }

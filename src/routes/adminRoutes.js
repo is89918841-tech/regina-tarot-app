@@ -10,6 +10,7 @@ const {
   deleteFile,
   updateFileMetadata,
 } = require('../services/knowledgeService');
+const { listConsultations } = require('../services/consultationService');
 const {
   SESSION_COOKIE_NAME,
   parseCookies,
@@ -65,6 +66,15 @@ router.post('/logout', (req, res) => {
 });
 
 router.use(adminAuth);
+
+router.get('/consultations', async (_, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    return res.json({ ok: true, consultations });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 router.post('/upload', upload.single('file'), async (req, res, next) => {
   try {

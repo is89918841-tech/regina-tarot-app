@@ -1,9 +1,10 @@
 const express = require('express');
 const { generateReading } = require('../services/readingService');
+const adminAuth = require('../middleware/adminAuth');
 
 const router = express.Router();
 
-router.post('/generate', async (req, res, next) => {
+router.post('/generate', adminAuth, async (req, res, next) => {
   try {
     const { question, spread, deck, topic } = req.body || {};
 
