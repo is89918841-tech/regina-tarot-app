@@ -46,6 +46,7 @@
         { id: 'decision-flow', title: '결정 흐름 리딩', rec: '선택지 비교와 실행 순서가 필요할 때', duration: '약 25~35분', price: 18000, desc: '결정 흐름과 리스크를 구조적으로 안내합니다.' },
         { id: 'deep-decision', title: '심층 결정 리딩', rec: '복합 이슈를 깊이 분석하고 싶을 때', duration: '약 45~60분', price: 30000, desc: '핵심 질문을 중심으로 심층 리딩을 진행합니다.' },
       ];
+      const formatPrice = (p) => `${Number(p || 0).toLocaleString('ko-KR')}원`;
 
       function asNumberPrice(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
       function formatPrice(price) { return `${price.toLocaleString('ko-KR')}원`; }
@@ -198,7 +199,7 @@
               ) : null
             ) : null
           )
-        )
+        );
       }
 
       ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
