@@ -1,193 +1,350 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>관리자 업로드</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; }
-    .row { display: grid; gap: 8px; margin-bottom: 12px; }
-    input, select, button { padding: 10px 12px; font-size: 14px; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .error { color: #c62828; }
-    .info { color: #1565c0; }
-  </style>
-</head>
-<body>
-  <h1>파일 업로드 관리자</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regina Admin Dashboard</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; background: #020617; color: #e2e8f0; }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+      .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+      input, select, button { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+      button { cursor: pointer; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; border-bottom: 1px solid #334155; padding: 8px; font-size: 14px; vertical-align: top; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+      .row > * { flex: 1; min-width: 120px; }
+      .danger { background: #b91c1c; border: 0; }
+      .primary { background: #2563eb; border: 0; }
+      .muted { color: #94a3b8; font-size: 12px; }
+      .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+      .s-processed { background: #065f46; }
+      .s-processing { background: #92400e; }
+      .s-error { background: #7f1d1d; }
+      .s-uploaded, .s-saved { background: #1e3a8a; }
+      .msg-error { color: #fecaca; }
+      .msg-info { color: #bfdbfe; }
+      .chip { display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px; }
+      .chip.pending{ background:#334155; }
+      .chip.auto{ background:#1d4ed8; }
+      .chip.reserve{ background:#7c3aed; }
+      .chip.done{ background:#166534; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
 
-  <div class="row">
-    <label for="deck">덱</label>
-    <input id="deck" type="text" placeholder="예: 유니버셜 타로" />
-  </div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+      const { useState, useEffect } = React;
+      const MAX_FILE_MB = 100;
 
-  <div class="row">
-    <label for="topic">토픽</label>
-    <input id="topic" type="text" placeholder="예: 메이저 아르카나" />
-  </div>
+      function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return '-';
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      }
 
-  <div class="row">
-    <label for="priority">우선순위</label>
-    <select id="priority">
-      <option value="core">core</option>
-      <option value="high">high</option>
-      <option value="low">low</option>
-    </select>
-  </div>
+      function statusClass(status) {
+        if (status === 'completed') return 'chip done';
+        if (status === 'paid_auto_ready') return 'chip auto';
+        if (status === 'paid_reservation_waiting' || status === 'reservation_scheduled') return 'chip reserve';
+        return 'chip pending';
+      }
 
-  <div class="row">
-    <label for="type">타입</label>
-    <select id="type">
-      <option value="guidebook">guidebook</option>
-      <option value="keywords">keywords</option>
-      <option value="notes">notes</option>
-    </select>
-  </div>
+      function App() {
+        const [token, setToken] = useState('');
+        const [authenticated, setAuthenticated] = useState(false);
+        const [files, setFiles] = useState([]);
+        const [consultations, setConsultations] = useState([]);
+        const [status, setStatus] = useState({ type: 'info', text: '' });
+        const [uploading, setUploading] = useState(false);
+        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
 
-  <div class="row">
-    <label for="files">파일 선택 (다중 업로드)</label>
-    <input id="files" type="file" multiple />
-  </div>
+        function setError(text) { setStatus({ type: 'error', text }); }
+        function setInfo(text) { setStatus({ type: 'info', text }); }
 
-  <div class="actions">
-    <button id="auth-btn" type="button">인증 완료 처리</button>
-    <button id="upload-btn" type="button">업로드 시작</button>
-  </div>
+        useEffect(() => {
+          (async () => {
+            try {
+              const res = await fetch('/api/admin/session', { credentials: 'include' });
+              if (!res.ok) return setAuthenticated(false);
+              const data = await res.json();
+              if (data.ok && data.authenticated) {
+                setAuthenticated(true);
+                await Promise.all([fetchFiles(), fetchConsultations()]);
+              }
+            } catch (_) {
+              setAuthenticated(false);
+            }
+          })();
+        }, []);
 
-  <p id="error" class="error"></p>
-  <p id="info" class="info"></p>
-
-  <script>
-    const form = {
-      deck: '',
-      topic: '',
-      priority: 'core',
-      type: 'guidebook',
-      files: [],
-    };
-
-    let authenticated = false;
-    let uploading = false;
-
-    const deckEl = document.getElementById('deck');
-    const topicEl = document.getElementById('topic');
-    const priorityEl = document.getElementById('priority');
-    const typeEl = document.getElementById('type');
-    const filesEl = document.getElementById('files');
-    const errorEl = document.getElementById('error');
-    const infoEl = document.getElementById('info');
-    const uploadBtn = document.getElementById('upload-btn');
-
-    const setError = (msg) => {
-      errorEl.textContent = msg || '';
-      return msg;
-    };
-
-    const setInfo = (msg) => {
-      infoEl.textContent = msg || '';
-      return msg;
-    };
-
-    const setUploading = (value) => {
-      uploading = value;
-      uploadBtn.disabled = value;
-    };
-
-    async function fetchFiles() {
-      // 목록 갱신 API가 있는 경우 여기에서 호출하세요.
-      return Promise.resolve();
-    }
-
-    function setForm(next) {
-      form.deck = next.deck;
-      form.topic = next.topic;
-      form.priority = next.priority;
-      form.type = next.type;
-      form.files = next.files;
-
-      deckEl.value = form.deck;
-      topicEl.value = form.topic;
-      priorityEl.value = form.priority;
-      typeEl.value = form.type;
-      filesEl.value = '';
-    }
-
-    deckEl.addEventListener('input', (e) => {
-      form.deck = e.target.value;
-    });
-
-    topicEl.addEventListener('input', (e) => {
-      form.topic = e.target.value;
-    });
-
-    priorityEl.addEventListener('change', (e) => {
-      form.priority = e.target.value;
-    });
-
-    typeEl.addEventListener('change', (e) => {
-      form.type = e.target.value;
-    });
-
-    filesEl.addEventListener('change', (e) => {
-      form.files = Array.from(e.target.files || []);
-      setInfo(`${form.files.length}개 파일 선택됨`);
-      setError('');
-    });
-
-    document.getElementById('auth-btn').addEventListener('click', () => {
-      authenticated = true;
-      setError('');
-      setInfo('인증 상태가 활성화되었어요.');
-    });
-
-    async function upload() {
-      try {
-        if (!form.files || form.files.length === 0) {
-          return setError('파일을 선택해주세요.')
-        }
-
-        if (!authenticated) return setError('먼저 인증해주세요.')
-
-        setUploading(true)
-        setInfo(`총 ${form.files.length}개 업로드 시작...`)
-        setError('')
-
-        for (const file of form.files) {
-          const body = new FormData()
-          body.append('file', file)
-          body.append('deck', form.deck)
-          body.append('topic', form.topic)
-          body.append('priority', form.priority)
-          body.append('type', form.type)
-
-          const res = await fetch('/api/admin/upload', {
-            method: 'POST',
-            credentials: 'include',
-            body,
-          })
-
-          const data = await res.json()
-
-          if (!data.ok) {
-            throw new Error(`${file.name} 업로드 실패: ${data.error}`)
+        async function login() {
+          try {
+            const res = await fetch('/api/admin/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ token }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '인증 실패');
+            setAuthenticated(true);
+            await Promise.all([fetchFiles(), fetchConsultations()]);
+          } catch (e) {
+            setError(e.message);
           }
         }
 
-        setInfo(`모든 파일 업로드 완료`)
-        setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] })
+        async function logout() {
+          await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+          setAuthenticated(false);
+          setFiles([]);
+          setConsultations([]);
+          setInfo('로그아웃 되었습니다.');
+        }
 
-        await fetchFiles()
-      } catch (e) {
-        setError(e.message)
-      } finally {
-        setUploading(false)
+        async function fetchFiles() {
+          try {
+            const res = await fetch('/api/admin/files', { credentials: 'include' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '조회 실패');
+            setFiles(data.files);
+          } catch (e) {
+            setError(e.message);
+          }
+        }
+
+        async function fetchConsultations() {
+          try {
+            const res = await fetch('/api/admin/consultations', { credentials: 'include' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '접수 목록 조회 실패');
+            setConsultations(data.consultations || []);
+          } catch (e) {
+            setError(e.message);
+          }
+        }
+
+        async function confirmPayment(id) {
+          try {
+            const res = await fetch(`/api/consultations/${id}/confirm-payment`, { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '입금 확인 실패');
+            await fetchConsultations();
+          } catch (e) { setError(e.message); }
+        }
+
+        async function runAutoReading(id) {
+          try {
+            const res = await fetch(`/api/consultations/${id}/run-auto-reading`, { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '자동 리딩 실행 실패');
+            await fetchConsultations();
+          } catch (e) { setError(e.message); }
+        }
+
+        async function upload() {
+          if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
+          if (!authenticated) return setError('먼저 인증해주세요.');
+
+          const fileMb = form.files[0].size / (1024 * 1024);
+          if (fileMb > MAX_FILE_MB) return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요.`);
+
+          setUploading(true);
+          try {
+            for (const file of form.files) {
+              const body = new FormData();
+              body.append('file', file);
+              body.append('deck', form.deck);
+              body.append('topic', form.topic);
+              body.append('priority', form.priority);
+              body.append('type', form.type);
+
+              const res = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body });
+              const data = await res.json();
+              if (!data.ok) throw new Error(`${file.name} 업로드 실패`);
+            }
+            await fetchFiles();
+          } catch (e) {
+            setError(e.message);
+          } finally {
+            setUploading(false);
+          }
+        }
+
+        async function updateRow(file) {
+          try {
+            const res = await fetch(`/api/admin/files/${file.id}`, {
+              method: 'PATCH',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(file),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '수정 실패');
+            await fetchFiles();
+          } catch (e) { setError(e.message); }
+        }
+
+        async function removeRow(id) {
+          if (!confirm('삭제할까요?')) return;
+          try {
+            const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE', credentials: 'include' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '삭제 실패');
+            await fetchFiles();
+          } catch (e) { setError(e.message); }
+        }
+
+        function fileStatusClass(s) {
+          if (s === 'processed') return 'status s-processed';
+          if (s === 'processing') return 'status s-processing';
+          if (s === 'error') return 'status s-error';
+          return 'status s-uploaded';
+        }
+
+        return React.createElement('div', { className: 'wrap' },
+          React.createElement('h1', null, 'Regina Admin Dashboard'),
+          React.createElement('div', { className: 'card' },
+            React.createElement('label', null, 'Admin Token'),
+            React.createElement('input', { value: token, onChange: (e) => setToken(e.target.value), placeholder: 'ADMIN_TOKEN 입력' }),
+            React.createElement('div', { className: 'row' },
+              React.createElement('button', { className: 'primary', onClick: login }, '세션 로그인'),
+              React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
+              React.createElement('button', { className: 'primary', onClick: fetchFiles, disabled: !authenticated }, '파일 목록 새로고침'),
+              React.createElement('button', { className: 'primary', onClick: fetchConsultations, disabled: !authenticated }, '접수 목록 새로고침')
+            ),
+            status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', null, '상담 접수 목록'),
+            React.createElement('table', null,
+              React.createElement('thead', null,
+                React.createElement('tr', null,
+                  React.createElement('th', null, '접수시각'),
+                  React.createElement('th', null, '메뉴'),
+                  React.createElement('th', null, '타입/가격'),
+                  React.createElement('th', null, '상태/결제'),
+                  React.createElement('th', null, '예약'),
+                  React.createElement('th', null, '리딩'),
+                  React.createElement('th', null, '작업')
+                )
+              ),
+              React.createElement('tbody', null,
+                ...consultations.map((c) => React.createElement('tr', { key: c.id },
+                  React.createElement('td', null, c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR') : '-'),
+                  React.createElement('td', null,
+                    React.createElement('div', null, c.menuTitle || '-'),
+                    React.createElement('div', { className: 'muted' }, c.name || '-', ' / ', c.contactChannel || '-')
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('div', null, c.productType || '-'),
+                    React.createElement('div', { className: 'muted' }, typeof c.price === 'number' ? `${c.price.toLocaleString('ko-KR')}원` : '-')
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('span', { className: statusClass(c.status) }, c.status || 'pending'),
+                    React.createElement('div', { className: 'muted' }, c.paymentConfirmed ? '입금확인' : '미확인')
+                  ),
+                  React.createElement('td', null,
+                    c.reservationNote || '-',
+                    c.status === 'paid_reservation_waiting'
+                      ? React.createElement('div', { className: 'muted' }, '예약 대기')
+                      : null
+                  ),
+                  React.createElement('td', null, c.reading ? '있음' : '없음'),
+                  React.createElement('td', null,
+                    !c.paymentConfirmed
+                      ? React.createElement('button', { className: 'primary', onClick: () => confirmPayment(c.id), disabled: !authenticated }, '입금 확인')
+                      : null,
+                    c.status === 'paid_auto_ready'
+                      ? React.createElement('button', { className: 'primary', onClick: () => runAutoReading(c.id), style: { marginTop: '4px' }, disabled: !authenticated }, '자동 리딩 실행')
+                      : null,
+                    c.status === 'reservation_scheduled'
+                      ? React.createElement('div', { className: 'muted' }, '예약 확정')
+                      : null,
+                    c.status === 'completed'
+                      ? React.createElement('div', { className: 'muted' }, '완료')
+                      : null
+                  )
+                ))
+              )
+            )
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', null, '지식 파일 업로드'),
+            React.createElement('div', { className: 'row' },
+              React.createElement('input', { value: form.deck, placeholder: 'deck', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
+              React.createElement('input', { value: form.topic, placeholder: 'topic', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
+              React.createElement('select', { value: form.priority, onChange: (e) => setForm({ ...form, priority: e.target.value }) },
+                React.createElement('option', { value: 'core' }, 'core'),
+                React.createElement('option', { value: 'support' }, 'support'),
+                React.createElement('option', { value: 'optional' }, 'optional')
+              ),
+              React.createElement('select', { value: form.type, onChange: (e) => setForm({ ...form, type: e.target.value }) },
+                React.createElement('option', { value: 'guidebook' }, 'guidebook'),
+                React.createElement('option', { value: 'interpretation' }, 'interpretation'),
+                React.createElement('option', { value: 'tone' }, 'tone'),
+                React.createElement('option', { value: 'rule' }, 'rule')
+              )
+            ),
+            React.createElement('input', {
+              type: 'file', multiple: true,
+              onChange: (e) => setForm({ ...form, files: Array.from(e.target.files || []) }),
+            }),
+            React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading || !authenticated }, uploading ? '처리 중...' : '업로드')
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', null, '파일 목록'),
+            React.createElement('table', null,
+              React.createElement('thead', null,
+                React.createElement('tr', null,
+                  React.createElement('th', null, '파일명/크기'),
+                  React.createElement('th', null, 'deck/topic'),
+                  React.createElement('th', null, 'priority/type'),
+                  React.createElement('th', null, '상태'),
+                  React.createElement('th', null, '작업')
+                )
+              ),
+              React.createElement('tbody', null,
+                ...files.map((f) => React.createElement('tr', { key: f.id },
+                  React.createElement('td', null,
+                    React.createElement('div', null, f.originalName),
+                    React.createElement('div', { className: 'muted' }, formatBytes(f.size))
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('input', { value: f.deck || '', onChange: (e) => f.deck = e.target.value }),
+                    React.createElement('input', { value: f.topic || '', onChange: (e) => f.topic = e.target.value, style: { marginTop: '4px' } })
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('select', { value: f.priority || 'optional', onChange: (e) => f.priority = e.target.value },
+                      React.createElement('option', { value: 'core' }, 'core'),
+                      React.createElement('option', { value: 'support' }, 'support'),
+                      React.createElement('option', { value: 'optional' }, 'optional')
+                    ),
+                    React.createElement('select', { value: f.type || 'guidebook', onChange: (e) => f.type = e.target.value, style: { marginTop: '4px' } },
+                      React.createElement('option', { value: 'guidebook' }, 'guidebook'),
+                      React.createElement('option', { value: 'interpretation' }, 'interpretation'),
+                      React.createElement('option', { value: 'tone' }, 'tone'),
+                      React.createElement('option', { value: 'rule' }, 'rule')
+                    )
+                  ),
+                  React.createElement('td', null, React.createElement('span', { className: fileStatusClass(f.status) }, f.status || '-')),
+                  React.createElement('td', null,
+                    React.createElement('button', { className: 'primary', onClick: () => updateRow(f), disabled: !authenticated }, '저장'),
+                    React.createElement('button', { className: 'danger', onClick: () => removeRow(f.id), style: { marginTop: '4px' }, disabled: !authenticated }, '삭제')
+                  )
+                ))
+              )
+            )
+          )
+        );
       }
-    }
 
-    uploadBtn.addEventListener('click', () => {
-      if (uploading) return;
-      upload();
-    });
-  </script>
-</body>
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+  </body>
 </html>
