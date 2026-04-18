@@ -28,7 +28,6 @@ app.use('/api/admin', adminRoutes);
 
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Public root always serves the consultation intake page.
 app.get('/', (_, res) => {
   res.sendFile(path.join(process.cwd(), 'public/consultation.html'));
 });
