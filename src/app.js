@@ -39,7 +39,7 @@ app.get('/consultation.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
-app.get('/admin', (_, res) => {
+app.get('/admin', adminAuth, (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
@@ -51,8 +51,7 @@ app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, re
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
-app.use((error, _, res, __) => {
-  console.error(error);
+app.use((error, _req, res, _next) => {
   res.status(error.status || 500).json({
     ok: false,
     error: error.message || 'Internal server error',
