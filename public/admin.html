@@ -575,18 +575,20 @@
             ),
             status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
           ),
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
-            React.createElement('div', { className: 'row' },
-              ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
-                key: tool.url,
-                href: tool.url,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-                className: 'tool-btn',
-              }, tool.label))
-            )
-          ),
+          authenticated
+            ? React.createElement('div', { className: 'card' },
+                React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
+                React.createElement('div', { className: 'row' },
+                  ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
+                    key: tool.url,
+                    href: tool.url,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    className: 'tool-btn',
+                  }, tool.label))
+                )
+              )
+            : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.'),
 
           React.createElement('div', { className: 'layout-2col' },
             React.createElement('div', { className: 'card' },
