@@ -29,7 +29,7 @@ app.use('/api/admin', adminRoutes);
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.get('/', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public/consultation.html'));
+  res.sendFile(path.join(process.cwd(), 'public/index.html'));
 });
 
 app.get('/admin', (_, res) => {
