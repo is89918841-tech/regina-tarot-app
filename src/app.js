@@ -9,6 +9,9 @@ const consultationRoutes = require('./routes/consultationRoutes');
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
+const ROOT_DIR = path.resolve(__dirname, '..');
+const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
+const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 
 ensureDir(env.uploadRoot).catch((error) => {
   console.error('Failed to ensure upload directory:', error);
@@ -26,22 +29,26 @@ app.use('/api/reading', readingRoutes);
 app.use('/api/consultations', consultationRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(express.static(PUBLIC_DIR));
 
 app.get('/', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public/index.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+app.get('/consultation.html', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
 app.get('/admin', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public/admin.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-app.get('/admin/helper', adminAuth, (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'private/admin-helper.html'));
+app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get('/admin/grand-tableau', adminAuth, (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'private/admin-grand-tableau.html'));
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
 app.use((error, _, res, __) => {
