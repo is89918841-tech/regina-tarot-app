@@ -38,9 +38,10 @@
       const { useEffect, useMemo, useState } = React;
       const MENU_CONFIG_URL = '/data/consultation-products.json';
       const fallbackMenus = [
-        { id: 'auto-basic', title: '자동 리딩', rec: '빠른 결과 확인', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
-        { id: 'chat-love', title: '연애 리딩', rec: '관계 흐름/재회/감정 확인', price: 39000, desc: '현재 관계 흐름과 핵심 변수를 채팅 상담으로 정리합니다.' },
-        { id: 'chat-career', title: '진로·재물 리딩', rec: '이직/사업/금전 선택', price: 49000, desc: '선택지별 흐름과 주의 포인트를 채팅 기반으로 안내합니다.' },
+        { id: 'line-direction', title: '한 줄 방향 리딩', rec: '빠른 방향 점검', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
+        { id: 'core-summary', title: '핵심 정리 리딩', rec: '핵심 포인트 정리', price: 39000, desc: '상황 핵심과 우선순위를 채팅 상담으로 정리합니다.' },
+        { id: 'decision-flow', title: '결정 흐름 리딩', rec: '선택지 비교', price: 49000, desc: '결정 흐름과 리스크를 채팅 기반으로 점검합니다.' },
+        { id: 'deep-decision', title: '심층 결정 리딩', rec: '복합 이슈 심층 분석', price: 69000, desc: '복합 질문을 깊이 있게 분석하는 심층 상담입니다.' },
       ];
 
       function asNumberPrice(value) {
@@ -131,13 +132,13 @@
             React.createElement('section', { className:'card fade' },
               React.createElement('div', { className:'step-title' }, '1) 서비스 선택'),
               React.createElement('div', { className:'option-grid' },
-                React.createElement('div', { className:`option ${serviceType === 'consultation' ? 'active' : ''}`, onClick:() => setServiceType('consultation') },
-                  React.createElement('div', { className:'menu-title' }, '상담 접수'),
-                  React.createElement('div', { className:'meta' }, '신규 상담 접수 흐름')
+                React.createElement('div', { className:`option ${serviceType === 'question' ? 'active' : ''}`, onClick:() => setServiceType('question') },
+                  React.createElement('div', { className:'menu-title' }, '상담 질문'),
+                  React.createElement('div', { className:'meta' }, '질문 중심 상담 접수')
                 ),
-                React.createElement('div', { className:`option ${serviceType === 'followup' ? 'active' : ''}`, onClick:() => setServiceType('followup') },
-                  React.createElement('div', { className:'menu-title' }, '후속 상담'),
-                  React.createElement('div', { className:'meta' }, '기존 상담 연장/후속 흐름')
+                React.createElement('div', { className:`option ${serviceType === 'fortune' ? 'active' : ''}`, onClick:() => setServiceType('fortune') },
+                  React.createElement('div', { className:'menu-title' }, '오늘의 운세'),
+                  React.createElement('div', { className:'meta' }, '오늘 흐름 간단 점검')
                 )
               )
             ),
@@ -173,7 +174,7 @@
             ) : null,
 
             canShowMemoAndSubmit ? React.createElement('section', { className:'card fade' },
-              React.createElement('div', { className:'step-title' }, '5) 추가 메모 & 접수'),
+              React.createElement('div', { className:'step-title' }, '5) 질문/메모 & 접수'),
               React.createElement('label', null, '추가 메모 (선택)'),
               React.createElement('textarea', { value:form.memo, onChange:(e)=>setForm({...form,memo:e.target.value}), placeholder:'상담 전 전달할 메모가 있다면 적어주세요.' }),
               React.createElement('button', { className:'submit', type:'submit', disabled: submitting }, submitting ? '접수 중...' : '상담 접수 제출'),
