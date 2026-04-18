@@ -5,6 +5,7 @@ const { ensureDir } = require('./utils/fileStore');
 const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
+const consultationRoutes = require('./routes/consultationRoutes');
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
@@ -22,6 +23,7 @@ app.get('/healthz', (_, res) => {
 });
 
 app.use('/api/reading', readingRoutes);
+app.use('/api/consultations', consultationRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use(express.static(path.join(process.cwd(), 'public')));
