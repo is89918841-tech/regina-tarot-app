@@ -5,26 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>레지나타로썰 상담 접수</title>
     <style>
-      body{margin:0;background:radial-gradient(circle at top,#1b2645 0%,#0b1020 60%);color:#e2e8f0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif}
-      .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
-      .hero { margin-bottom: 20px; }
-      .desc { color: #cbd5e1; line-height: 1.6; }
-      .card { background: rgba(15, 23, 42, 0.92); border: 1px solid #334155; border-radius: 18px; padding: 20px; margin-bottom: 16px; }
-      .step-title { font-weight: 700; margin-bottom: 14px; color: #f8d184; }
-      .option-grid, .menu-grid { display: grid; gap: 12px; }
-      .option, .menu-card { border: 1px solid #334155; border-radius: 14px; background: #0f172a; color: #e2e8f0; padding: 14px 16px; cursor: pointer; }
-      .option.active, .menu-card.active { border-color: #d4a95f; box-shadow: 0 0 0 1px #d4a95f inset; }
-      .menu-title { font-weight: 700; margin-bottom: 6px; }
-      .menu-price { color: #f8d184; margin-bottom: 6px; }
-      .menu-desc { color: #94a3b8; font-size: 14px; }
-      input, textarea { width: 100%; margin-top: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid #334155; background: #17203a; color: #e2e8f0; box-sizing: border-box; }
-      textarea{resize:vertical}
-      .submit-btn { width: 100%; margin-top: 14px; padding: 16px; border: 0; border-radius: 14px; background: linear-gradient(180deg, #d4a95f, #c89749); color: #1e1b16; font-weight: 700; cursor: pointer; }
-      .fade { animation: fadeUp 0.28s ease; }
-      @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      .status-text, .payment-desc, .selected-summary { margin-top: 12px; color: #cbd5e1; }
-      .account { font-size: 18px; font-weight: 700; color: #f8d184; margin-top: 12px; }
-      @media(max-width:760px){.wrap{padding:20px 14px 48px}}
+      :root { --bg:#090c18; --panel:#11182a; --line:#2e3854; --text:#ece5d8; --muted:#bcb29f; --gold:#cba871; --gold-soft:#f0d5a2; }
+      *{box-sizing:border-box}
+      body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at top,#171f39 0%,var(--bg) 58%);color:var(--text)}
+      .wrap{max-width:980px;margin:0 auto;padding:24px 16px 56px}
+      .hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+      .hero{padding:24px;margin:12px 0 16px}
+      h1{margin:0;font-size:30px}.desc{margin-top:8px;color:var(--muted);line-height:1.6}
+      .badge{display:inline-block;margin-top:10px;padding:6px 12px;border:1px solid #495376;border-radius:999px;background:#212a44;font-size:12px}
+      .card{padding:16px;margin-bottom:12px}.step-title{font-weight:700;margin-bottom:8px;color:var(--gold-soft)}
+      .hint{font-size:12px;color:var(--muted)}
+      .option-grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+      .option,.menu-card{cursor:pointer;transition:.2s;border:1px solid #3a4569;background:#141c32;border-radius:12px;padding:12px}
+      .option.active,.menu-card.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(203,168,113,.45)}
+      .menu-grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+      .menu-title{font-weight:700;margin-bottom:4px}.meta{font-size:13px;color:var(--muted);line-height:1.5}
+      label{font-size:13px;color:#ded5c3;display:block;margin-bottom:6px}
+      input,textarea,button{width:100%;border-radius:10px;border:1px solid #3b4566;background:#171f36;color:var(--text);padding:11px;font-size:14px}
+      textarea.question{min-height:150px;resize:vertical}
+      textarea.memo{min-height:72px;resize:vertical}
+      .submit{margin-top:12px;background:linear-gradient(180deg,#c9a570,#9e7c49);border:0;color:#261d0c;font-weight:700}
+      .msg{font-size:13px;margin-top:10px}.ok{color:#86efac}.err{color:#fecaca}
+      .fade{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+      .pay-box{margin-top:12px;padding:12px;border:1px solid #6e5732;background:#2a2115;border-radius:12px;color:#f5ddb3}
+      .pay-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+      .pay-row input{width:auto}
+      @media(max-width:900px){.menu-grid,.option-grid{grid-template-columns:1fr}}
     </style>
   </head>
   <body>
@@ -40,6 +46,10 @@
         { id: 'decision-flow', title: '결정 흐름 리딩', price: 18000, desc: '결정 흐름과 리스크를 구조적으로 안내합니다.' },
         { id: 'deep-decision', title: '심층 결정 리딩', price: 30000, desc: '핵심 질문을 중심으로 심층 리딩을 진행합니다.' },
       ];
+      const formatPrice = (p) => `${Number(p || 0).toLocaleString('ko-KR')}원`;
+
+      function asNumberPrice(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
+      function formatPrice(price) { return `${price.toLocaleString('ko-KR')}원`; }
 
       function App(){
         const [serviceType, setServiceType] = useState('');
