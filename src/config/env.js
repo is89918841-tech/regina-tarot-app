@@ -12,6 +12,8 @@ module.exports = {
   uploadRoot: path.resolve(UPLOAD_ROOT),
   metadataStorePath:
     process.env.METADATA_STORE_PATH || path.join(UPLOAD_ROOT, 'metadata.json'),
+  consultationStorePath:
+    process.env.CONSULTATION_STORE_PATH || path.join(UPLOAD_ROOT, 'consultations.json'),
   vectorStoreId: process.env.OPENAI_VECTOR_STORE_ID || '',
   model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
   maxUploadSizeMb: Number(process.env.MAX_UPLOAD_SIZE_MB || 100),
