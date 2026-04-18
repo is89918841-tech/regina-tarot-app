@@ -8,6 +8,9 @@ const readingRoutes = require('./routes/readingRoutes');
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
+const ROOT_DIR = path.resolve(__dirname, '..');
+const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
+const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 
 ensureDir(env.uploadRoot).catch((error) => {
   console.error('Failed to ensure upload directory:', error);
@@ -22,9 +25,18 @@ app.get('/healthz', (_, res) => {
 });
 
 app.use('/api/reading', readingRoutes);
+app.use('/api/consultations', consultationRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(express.static(PUBLIC_DIR));
+
+app.get('/', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+app.get('/consultation.html', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
+});
 
 app.get('/', (_, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
