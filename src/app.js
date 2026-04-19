@@ -6,7 +6,7 @@ const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
 const consultationRoutes = require('./routes/consultationRoutes');
-const adminAuth = require('./middleware/adminAuth');
+const requireAdminPage = require('./middleware/requireAdminPage');
 
 const app = express();
 const ROOT_DIR = path.resolve(__dirname, '..');
