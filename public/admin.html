@@ -595,61 +595,62 @@
             ),
             status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
           ),
-          authenticated
-            ? React.createElement('div', { className: 'card' },
-                React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
-                React.createElement('div', { className: 'row' },
-                  ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
-                    key: tool.url,
-                    href: tool.url,
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                    className: 'tool-btn',
-                  }, tool.label))
-                )
-              )
-            : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.'),
+authenticated
+  ? React.createElement('div', { className: 'card' },
+      React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
+      React.createElement('div', { className: 'row' },
+        ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
+          key: tool.url,
+          href: tool.url,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          className: 'tool-btn',
+        }, tool.label))
+      )
+    )
+  : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.'),
 
-          React.createElement('div', { className: 'layout-2col' },
-            React.createElement('div', { className: 'card' },
-              React.createElement('h3', { className: 'section-title' }, '상담 접수 목록'),
-              React.createElement('table', null,
-                React.createElement('thead', null,
-                  React.createElement('tr', null,
-                    React.createElement('th', null, '접수시각'),
-                    React.createElement('th', null, '메뉴/이름'),
-                    React.createElement('th', null, '가격'),
-                    React.createElement('th', null, 'payment/status'),
-                    React.createElement('th', null, '작업')
-                  )
-                ),
-                React.createElement('tbody', null,
-                  ...consultations.map((c) => React.createElement('tr', {
-                    key: c.id,
-                    className: `clickable ${selectedId === c.id ? 'selected' : ''}`,
-                    onClick: () => setSelectedId(c.id),
-                  },
-                    React.createElement('td', null, c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR') : '-'),
-                    React.createElement('td', null,
-                      React.createElement('div', null, c.menuTitle || '-'),
-                      React.createElement('div', { className: 'muted' }, `${c.name || '-'} / ${c.contactChannel || '-'}`)
-                    ),
-                    React.createElement('td', null, typeof c.price === 'number' ? `${c.price.toLocaleString('ko-KR')}원` : '-'),
-                    React.createElement('td', null,
-                      React.createElement('div', null, React.createElement('span', { className: 'chip payment' }, c.paymentStatus || (c.paymentConfirmed ? 'paid' : 'unpaid'))),
-                      React.createElement('div', { style: { marginTop: '4px' } }, React.createElement('span', { className: getChipClass(c.status) }, c.status || 'submitted'))
-                    ),
-                    React.createElement('td', null,
-                      !c.paymentConfirmed
-                        ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); confirmPayment(c.id); }, disabled: !authenticated }, '입금 확인')
-                        : React.createElement('div', { className: 'muted' }, '입금확인'),
-                      c.productType === 'auto' && c.status === 'paid'
-                        ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); runAutoReading(c.id); }, style: { marginTop: '4px' }, disabled: !authenticated }, '자동 리딩 실행')
-                        : null
-                    )
-                  ))
-                )
-              )
+React.createElement('div', { className: 'layout-2col' },
+  React.createElement('div', { className: 'card' },
+    React.createElement('h3', { className: 'section-title' }, '상담 접수 목록'),
+    React.createElement('table', null,
+      React.createElement('thead', null,
+        React.createElement('tr', null,
+          React.createElement('th', null, '접수시각'),
+          React.createElement('th', null, '메뉴/이름'),
+          React.createElement('th', null, '가격'),
+          React.createElement('th', null, 'payment/status'),
+          React.createElement('th', null, '작업')
+        )
+      ),
+      React.createElement('tbody', null,
+        ...consultations.map((c) => React.createElement('tr', {
+          key: c.id,
+          className: `clickable ${selectedId === c.id ? 'selected' : ''}`,
+          onClick: () => setSelectedId(c.id),
+        },
+          React.createElement('td', null, c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR') : '-'),
+          React.createElement('td', null,
+            React.createElement('div', null, c.menuTitle || '-'),
+            React.createElement('div', { className: 'muted' }, `${c.name || '-'} / ${c.contactChannel || '-'}`)
+          ),
+          React.createElement('td', null, typeof c.price === 'number' ? `${c.price.toLocaleString('ko-KR')}원` : '-'),
+          React.createElement('td', null,
+            React.createElement('div', null, React.createElement('span', { className: 'chip payment' }, c.paymentStatus || (c.paymentConfirmed ? 'paid' : 'unpaid'))),
+            React.createElement('div', { style: { marginTop: '4px' } }, React.createElement('span', { className: getChipClass(c.status) }, c.status || 'submitted'))
+          ),
+          React.createElement('td', null,
+            !c.paymentConfirmed
+              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); confirmPayment(c.id); }, disabled: !authenticated }, '입금 확인')
+              : React.createElement('div', { className: 'muted' }, '입금확인'),
+            c.productType === 'auto' && c.status === 'paid'
+              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); runAutoReading(c.id); }, style: { marginTop: '4px' }, disabled: !authenticated }, '자동 리딩 실행')
+              : null
+          )
+        ))
+      )
+    )
+  ),
             ),
 
             React.createElement('div', { className: 'card' },
