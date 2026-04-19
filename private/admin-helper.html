@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -85,6 +86,7 @@ const { useEffect, useMemo, useState } = React;
 const MANIFEST_URL = '/data/manifest.json';
 const DECKS_URL = '/data/decks.json';
 const UNIVERSAL_URL = '/data/universal.json';
+const YUKYO_FALLBACK_URL = '/data/주역육효_simple.json';
 
 const RUNES_24 = ["Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz","Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera","Eihwaz","Perthro","Algiz","Sowilo","Tiwaz","Berkano","Ehwaz","Mannaz","Laguz","Ingwaz","Othala","Dagaz"];
 const LENORMAND_36 = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","7 뱀","8 관","9 꽃다발","10 낫","11 채찍","12 새","13 아이","14 여우","15 곰","16 별","17 황새","18 개","19 탑","20 정원","21 산","22 갈림길","23 쥐","24 하트","25 반지","26 책","27 편지","28 남자","29 여자","30 백합","31 태양","32 달","33 열쇠","34 물고기","35 닻","36 십자가"];
@@ -224,9 +226,13 @@ function App(){
         ));
 
         if(manifest.iching) setIching64(await loadJson(`/data/${manifest.iching}`));
-        if(manifest.yukyo){
-          const y = await loadJson(`/data/${manifest.yukyo}`);
+
+        try{
+          const yukyoSource = manifest.yukyo ? `/data/${manifest.yukyo}` : YUKYO_FALLBACK_URL;
+          const y = await loadJson(yukyoSource);
           setYukyoCards(Array.isArray(y) ? y : (y.cards || []));
+        }catch(_){
+          setYukyoCards([]);
         }
 
         try{
@@ -344,6 +350,11 @@ function App(){
     if(!yukyoCards.length) return [];
     const picks = shuffle(yukyoCards).slice(0, yukyoCount).map(card => {
       if(!card) return "";
+
+      if(typeof card === "string"){
+        return card.trim();
+      }
+
       const name = card.괘명 || card.name || "";
       const kor = card.한글 ? `(${card.한글})` : "";
       const meaning = card.의미 ? ` — ${card.의미}` : "";
