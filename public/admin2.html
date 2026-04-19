@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regina Admin</title>
+  <title>Regina Admin Dashboard</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -27,17 +27,49 @@
       color: var(--text);
       font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
     }
+
     a { color: inherit; text-decoration: none; }
     button, input, textarea, select { font: inherit; }
 
     .hidden { display: none !important; }
-    .app { max-width: 1440px; margin: 0 auto; padding: 24px; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-    .brand h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.2; }
-    .brand p { margin: 0; color: var(--muted); font-size: 14px; }
 
-    .row { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; align-items: start; }
-    .stack { display: grid; gap: 16px; }
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
 
     .panel {
       background: rgba(18, 24, 43, 0.95);
@@ -47,9 +79,22 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.22);
     }
 
-    .panel h2 { margin: 0 0 12px; font-size: 18px; }
-    .muted { color: var(--muted); font-size: 13px; }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
 
     .btn {
       border: 1px solid var(--line);
@@ -84,9 +129,21 @@
       line-height: 1.6;
     }
 
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .field { display: grid; gap: 6px; }
-    .field label { font-size: 13px; color: var(--muted); }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+    }
 
     .login-wrap {
       min-height: 100vh;
@@ -105,8 +162,16 @@
       box-shadow: 0 24px 80px rgba(0,0,0,0.35);
     }
 
-    .login-card h1 { margin: 0 0 10px; font-size: 28px; }
-    .login-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.6; }
+    .login-card h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    .login-card p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
 
     .status {
       margin-top: 12px;
@@ -142,9 +207,28 @@
     .item:hover { border-color: #4f5d84; }
     .item.active { border-color: #8b5cf6; box-shadow: inset 0 0 0 1px rgba(139,92,246,0.5); }
 
-    .item-title { font-weight: 800; margin-bottom: 6px; font-size: 15px; }
-    .item-meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
-    .kv { display: grid; grid-template-columns: 120px 1fr; gap: 10px; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+    .item-title {
+      font-weight: 800;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .item-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
 
     .badge {
       display: inline-flex;
@@ -173,14 +257,18 @@
     <div class="login-card">
       <h1>레지나 관리자</h1>
       <p>상담 접수, 추천 생성, 자동 드로우, 최종 리딩 저장, 지식 파일 업로드를 한 화면에서 관리합니다.</p>
+
       <div class="field">
         <label for="password">관리자 비밀번호</label>
         <input id="password" class="input" type="password" placeholder="비밀번호 입력" />
       </div>
+
       <div class="spacer"></div>
+
       <div class="toolbar">
         <button id="loginBtn" class="btn primary" type="button">로그인</button>
       </div>
+
       <div id="loginStatus" class="status hidden"></div>
     </div>
   </div>
@@ -192,6 +280,7 @@
           <h1>Regina Admin Dashboard</h1>
           <p>상담 접수 / 추천 생성 / 자동 드로우 / 최종 리딩 / 지식 파일 관리</p>
         </div>
+
         <div class="top-actions">
           <a class="btn ghost" href="/admin/helper" target="_blank">보조앱 열기</a>
           <a class="btn ghost" href="/admin/grand-tableau" target="_blank">그랑따블로 열기</a>
@@ -261,6 +350,7 @@
             </div>
 
             <div id="uploadStatus" class="status hidden" style="margin-top: 12px;"></div>
+
             <div class="section-divider"></div>
 
             <div id="filesList" class="list">
@@ -378,11 +468,7 @@
     }
 
     async function loadAll() {
-      try {
-        await Promise.all([loadConsultations(), loadFiles()]);
-      } catch (error) {
-        throw new Error(error.message || '초기 데이터 로딩 실패');
-      }
+      await Promise.all([loadConsultations(), loadFiles()]);
     }
 
     async function ensureSession() {
