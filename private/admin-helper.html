@@ -9,18 +9,18 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     :root{
-      --bg:#081224; --bg2:#0d1a31; --panel:rgba(16,24,42,.88); --line:#253353; --line2:#33446b;
-      --text:#edf2ff; --muted:#95a5c7; --accent:#6d76ff; --accent2:#4856ff; --good:#1f8f63; --warn:#d49c33;
-      --danger:#d96b88; --chip:#131f38; --shadow:0 18px 60px rgba(0,0,0,.35); --radius:22px;
+      --bg:#07101f; --panel:rgba(13,22,40,.92); --line:#263554; --line2:#33456d;
+      --text:#eef3ff; --muted:#98a7c7; --accent:#6772ff; --accent2:#4655ff;
+      --good:#1f9a68; --shadow:0 18px 60px rgba(0,0,0,.34); --radius:22px;
     }
     *{box-sizing:border-box} html,body{margin:0;padding:0}
     body{
-      background:radial-gradient(circle at top,#10254f 0%, #081224 38%, #050c17 100%);
+      background:radial-gradient(circle at top,#112654 0%, #07101f 36%, #040b15 100%);
       color:var(--text); font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
     }
     button,input,select,textarea{font:inherit}
-    .wrap{max-width:1280px;margin:0 auto;padding:22px 16px 40px}
-    .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:16px}
+    .wrap{max-width:1320px;margin:0 auto;padding:22px 16px 40px}
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px}
     .layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:14px}
     .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
     .panel-inner{padding:18px}
@@ -34,10 +34,10 @@
     .field{display:grid;gap:7px}
     .label{font-size:13px;font-weight:700;color:#dde5ff}
     .input,.select,.textarea{
-      width:100%;background:rgba(7,13,25,.88);color:var(--text);border:1px solid var(--line2);
+      width:100%;background:rgba(7,13,25,.9);color:var(--text);border:1px solid var(--line2);
       border-radius:14px;padding:12px 13px;outline:none;transition:.18s ease;
     }
-    .textarea{min-height:92px;resize:vertical}
+    .textarea{min-height:120px;resize:vertical}
     .input:focus,.select:focus,.textarea:focus{border-color:#7d87ff;box-shadow:0 0 0 4px rgba(109,118,255,.14)}
     .btn{
       appearance:none;border:1px solid var(--line2);background:#1a2643;color:var(--text);padding:11px 14px;
@@ -46,21 +46,13 @@
     .btn:hover{transform:translateY(-1px);border-color:#6274aa}
     .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}
     .btn.good{background:linear-gradient(180deg,#229b6b,#167650);border-color:transparent}
-    .btn.warn{background:linear-gradient(180deg,#d1a13d,#a87b24);border-color:transparent;color:#16120a}
     .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);font-size:12px;color:#c3cef0}
+    .chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#131f38;border:1px solid var(--line);font-size:12px;color:#c3cef0}
     .chip.on{border-color:#7f8cff;background:rgba(109,118,255,.14);color:#fff}
-    .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
     .kpi-item{background:rgba(8,14,28,.65);border:1px solid var(--line);border-radius:16px;padding:12px}
     .kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px}
     .kpi-value{font-size:18px;font-weight:800}
-    .preset-grid,.mode-tabs{display:grid;gap:8px}
-    .preset-grid{grid-template-columns:repeat(2,1fr)}
-    .mode-tabs{grid-template-columns:repeat(3,1fr)}
-    .preset{padding:12px;border-radius:16px;background:rgba(9,16,30,.75);border:1px solid var(--line);cursor:pointer;text-align:left}
-    .preset:hover{border-color:#6677aa}
-    .preset strong{display:block;font-size:13px;margin-bottom:4px}
-    .preset span{display:block;font-size:12px;color:var(--muted);line-height:1.45}
     .deck-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
     .mini-card{background:rgba(8,14,28,.72);border:1px solid var(--line);border-radius:16px;padding:12px}
     .tiny{font-size:12px;color:var(--muted)}
@@ -75,8 +67,8 @@
     .toggle-card-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
     .number-board-wrap{background:rgba(7,13,25,.72);border:1px solid var(--line);border-radius:18px;padding:12px}
     .number-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-    .number-board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;max-height:356px;overflow:auto;padding-right:4px}
-    .num-btn{border:1px solid var(--line);background:#0f1930;color:#e7edff;border-radius:12px;min-height:44px;font-weight:700;cursor:pointer}
+    .number-board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;max-height:420px;overflow:auto;padding-right:4px}
+    .num-btn{border:1px solid var(--line);background:#0f1930;color:#e7edff;border-radius:12px;min-height:46px;font-weight:700;cursor:pointer}
     .num-btn:hover{border-color:#6778ad;background:#162443}
     .num-btn.selected{background:linear-gradient(180deg,#6d76ff,#4c58ff);border-color:transparent;color:#fff;box-shadow:0 10px 24px rgba(79,89,255,.34)}
     .num-btn.locked{opacity:.44;cursor:not-allowed}
@@ -84,15 +76,21 @@
     .status.error{color:#ffd1db;border-color:rgba(217,107,136,.45);background:rgba(77,18,34,.22)}
     .status.good{color:#d1ffe8;border-color:rgba(31,143,99,.45);background:rgba(17,77,53,.24)}
     .help{font-size:12px;color:var(--muted);line-height:1.55}
-    .result-box{white-space:pre-wrap;background:rgba(8,14,28,.8);border:1px solid var(--line);border-radius:18px;padding:16px;font-size:14px;line-height:1.7;color:#f7f9ff;min-height:260px}
+    .result-box{white-space:pre-wrap;background:rgba(8,14,28,.8);border:1px solid var(--line);border-radius:18px;padding:16px;font-size:14px;line-height:1.7;color:#f7f9ff;min-height:300px}
     .draw-list{display:grid;gap:7px}
     .draw-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(8,14,28,.72);border:1px solid var(--line)}
     .draw-pos{min-width:56px;font-size:12px;font-weight:800;color:#b7c2ea;padding-top:2px}
     .draw-name{font-size:14px;line-height:1.5}
+    .copy-box{display:grid;gap:10px}
+    .copy-area{
+      width:100%; min-height:240px; resize:vertical; background:rgba(6,11,22,.95); color:#f7f9ff;
+      border:1px solid var(--line2); border-radius:16px; padding:14px; line-height:1.7;
+    }
+    .copy-actions{display:flex;gap:10px;flex-wrap:wrap}
     .footer-note{margin-top:12px;font-size:12px;color:var(--muted)}
     @media (max-width:1080px){.hero,.layout{grid-template-columns:1fr}}
     @media (max-width:780px){
-      .preset-grid,.deck-summary,.kpi,.mode-tabs{grid-template-columns:1fr}
+      .deck-summary,.kpi{grid-template-columns:1fr 1fr}
       .number-board{grid-template-columns:repeat(5,minmax(0,1fr))}
       .title{font-size:28px}
     }
@@ -102,7 +100,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useEffect, useMemo, useState } = React;
+    const { useEffect, useMemo, useRef, useState } = React;
 
     const MANIFEST_URL = '/data/manifest.json';
     const DECKS_URL = '/data/decks.json';
@@ -113,12 +111,6 @@
     const OGANGI_5 = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
     const OBANGGI_5 = ["동","서","남","북","중앙"];
     const ORACLE_KEYWORD_FALLBACK = ["경계","확장","정화","인내","회복","소통","결단","유연성","균형","휴식","몰입","신뢰","재정비","성장","재시도","축복","배움","경로수정","연결","해방","용기","겸손","보호","변화","기회","통찰","전환","안정","기초","자기돌봄","성찰","협력","해소","도약","선택","실행","타이밍","감사","용서","열림","집중","휴지기"];
-    const PRESETS = [
-      { id:"love", title:"연애 흐름 기본", desc:"속도감 있게 기본 세팅만 맞춤", config:{ count:3, mode:"random", reversal:true, reverseRatio:45 }},
-      { id:"heart", title:"속마음 / 관계", desc:"레노먼드 + 보조덱까지 붙이는 구조", config:{ count:6, mode:"random", reversal:true, reverseRatio:50, lenormand:true, lenormandCount:3, useAuxDeck:true, aux:["귀문방","갑골영패"], auxCounts:{ "귀문방":1, "갑골영패":1 } }},
-      { id:"decision", title:"결정 / 선택", desc:"주역과 갑골영패 보강", config:{ count:6, mode:"random", reversal:true, reverseRatio:45, iching:true, ichingCount:1, useAuxDeck:true, aux:["갑골영패"], auxCounts:{ "갑골영패":1 }, ogangi:true }},
-      { id:"yearly", title:"13장 월별 흐름", desc:"총운 1장 + 월별 12장 흐름", config:{ count:13, mode:"random", reversal:true, reverseRatio:45, yukyo:true, yukyoCount:13 }}
-    ];
 
     async function loadJson(url){
       const res = await fetch(url, { cache:"no-store" });
@@ -138,7 +130,6 @@
       if(Number.isNaN(n)) return fallback;
       return Math.min(max, Math.max(min, n));
     }
-    function boolParam(v){ return String(v).toLowerCase() === "true"; }
     function cleanAuxValue(entry){
       if(typeof entry === "string") return entry;
       if(!entry || typeof entry !== "object") return "";
@@ -190,10 +181,8 @@
 
       const [tarotDeck, setTarotDeck] = useState("");
       const [allowReversal, setAllowReversal] = useState(true);
-      const [reverseRatio, setReverseRatio] = useState(50);
+      const [reverseRatio, setReverseRatio] = useState(45);
       const [cardCount, setCardCount] = useState(3);
-      const [mode, setMode] = useState("random");
-
       const [numMap, setNumMap] = useState([]);
       const [selectedNums, setSelectedNums] = useState([]);
 
@@ -214,6 +203,8 @@
       const [selectedAuxDecks, setSelectedAuxDecks] = useState([]);
       const [auxDeckCounts, setAuxDeckCounts] = useState({});
       const [result, setResult] = useState(null);
+
+      const copyAreaRef = useRef(null);
 
       const allTarotDecks = useMemo(() => Object.keys(tarotMap), [tarotMap]);
       const allOracleDecks = useMemo(() => Object.keys(oracleMap), [oracleMap]);
@@ -262,7 +253,7 @@
               try{
                 universal78 = await loadJson(UNIVERSAL_URL);
               }catch(_){
-                setLoadWarning("/data/universal.json 을 못 불러와도 현재 보이는 78장 기준으로 최대한 유지되게 보정해뒀어요.");
+                setLoadWarning("/data/universal.json 을 못 불러와도 78장 숫자뽑기 기준으로 fallback 되게 보정했어요.");
               }
 
               if(decks.tarot_decks){
@@ -270,8 +261,10 @@
                   if(cfg?.alias_of === "UNIVERSAL_78"){
                     if(Array.isArray(universal78) && universal78.length === 78){
                       tarotObj[name] = [...universal78];
-                    }else if(!tarotObj[name] && tarotObj["유니버셜 타로"]){
+                    }else if(Array.isArray(tarotObj["유니버셜 타로"]) && tarotObj["유니버셜 타로"].length){
                       tarotObj[name] = [...tarotObj["유니버셜 타로"]].slice(0, 78);
+                    }else if(Array.isArray(tarotObj[name]) && tarotObj[name].length){
+                      tarotObj[name] = [...tarotObj[name]].slice(0, 78);
                     }
                   }
                 }
@@ -287,7 +280,7 @@
                 }
               }
             }catch(_){
-              setLoadWarning("decks.json 병합이 실패해서 manifest 기준으로만 열었어요.");
+              setLoadWarning("decks.json 병합이 실패해도 manifest 기준으로는 열리게 했어요.");
             }
 
             setTarotMap(tarotObj);
@@ -304,13 +297,14 @@
 
       useEffect(() => {
         const deck = tarotMap[tarotDeck] || [];
-        if(mode === "numbers" && deck.length){
-          if(numMap.length !== deck.length || !numMap.every(card => deck.includes(card))){
-            setNumMap(shuffle(deck));
+        if(deck.length){
+          const basis = deck.length >= 78 ? deck.slice(0, 78) : deck;
+          if(numMap.length !== basis.length || !numMap.every(card => basis.includes(card))){
+            setNumMap(shuffle(basis));
             setSelectedNums([]);
           }
         }
-      }, [mode, tarotDeck, tarotMap]);
+      }, [tarotDeck, tarotMap]);
 
       useEffect(() => {
         const onKey = (e) => {
@@ -326,12 +320,11 @@
         return () => window.removeEventListener("keydown", onKey);
       }, []);
 
-      function applyConfig(config={}){
+      function applyRecommendation(config={}){
         if(config.deck && tarotMap[config.deck]) setTarotDeck(config.deck);
         if(config.count != null) setCardCount(clamp(config.count, 1, 13, 3));
-        if(config.mode === "numbers" || config.mode === "random") setMode(config.mode);
         if(typeof config.reversal === "boolean") setAllowReversal(config.reversal);
-        if(config.reverseRatio != null) setReverseRatio(clamp(config.reverseRatio, 0, 100, 50));
+        if(config.reverseRatio != null) setReverseRatio(clamp(config.reverseRatio, 0, 100, 45));
         if(typeof config.runes === "boolean") setUseRunes(config.runes);
         if(config.runeCount != null) setRuneCount(clamp(config.runeCount, 1, 6, 2));
         if(typeof config.lenormand === "boolean") setUseLenormand(config.lenormand);
@@ -373,16 +366,15 @@
       function drawTarot(){
         const deck = tarotMap[tarotDeck] || [];
         if(!deck.length){ alert("선택된 타로 덱 데이터가 비어 있어요."); return null; }
-        let chosen = [];
-        if(mode === "random"){
-          chosen = shuffle(deck).slice(0, cardCount).map(name => ({ name, reversed: allowReversal && Math.random() * 100 < reverseRatio }));
-        }else{
-          if(selectedNums.length !== cardCount){
-            alert(`숫자 모드에서는 ${cardCount}개 숫자를 선택해야 해요. 현재 ${selectedNums.length}개예요.`);
-            return null;
-          }
-          chosen = selectedNums.map(n => ({ name: numMap[n - 1] || deck[n - 1] || "", reversed: allowReversal && Math.random() * 100 < reverseRatio }));
+        const basis = deck.length >= 78 ? deck.slice(0, 78) : deck;
+        if(selectedNums.length !== cardCount){
+          alert(`숫자 뽑기는 ${cardCount}개 번호를 골라야 해요. 현재 ${selectedNums.length}개예요.`);
+          return null;
         }
+        const chosen = selectedNums.map(n => ({
+          name: numMap[n - 1] || basis[n - 1] || "",
+          reversed: allowReversal && Math.random() * 100 < reverseRatio
+        }));
         return chosen.map((item, idx) => ({ position:`카드 ${idx + 1}`, card:`${item.name}${item.reversed ? " (역방향)" : ""}` }));
       }
 
@@ -443,18 +435,23 @@
         setTimeout(() => document.getElementById("result-area")?.scrollIntoView({ behavior:"smooth", block:"start" }), 60);
       }
 
-      async function handleCopy(){
+      async function handleCopyPlain(){
         const text = makeTextResult(result);
         if(!text){ alert("먼저 카드를 뽑아주세요."); return; }
         try{
           await navigator.clipboard.writeText(text);
           alert("복사 완료!");
         }catch(_){
-          const ta = document.createElement("textarea");
-          ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; ta.style.top = "-1000px";
-          document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+          copyAreaRef.current?.focus();
+          copyAreaRef.current?.select();
+          document.execCommand("copy");
           alert("복사 완료!");
         }
+      }
+
+      function handleSelectAll(){
+        copyAreaRef.current?.focus();
+        copyAreaRef.current?.select();
       }
 
       async function handleRecommendApply(){
@@ -470,68 +467,22 @@
           });
           const data = await res.json();
           if(!res.ok || !data.ok) throw new Error(data.error || "추천 생성 실패");
-          applyConfig(data.recommendation || {});
-          setRecommendStatus("추천 세팅이 적용됐어요. 바로 카드만 뽑으면 돼요.");
-        }catch(err){
-          setRecommendStatus(String(err?.message || err));
-        }
-      }
-
-      async function handleRecommendReload(){
-        const question = String(questionInput || "").trim();
-        if(!question){ setRecommendStatus("질문을 먼저 넣어주세요."); return; }
-        try{
-          setRecommendStatus("추천 주소를 만드는 중이에요…");
-          const res = await fetch("/api/admin/recommend", {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            credentials:"include",
-            body: JSON.stringify({ question })
-          });
-          const data = await res.json();
-          if(!res.ok || !data.ok) throw new Error(data.error || "추천 생성 실패");
-          const r = data.recommendation || {};
-          const params = new URLSearchParams();
-          if(r.deck) params.set("deck", r.deck);
-          if(r.count != null) params.set("count", String(r.count));
-          if(r.mode) params.set("mode", String(r.mode));
-          if(typeof r.reversal === "boolean") params.set("reversal", String(r.reversal));
-          if(r.reverseRatio != null) params.set("reverseRatio", String(r.reverseRatio));
-          if(typeof r.runes === "boolean") params.set("runes", String(r.runes));
-          if(r.runeCount != null) params.set("runeCount", String(r.runeCount));
-          if(typeof r.lenormand === "boolean") params.set("lenormand", String(r.lenormand));
-          if(r.lenormandCount != null) params.set("lenormandCount", String(r.lenormandCount));
-          if(typeof r.iching === "boolean") params.set("iching", String(r.iching));
-          if(r.ichingCount != null) params.set("ichingCount", String(r.ichingCount));
-          if(typeof r.yukyo === "boolean") params.set("yukyo", String(r.yukyo));
-          if(r.yukyoCount != null) params.set("yukyoCount", String(r.yukyoCount));
-          if(typeof r.oracle === "boolean") params.set("oracle", String(r.oracle));
-          if(r.oracleDeck) params.set("oracleDeck", String(r.oracleDeck));
-          if(r.oracleCount != null) params.set("oracleCount", String(r.oracleCount));
-          if(typeof r.ogangi === "boolean") params.set("ogangi", String(r.ogangi));
-          if(typeof r.obanggi === "boolean") params.set("obanggi", String(r.obanggi));
-          if(typeof r.useAuxDeck === "boolean") params.set("useAuxDeck", String(r.useAuxDeck));
-          if(Array.isArray(r.aux) && r.aux.length) params.set("aux", r.aux.join(","));
-          if(r.auxCounts && typeof r.auxCounts === "object"){
-            const pairs = Object.entries(r.auxCounts).map(([k, v]) => `${k}:${v}`);
-            if(pairs.length) params.set("auxCounts", pairs.join(","));
-          }
-          params.set("autoDraw", "true");
-          window.location.href = `${window.location.pathname}?${params.toString()}`;
+          applyRecommendation(data.recommendation || {});
+          setRecommendStatus("추천 세팅을 적용했어요. 숫자 78장에서 바로 골라 뽑으시면 돼요.");
         }catch(err){
           setRecommendStatus(String(err?.message || err));
         }
       }
 
       function handleReset(){
-        setAllowReversal(true); setReverseRatio(50); setCardCount(3); setMode("random"); setSelectedNums([]);
+        setAllowReversal(true); setReverseRatio(45); setCardCount(3); setSelectedNums([]);
         setUseRunes(false); setRuneCount(2); setUseLenormand(false); setLenormandCount(3); setUseIching(false); setIchingCount(1);
         setUseYukyo(false); setYukyoCount(1); setUseOracle(false); setOracleCount(1); setUseOgangi(false); setUseObanggi(false);
         setUseAuxDeck(false); setSelectedAuxDecks([]); setAuxDeckCounts({}); setResult(null); setRecommendStatus("");
-        window.history.replaceState({}, "", window.location.pathname);
       }
 
       const currentDeckCards = tarotMap[tarotDeck] || [];
+      const numberDeckCount = Math.min(78, currentDeckCards.length || 78);
       const resultText = useMemo(() => makeTextResult(result), [result]);
 
       return (
@@ -541,18 +492,17 @@
               <div className="panel-inner">
                 <div className="chips" style={{marginBottom:10}}>
                   <span className="chip on">레지나 리딩 보조앱 관리자 허브</span>
-                  <span className="chip">장수 1~13</span>
-                  <span className="chip">숫자 뽑기 78장</span>
-                  <span className="chip">추천 세팅 연결</span>
+                  <span className="chip">프리셋 제거</span>
+                  <span className="chip">숫자뽑기 78장 고정</span>
+                  <span className="chip">복붙 편의 강화</span>
                 </div>
-                <h1 className="title">한 번에 갈아끼울 수 있는 전체 코드 버전</h1>
+                <h1 className="title">숫자뽑기 중심으로 다시 정리한 전체 코드</h1>
                 <div className="subtitle">
-                  보조앱형 레이아웃으로 정리했고, 숫자 뽑기 / 추천 세팅 / 보조도구 / 결과 복사를 한 화면에 묶었습니다.
-                  특히 <b>/data/universal.json</b> 이 502여도 최대한 버티도록 fallback 을 넣어뒀습니다.
+                  프리셋은 빼고, 숫자 선택을 기준 동선으로 잡았습니다. 어떤 타로 덱을 골라도 숫자판은 기본 78장 기준으로 돌아가고,
+                  결과는 아래 큰 복붙 박스에서 한 번에 전체 선택·복사되게 바꿨습니다.
                 </div>
                 <div className="row" style={{marginTop:14}}>
-                  <button className="btn primary" type="button" onClick={handleRecommendApply}>추천 세팅 적용</button>
-                  <button className="btn" type="button" onClick={handleRecommendReload}>추천 주소로 다시 열기</button>
+                  <button className="btn primary" type="button" onClick={handleRecommendApply}>질문 기반 추천 세팅 적용</button>
                   <button className="btn" type="button" onClick={handleReset}>전체 초기화</button>
                 </div>
               </div>
@@ -573,6 +523,7 @@
                   <div className="kpi-item"><div className="kpi-label">타로 덱</div><div className="kpi-value">{loaded ? allTarotDecks.length : "-"}</div></div>
                   <div className="kpi-item"><div className="kpi-label">오라클</div><div className="kpi-value">{loaded ? allOracleDecks.length : "-"}</div></div>
                   <div className="kpi-item"><div className="kpi-label">보조덱</div><div className="kpi-value">{loaded ? allAuxDecks.length : "-"}</div></div>
+                  <div className="kpi-item"><div className="kpi-label">숫자판</div><div className="kpi-value">78</div></div>
                 </div>
                 {recommendStatus && <div className={`status ${recommendStatus.includes("적용") ? "good" : ""}`}>{recommendStatus}</div>}
                 {loadWarning && <div className="status">{loadWarning}</div>}
@@ -584,39 +535,17 @@
           <div className="layout">
             <aside className="grid">
               <section className="panel">
-                <div className="panel-inner">
-                  <h2 className="section-title">빠른 프리셋</h2>
-                  <div className="preset-grid">
-                    {PRESETS.map(preset => (
-                      <button type="button" key={preset.id} className="preset" onClick={() => applyConfig(preset.config)}>
-                        <strong>{preset.title}</strong>
-                        <span>{preset.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              <section className="panel">
                 <div className="panel-inner stack">
                   <h2 className="section-title">핵심 설정</h2>
                   <div className="field">
                     <label className="label">메인 타로 덱</label>
-                    <select className="select" value={tarotDeck} onChange={(e) => { setTarotDeck(e.target.value); setSelectedNums([]); }}>
+                    <select className="select" value={tarotDeck} onChange={(e) => setTarotDeck(e.target.value)}>
                       {allTarotDecks.map(name => <option key={name} value={name}>{name}</option>)}
                     </select>
                   </div>
                   <div className="deck-summary">
-                    <div className="mini-card"><div className="tiny">현재 덱 카드 수</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{currentDeckCards.length || "-"}</div></div>
-                    <div className="mini-card"><div className="tiny">선택 상태</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{mode === "numbers" ? `${selectedNums.length}/${cardCount}` : `${cardCount}장`}</div></div>
-                  </div>
-                  <div className="field">
-                    <label className="label">드로우 모드</label>
-                    <div className="mode-tabs">
-                      <button type="button" className={`btn ${mode === "random" ? "primary" : ""}`} onClick={() => setMode("random")}>랜덤</button>
-                      <button type="button" className={`btn ${mode === "numbers" ? "primary" : ""}`} onClick={() => setMode("numbers")}>숫자 뽑기</button>
-                      <button type="button" className="btn" onClick={() => { setNumMap(shuffle(currentDeckCards)); setSelectedNums([]); }}>맵 다시 섞기</button>
-                    </div>
+                    <div className="mini-card"><div className="tiny">현재 덱 원본 카드 수</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{currentDeckCards.length || "-"}</div></div>
+                    <div className="mini-card"><div className="tiny">숫자 뽑기 기준</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{numberDeckCount}장</div></div>
                   </div>
                   <div className="field">
                     <label className="label">장수</label>
@@ -658,7 +587,7 @@
 
                   <div className={`toggle-card ${useYukyo ? "on" : ""}`}>
                     <input className="checkbox" type="checkbox" checked={useYukyo} onChange={(e) => setUseYukyo(e.target.checked)} />
-                    <div><div className="toggle-card-title">주역육효괘</div><div className="toggle-card-desc">1 / 3 / 13장 월별 흐름까지 대응</div></div>
+                    <div><div className="toggle-card-title">주역육효괘</div><div className="toggle-card-desc">1 / 3 / 13장 대응</div></div>
                     {useYukyo && <Stepper value={yukyoCount} min={1} max={13} onChange={setYukyoCount} />}
                   </div>
 
@@ -666,7 +595,7 @@
                     <input className="checkbox" type="checkbox" checked={useOracle} onChange={(e) => setUseOracle(e.target.checked)} />
                     <div>
                       <div className="toggle-card-title">오라클</div>
-                      <div className="toggle-card-desc">질문 분위기에 맞는 보조 메시지 추가</div>
+                      <div className="toggle-card-desc">질문 분위기에 맞는 보조 메시지</div>
                       {useOracle && (
                         <div className="stack" style={{marginTop:8}}>
                           <select className="select" value={oracleDeck} onChange={(e) => setOracleDeck(e.target.value)}>
@@ -693,12 +622,7 @@
                             <input className="checkbox" type="checkbox" checked={checked} onChange={() => toggleAuxDeck(name)} />
                             <div><div className="toggle-card-title">{name}</div></div>
                             {checked ? (
-                              <Stepper
-                                value={auxDeckCounts[name] || 1}
-                                min={1}
-                                max={13}
-                                onChange={(v) => setAuxDeckCounts(prev => ({ ...prev, [name]: v }))}
-                              />
+                              <Stepper value={auxDeckCounts[name] || 1} min={1} max={13} onChange={(v) => setAuxDeckCounts(prev => ({ ...prev, [name]: v }))} />
                             ) : <div className="tiny">off</div>}
                           </div>
                         );
@@ -719,15 +643,15 @@
                 <div className="panel-inner stack">
                   <div className="between">
                     <h2 className="section-title" style={{margin:0}}>숫자 뽑기</h2>
-                    <div className="tiny">현재 덱 카드 수만큼 번호가 자동 표시돼요.</div>
+                    <div className="tiny">프리셋 없이 여기서 바로 고르면 됩니다. 어떤 덱이든 78장 기준입니다.</div>
                   </div>
                   <div className="number-board-wrap">
                     <div className="number-toolbar">
                       <div className="tiny">선택 {selectedNums.length}/{cardCount}</div>
-                      <div className="tiny">숫자에 마우스를 올리면 카드명이 툴팁으로 보여요.</div>
+                      <div className="tiny">숫자에 마우스를 올리면 해당 카드명이 툴팁으로 보여요.</div>
                     </div>
                     <div className="number-board">
-                      {Array.from({ length: currentDeckCards.length || 78 }, (_, i) => i + 1).map(n => {
+                      {Array.from({ length: numberDeckCount || 78 }, (_, i) => i + 1).map(n => {
                         const selected = selectedNums.includes(n);
                         const locked = !selected && selectedNums.length >= cardCount;
                         return (
@@ -746,8 +670,10 @@
                     </div>
                   </div>
                   <div className="row">
+                    <button className="btn" type="button" onClick={() => { setNumMap(shuffle((tarotMap[tarotDeck] || []).slice(0, numberDeckCount))); setSelectedNums([]); }}>숫자맵 다시 섞기</button>
                     <button className="btn primary" type="button" onClick={handleDraw}>카드 뽑기</button>
-                    <button className="btn good" type="button" onClick={handleCopy}>결과 복사</button>
+                    <button className="btn good" type="button" onClick={handleCopyPlain}>즉시 복사</button>
+                    <button className="btn" type="button" onClick={handleSelectAll}>전체 선택</button>
                   </div>
                 </div>
               </section>
@@ -755,26 +681,34 @@
               <section id="result-area" className="panel">
                 <div className="panel-inner stack">
                   <div className="between">
-                    <h2 className="section-title" style={{margin:0}}>결과 미리보기</h2>
-                    <div className="tiny">복붙용 포맷으로 바로 정리됨</div>
+                    <h2 className="section-title" style={{margin:0}}>결과 복붙 박스</h2>
+                    <div className="tiny">아래 박스에서 바로 Ctrl+C 하셔도 됩니다.</div>
                   </div>
 
-                  {result ? (
-                    <>
-                      <div className="draw-list">
-                        {result.tarot.map((item, idx) => (
-                          <div key={idx} className="draw-item">
-                            <div className="draw-pos">{item.position}</div>
-                            <div className="draw-name">{item.card}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="result-box">{resultText}</div>
-                    </>
-                  ) : (
-                    <div className="result-box">아직 결과가 없어요.
-좌측 설정을 잡고 카드 뽑기를 누르면 여기 바로 정리됩니다.</div>
+                  {result && (
+                    <div className="draw-list">
+                      {result.tarot.map((item, idx) => (
+                        <div key={idx} className="draw-item">
+                          <div className="draw-pos">{item.position}</div>
+                          <div className="draw-name">{item.card}</div>
+                        </div>
+                      ))}
+                    </div>
                   )}
+
+                  <div className="copy-box">
+                    <textarea
+                      ref={copyAreaRef}
+                      className="copy-area"
+                      value={resultText}
+                      readOnly
+                      placeholder="카드를 뽑으면 복붙용 결과가 여기 크게 정리됩니다."
+                    />
+                    <div className="copy-actions">
+                      <button className="btn good" type="button" onClick={handleCopyPlain}>한 번에 복사</button>
+                      <button className="btn" type="button" onClick={handleSelectAll}>박스 전체 선택</button>
+                    </div>
+                  </div>
 
                   <div className="footer-note">
                     로딩 상태: {loaded ? "완료" : (loadError ? "오류" : "불러오는 중")} ·
