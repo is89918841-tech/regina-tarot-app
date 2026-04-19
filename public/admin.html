@@ -1,803 +1,164 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Regina Admin Dashboard</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 0; background: #020617; color: #e2e8f0; }
-      .wrap { max-width: 1320px; margin: 0 auto; padding: 20px; }
-      .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #334155; }
-      input, select, button, textarea { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
-      textarea { width: 100%; min-height: 80px; resize: vertical; }
-      button { cursor: pointer; }
-      button:disabled { opacity: .55; cursor: not-allowed; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; border-bottom: 1px solid #334155; padding: 8px; font-size: 14px; vertical-align: top; }
-      tr.clickable { cursor: pointer; }
-      tr.clickable:hover { background: rgba(59, 130, 246, 0.12); }
-      tr.selected { background: rgba(59, 130, 246, 0.22); }
-      .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-      .row > * { flex: 1; min-width: 120px; }
-      .danger { background: #b91c1c; border: 0; }
-      .primary { background: #2563eb; border: 0; }
-      .tool-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: #0b3b2e; color: #d1fae5; border: 1px solid #065f46; padding: 10px 14px; border-radius: 10px; font-weight: 600; }
-      .tool-btn:hover { background: #0f513f; }
-      .muted { color: #94a3b8; font-size: 12px; }
-      .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
-      .s-processed { background: #065f46; }
-      .s-processing { background: #92400e; }
-      .s-error { background: #7f1d1d; }
-      .s-uploaded, .s-saved { background: #1e3a8a; }
-      .msg-error { color: #fecaca; }
-      .msg-info { color: #bfdbfe; }
-      .chip { display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px; background: #334155; }
-      .chip.submitted { background:#475569; }
-      .chip.paid { background:#a16207; }
-      .chip.recommended { background:#1d4ed8; }
-      .chip.drawn { background:#6d28d9; }
-      .chip.finalized { background:#166534; }
-      .chip.sent { background:#0f766e; }
-      .chip.payment { background:#7c3aed; }
-      .layout-2col { display: grid; grid-template-columns: minmax(420px, 1fr) minmax(520px, 1.2fr); gap: 16px; }
-      .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-      .login-card { width: 100%; max-width: 460px; }
-      .section-title { margin: 0 0 8px; font-size: 16px; }
-      .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 10px; }
-      .field { display: flex; flex-direction: column; gap: 6px; }
-      .field.full { grid-column: 1 / -1; }
-      .kv { margin: 0; }
-      .kv strong { display: inline-block; min-width: 90px; color: #cbd5e1; }
-      .status-steps { display: flex; flex-wrap: wrap; gap: 8px; }
-      .step { padding: 6px 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; font-size: 12px; }
-      .step.active { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa inset; }
-      .step.done { border-color: #22c55e; }
-      pre.codebox { margin: 8px 0 0; background: #0b1220; border: 1px solid #334155; border-radius: 10px; padding: 10px; overflow: auto; font-size: 12px; }
-      @media (max-width: 1100px) { .layout-2col { grid-template-columns: 1fr; } }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regina Admin</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #12182b;
+      --panel-2: #19223a;
+      --line: #2a3658;
+      --text: #eef2ff;
+      --muted: #9aa6c7;
+      --accent: #8b5cf6;
+      --accent-2: #6366f1;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script>
-      const { useState, useEffect, useMemo } = React;
-      const MAX_FILE_MB = 100;
-      const STATUS_ORDER = ['submitted', 'paid', 'recommended', 'drawn', 'finalized', 'sent'];
-      const STATUS_LABELS = {
-        submitted: '접수됨',
-        paid: '결제확인',
-        recommended: '추천생성',
-        drawn: '자동드로우',
-        finalized: '최종리딩',
-        sent: '전송완료',
-      };
-      const INTERNAL_TOOLS = [
-        { label: '리딩 보조앱 열기', url: 'https://regina-tarot-app.onrender.com/admin/helper' },
-        { label: '그랑따블로 열기', url: 'https://regina-tarot-app.onrender.com/admin/grand-tableau' },
-      ];
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #0a0f1d, #10172a); color: var(--text); font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
 
-      const MOCK_TAROT_CARDS = [
-        'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
-        'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit',
-        'Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance', 'The Devil',
-        'The Tower', 'The Star', 'The Moon', 'The Sun', 'Judgement', 'The World',
-        'Ace of Cups', 'Ace of Pentacles', 'Queen of Swords', 'King of Wands'
-      ];
+    .hidden { display: none !important; }
+    .app { max-width: 1440px; margin: 0 auto; padding: 24px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .brand h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.2; }
+    .brand p { margin: 0; color: var(--muted); font-size: 14px; }
+    .row { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; align-items: start; }
+    .stack { display: grid; gap: 16px; }
+    .panel { background: rgba(18, 24, 43, 0.95); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.22); }
+    .panel h2 { margin: 0 0 12px; font-size: 18px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .btn { border: 1px solid var(--line); background: #1a2440; color: var(--text); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); border-color: transparent; }
+    .btn.ghost { background: transparent; }
+    .btn.ok { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); }
+    .btn.warn { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); }
+    .btn.danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); }
+    .input, .textarea, .select { width: 100%; background: #0d1428; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; outline: none; }
+    .textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .login-card { width: 100%; max-width: 460px; background: rgba(18, 24, 43, 0.96); border: 1px solid var(--line); border-radius: 24px; padding: 26px; box-shadow: 0 24px 80px rgba(0,0,0,0.35); }
+    .login-card h1 { margin: 0 0 10px; font-size: 28px; }
+    .login-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.6; }
+    .status { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 13px; white-space: pre-wrap; line-height: 1.5; border: 1px solid var(--line); background: #10182c; }
+    .status.ok { border-color: rgba(34,197,94,0.4); color: #bbf7d0; }
+    .status.error { border-color: rgba(239,68,68,0.4); color: #fecaca; }
+    .status.warn { border-color: rgba(245,158,11,0.4); color: #fde68a; }
+    .list { display: grid; gap: 10px; max-height: 420px; overflow: auto; padding-right: 4px; }
+    .item { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: rgba(25, 34, 58, 0.8); cursor: pointer; }
+    .item:hover { border-color: #4f5d84; }
+    .item.active { border-color: #8b5cf6; box-shadow: inset 0 0 0 1px rgba(139,92,246,0.5); }
+    .item-title { font-weight: 800; margin-bottom: 6px; font-size: 15px; }
+    .item-meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
+    .kv { display: grid; grid-template-columns: 120px 1fr; gap: 10px; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 800; border: 1px solid var(--line); background: rgba(99,102,241,0.12); color: #c7d2fe; }
+    .spacer { height: 6px; }
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .section-divider { height: 1px; background: var(--line); margin: 16px 0; }
+    @media (max-width: 1100px) { .row, .grid-3 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1>레지나 관리자</h1>
+      <p>상담 접수, 추천 생성, 자동 드로우, 최종 리딩 저장, 지식 파일 업로드를 한 화면에서 관리합니다.</p>
+      <div class="field"><label for="password">관리자 비밀번호</label><input id="password" class="input" type="password" placeholder="비밀번호 입력" /></div>
+      <div class="spacer"></div>
+      <div class="toolbar"><button id="loginBtn" class="btn primary" type="button">로그인</button></div>
+      <div id="loginStatus" class="status hidden"></div>
+    </div>
+  </div>
 
-      function formatBytes(bytes) {
-        if (!bytes && bytes !== 0) return '-';
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-      }
+  <div id="adminView" class="hidden">
+    <div class="app">
+      <div class="topbar">
+        <div class="brand"><h1>Regina Admin Dashboard</h1><p>상담 접수 / 추천 생성 / 자동 드로우 / 최종 리딩 / 지식 파일 관리</p></div>
+        <div class="top-actions">
+          <a class="btn ghost" href="/admin/helper" target="_blank">보조앱 열기</a>
+          <a class="btn ghost" href="/admin/grand-tableau" target="_blank">그랑따블로 열기</a>
+          <button id="logoutBtn" class="btn danger" type="button">로그아웃</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="stack">
+          <section class="panel"><div class="toolbar" style="justify-content: space-between; margin-bottom: 12px;"><h2>상담 접수 목록</h2><div class="toolbar"><button id="refreshConsultationsBtn" class="btn" type="button">새로고침</button></div></div><div id="consultationsList" class="list"><div class="muted">아직 접수 내역이 없습니다.</div></div></section>
+          <section class="panel">
+            <div class="toolbar" style="justify-content: space-between; margin-bottom: 12px;"><h2>지식 파일 관리</h2><div class="toolbar"><button id="refreshFilesBtn" class="btn" type="button">파일 새로고침</button></div></div>
+            <div class="grid-3">
+              <div class="field"><label for="uploadFile">파일</label><input id="uploadFile" class="input" type="file" /></div>
+              <div class="field"><label for="uploadDeck">덱</label><input id="uploadDeck" class="input" type="text" /></div>
+              <div class="field"><label for="uploadTopic">주제</label><input id="uploadTopic" class="input" type="text" /></div>
+            </div>
+            <div class="grid-3" style="margin-top: 12px;">
+              <div class="field"><label for="uploadPriority">우선순위</label><select id="uploadPriority" class="select"><option value="core">core</option><option value="support">support</option><option value="optional">optional</option></select></div>
+              <div class="field"><label for="uploadType">파일 타입</label><select id="uploadType" class="select"><option value="guidebook">guidebook</option><option value="interpretation">interpretation</option><option value="tone">tone</option><option value="rule">rule</option></select></div>
+              <div class="field"><label>&nbsp;</label><button id="uploadBtn" class="btn primary" type="button">업로드</button></div>
+            </div>
+            <div id="uploadStatus" class="status hidden" style="margin-top: 12px;"></div><div class="section-divider"></div>
+            <div id="filesList" class="list"><div class="muted">아직 업로드된 파일이 없습니다.</div></div>
+          </section>
+        </div>
+        <div class="stack">
+          <section class="panel"><h2>선택한 접수 상세</h2><div id="consultationDetail" class="muted">왼쪽에서 상담 접수를 선택해주세요.</div></section>
+          <section class="panel"><h2>추천 생성 / 저장</h2><div class="field"><label for="recommendationText">추천 결과</label><textarea id="recommendationText" class="textarea"></textarea></div><div class="toolbar" style="margin-top: 12px;"><button id="generateRecommendationBtn" class="btn primary" type="button">추천 생성</button><button id="saveRecommendationBtn" class="btn ok" type="button">추천 저장</button></div><div id="recommendationStatus" class="status hidden"></div></section>
+          <section class="panel"><h2>자동 드로우 / 드로우 잠금</h2><div class="field"><label for="drawResultText">드로우 결과</label><textarea id="drawResultText" class="textarea"></textarea></div><div class="toolbar" style="margin-top: 12px;"><button id="autoDrawBtn" class="btn primary" type="button">자동 드로우</button><button id="lockDrawBtn" class="btn warn" type="button">드로우 잠금 저장</button></div><div id="drawStatus" class="status hidden"></div></section>
+          <section class="panel"><h2>최종 리딩 생성 / 저장</h2><div class="field"><label for="finalReadingText">최종 리딩</label><textarea id="finalReadingText" class="textarea" style="min-height: 180px;"></textarea></div><div class="toolbar" style="margin-top: 12px;"><button id="generateFinalReadingBtn" class="btn primary" type="button">최종 리딩 생성</button><button id="saveFinalReadingBtn" class="btn ok" type="button">최종 리딩 저장</button></div><div id="readingStatus" class="status hidden"></div></section>
+          <section class="panel"><h2>카톡 문구 생성 / 복사</h2><div class="field"><label for="kakaoText">전달 문구</label><textarea id="kakaoText" class="textarea"></textarea></div><div class="toolbar" style="margin-top: 12px;"><button id="generateKakaoBtn" class="btn primary" type="button">카톡 문구 생성</button><button id="copyKakaoBtn" class="btn" type="button">복사</button></div><div id="kakaoStatus" class="status hidden"></div></section>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      function splitCsv(input) {
-        if (!input) return [];
-        return String(input).split(',').map((v) => v.trim()).filter(Boolean);
-      }
-
-      function joinCsv(arr) {
-        if (!Array.isArray(arr) || arr.length === 0) return '';
-        return arr.join(', ');
-      }
-
-      function getChipClass(status) {
-        const safe = STATUS_ORDER.includes(status) ? status : 'submitted';
-        return `chip ${safe}`;
-      }
-
-      function buildMockRecommendation(question) {
-        const text = String(question || '').toLowerCase();
-        if (text.includes('연애') || text.includes('관계') || text.includes('재회')) {
-          return {
-            deck: '로제딕 타로',
-            spreadName: '핵심 정리 3카드',
-            cardCount: 3,
-            spreadPositions: ['현재 상황', '고민의 핵심', '조언'],
-            supportTools: ['레노먼드'],
-            reason: '관계 흐름과 선택 지점을 간결하게 확인하기 적합한 구성입니다.',
-          };
-        }
-        if (text.includes('이직') || text.includes('직장') || text.includes('사업')) {
-          return {
-            deck: '세피로트 타로',
-            spreadName: '의사결정 3카드',
-            cardCount: 3,
-            spreadPositions: ['현실 조건', '리스크', '실행 조언'],
-            supportTools: ['주역'],
-            reason: '실행 가능성과 리스크 균형을 보기에 적합한 질문 유형입니다.',
-          };
-        }
-        return {
-          deck: '로제딕 타로',
-          spreadName: '기본 3카드',
-          cardCount: 3,
-          spreadPositions: ['현재', '흐름', '조언'],
-          supportTools: ['레노먼드', '귀문방'],
-          reason: '질문의 핵심 흐름을 빠르게 요약하기 위한 기본 추천입니다.',
-        };
-      }
-
-      function shuffle(array) {
-        const out = [...array];
-        for (let i = out.length - 1; i > 0; i -= 1) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [out[i], out[j]] = [out[j], out[i]];
-        }
-        return out;
-      }
-
-      function buildMockDrawResult(recommendation) {
-        const rec = recommendation || {};
-        const cardCount = Math.max(1, Number(rec.cardCount) || 3);
-        const positions = Array.isArray(rec.spreadPositions) && rec.spreadPositions.length > 0
-          ? rec.spreadPositions
-          : Array.from({ length: cardCount }, (_, idx) => `포지션 ${idx + 1}`);
-
-        const picked = shuffle(MOCK_TAROT_CARDS).slice(0, cardCount);
-        const tarot = picked.map((card, idx) => ({
-          position: positions[idx] || `포지션 ${idx + 1}`,
-          card,
-        }));
-
-        const tools = Array.isArray(rec.supportTools) ? rec.supportTools : [];
-
-        return {
-          tarotDeck: rec.deck || '로제딕 타로',
-          cardCount,
-          tarot,
-          runes: tools.includes('룬') ? ['ᚠ Fehu'] : [],
-          lenormand: tools.includes('레노먼드') ? ['22 갈림길'] : [],
-          iching: tools.includes('주역') ? ['수화기제'] : [],
-          oracles: tools.includes('오라클') ? ['Trust the timing'] : [],
-          aux: tools.includes('귀문방') ? ['귀문방: 무명귀 (역방향)'] : [],
-          locked: false,
-        };
-      }
-
-      function buildFinalReading(consultation) {
-        const rec = consultation.recommendation || {};
-        const draw = consultation.drawResult || {};
-        const tarotLines = Array.isArray(draw.tarot)
-          ? draw.tarot.map((item) => `- ${item.position}: ${item.card}`).join('\n')
-          : '';
-        return [
-          `질문: ${consultation.question || '-'}`,
-          '',
-          `[추천 구성]`,
-          `덱: ${rec.deck || '-'}`,
-          `스프레드: ${rec.spreadName || '-'} (${rec.cardCount || '-' }장)`,
-          `포지션: ${Array.isArray(rec.spreadPositions) ? rec.spreadPositions.join(' / ') : '-'}`,
-          `보조도구: ${Array.isArray(rec.supportTools) ? rec.supportTools.join(', ') : '-'}`,
-          `추천 이유: ${rec.reason || '-'}`,
-          '',
-          `[드로우 결과]`,
-          tarotLines || '- 카드 결과 없음',
-          draw.lenormand && draw.lenormand.length ? `레노먼드: ${draw.lenormand.join(', ')}` : '',
-          draw.aux && draw.aux.length ? `보조: ${draw.aux.join(', ')}` : '',
-          '',
-          `종합: 현재 흐름을 명확히 정리하고, 단기 선택보다 실행 순서를 먼저 확정하는 것이 좋습니다.`,
-        ].filter(Boolean).join('\n');
-      }
-
-      async function copyText(text) {
-        if (!text) return false;
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch (_) {
-          return false;
-        }
-      }
-
-      function App() {
-        const [token, setToken] = useState('');
-        const [authenticated, setAuthenticated] = useState(false);
-        const [files, setFiles] = useState([]);
-        const [consultations, setConsultations] = useState([]);
-        const [selectedId, setSelectedId] = useState('');
-        const [status, setStatus] = useState({ type: 'info', text: '' });
-        const [uploading, setUploading] = useState(false);
-        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
-        const [recommendationForm, setRecommendationForm] = useState({
-          deck: '', spreadName: '', cardCount: 3, spreadPositions: '', supportTools: '', reason: '',
-        });
-        const [drawDraft, setDrawDraft] = useState(null);
-        const [finalReadingDraft, setFinalReadingDraft] = useState('');
-        const [kakaoDraftDraft, setKakaoDraftDraft] = useState('');
-
-        const selectedConsultation = useMemo(
-          () => consultations.find((item) => item.id === selectedId) || null,
-          [consultations, selectedId]
-        );
-
-        function setError(text) { setStatus({ type: 'error', text }); }
-        function setInfo(text) { setStatus({ type: 'info', text }); }
-
-        useEffect(() => {
-          (async () => {
-            try {
-              const res = await fetch('/api/admin/session', { credentials: 'include' });
-              if (!res.ok) return setAuthenticated(false);
-              const data = await res.json();
-              if (data.ok && data.authenticated) {
-                setAuthenticated(true);
-                await Promise.all([fetchFiles(), fetchConsultations()]);
-              }
-            } catch (_) {
-              setAuthenticated(false);
-            }
-          })();
-        }, []);
-
-        useEffect(() => {
-          if (!consultations.length) {
-            setSelectedId('');
-            return;
-          }
-          if (!selectedId || !consultations.some((item) => item.id === selectedId)) {
-            setSelectedId(consultations[0].id);
-          }
-        }, [consultations, selectedId]);
-
-        useEffect(() => {
-          if (!selectedConsultation) {
-            setRecommendationForm({ deck: '', spreadName: '', cardCount: 3, spreadPositions: '', supportTools: '', reason: '' });
-            setDrawDraft(null);
-            setFinalReadingDraft('');
-            setKakaoDraftDraft('');
-            return;
-          }
-
-          const rec = selectedConsultation.recommendation || {};
-          setRecommendationForm({
-            deck: rec.deck || '',
-            spreadName: rec.spreadName || '',
-            cardCount: rec.cardCount || 3,
-            spreadPositions: joinCsv(rec.spreadPositions),
-            supportTools: joinCsv(rec.supportTools),
-            reason: rec.reason || '',
-          });
-          setDrawDraft(selectedConsultation.drawResult || null);
-          setFinalReadingDraft(selectedConsultation.finalReading || '');
-          setKakaoDraftDraft(selectedConsultation.kakaoDraft || '');
-        }, [selectedConsultation]);
-
-        async function login() {
-          try {
-            const res = await fetch('/api/admin/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ token }),
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '인증 실패');
-            setAuthenticated(true);
-            await Promise.all([fetchFiles(), fetchConsultations()]);
-            setInfo('로그인되었습니다.');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function logout() {
-          await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
-          setAuthenticated(false);
-          setFiles([]);
-          setConsultations([]);
-          setInfo('로그아웃 되었습니다.');
-        }
-
-        async function fetchFiles() {
-          try {
-            const res = await fetch('/api/admin/files', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '조회 실패');
-            setFiles(data.files);
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function fetchConsultations() {
-          try {
-            const res = await fetch('/api/admin/consultations', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '접수 목록 조회 실패');
-            setConsultations(data.consultations || []);
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function patchConsultation(id, payload) {
-          const res = await fetch(`/api/admin/consultations/${id}`, {
-            method: 'PATCH',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || '상담 업데이트 실패');
-          return data.consultation;
-        }
-
-        async function confirmPayment(id) {
-          try {
-            const res = await fetch(`/api/consultations/${id}/confirm-payment`, { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '입금 확인 실패');
-            await fetchConsultations();
-            setInfo('입금 확인 처리 완료');
-          } catch (e) { setError(e.message); }
-        }
-
-        async function runAutoReading(id) {
-          try {
-            const res = await fetch(`/api/consultations/${id}/run-auto-reading`, { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '자동 리딩 실행 실패');
-            await fetchConsultations();
-            setInfo('자동 리딩 실행 완료');
-          } catch (e) { setError(e.message); }
-        }
-
-        async function upload() {
-          if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
-          if (!authenticated) return setError('먼저 인증해주세요.');
-
-          const fileMb = form.files[0].size / (1024 * 1024);
-          if (fileMb > MAX_FILE_MB) return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요.`);
-
-          setUploading(true);
-          try {
-            for (const file of form.files) {
-              const body = new FormData();
-              body.append('file', file);
-              body.append('deck', form.deck);
-              body.append('topic', form.topic);
-              body.append('priority', form.priority);
-              body.append('type', form.type);
-
-              const res = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body });
-              const data = await res.json();
-              if (!data.ok) throw new Error(`${file.name} 업로드 실패`);
-            }
-            await fetchFiles();
-            setInfo('파일 업로드 완료');
-          } catch (e) {
-            setError(e.message);
-          } finally {
-            setUploading(false);
-          }
-        }
-
-        async function updateRow(file) {
-          try {
-            const res = await fetch(`/api/admin/files/${file.id}`, {
-              method: 'PATCH',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(file),
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '수정 실패');
-            await fetchFiles();
-          } catch (e) { setError(e.message); }
-        }
-
-        async function removeRow(id) {
-          if (!confirm('삭제할까요?')) return;
-          try {
-            const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '삭제 실패');
-            await fetchFiles();
-          } catch (e) { setError(e.message); }
-        }
-
-        async function handleGenerateRecommendation() {
-          if (!selectedConsultation) return;
-          const mock = buildMockRecommendation(selectedConsultation.question);
-          setRecommendationForm({
-            deck: mock.deck,
-            spreadName: mock.spreadName,
-            cardCount: mock.cardCount,
-            spreadPositions: joinCsv(mock.spreadPositions),
-            supportTools: joinCsv(mock.supportTools),
-            reason: mock.reason,
-          });
-          setInfo('추천 초안을 생성했습니다. 필요한 경우 수정 후 저장하세요.');
-        }
-
-        async function handleSaveRecommendation() {
-          if (!selectedConsultation) return;
-          try {
-            const recommendation = {
-              deck: recommendationForm.deck.trim(),
-              spreadName: recommendationForm.spreadName.trim(),
-              cardCount: Number(recommendationForm.cardCount) || 3,
-              spreadPositions: splitCsv(recommendationForm.spreadPositions),
-              supportTools: splitCsv(recommendationForm.supportTools),
-              reason: recommendationForm.reason.trim(),
-            };
-            await patchConsultation(selectedConsultation.id, {
-              recommendation,
-              status: 'recommended',
-            });
-            await fetchConsultations();
-            setInfo('추천 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleAutoDraw() {
-          if (!selectedConsultation) return;
-          const recommendation = {
-            deck: recommendationForm.deck.trim(),
-            spreadName: recommendationForm.spreadName.trim(),
-            cardCount: Number(recommendationForm.cardCount) || 3,
-            spreadPositions: splitCsv(recommendationForm.spreadPositions),
-            supportTools: splitCsv(recommendationForm.supportTools),
-            reason: recommendationForm.reason.trim(),
-          };
-          const result = buildMockDrawResult(recommendation);
-          setDrawDraft(result);
-          setInfo('자동 드로우 결과를 생성했습니다. 잠금 후 저장하세요.');
-        }
-
-        async function handleRedraw() {
-          await handleAutoDraw();
-        }
-
-        async function handleLockDraw() {
-          if (!selectedConsultation || !drawDraft) return;
-          try {
-            const locked = { ...drawDraft, locked: true };
-            await patchConsultation(selectedConsultation.id, {
-              drawResult: locked,
-              status: 'drawn',
-            });
-            await fetchConsultations();
-            setInfo('드로우 결과 잠금 및 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleGenerateFinalReading() {
-          if (!selectedConsultation) return;
-          const merged = {
-            ...selectedConsultation,
-            recommendation: {
-              deck: recommendationForm.deck.trim(),
-              spreadName: recommendationForm.spreadName.trim(),
-              cardCount: Number(recommendationForm.cardCount) || 3,
-              spreadPositions: splitCsv(recommendationForm.spreadPositions),
-              supportTools: splitCsv(recommendationForm.supportTools),
-              reason: recommendationForm.reason.trim(),
-            },
-            drawResult: drawDraft,
-          };
-          const text = buildFinalReading(merged);
-          setFinalReadingDraft(text);
-          setInfo('최종 리딩 초안을 생성했습니다.');
-        }
-
-        async function handleSaveFinalReading() {
-          if (!selectedConsultation) return;
-          try {
-            await patchConsultation(selectedConsultation.id, {
-              finalReading: finalReadingDraft,
-              status: 'finalized',
-            });
-            await fetchConsultations();
-            setInfo('최종 리딩 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleCopyFinalReading() {
-          const ok = await copyText(finalReadingDraft);
-          if (ok) setInfo('최종 리딩 복사 완료');
-          else setError('복사 실패: 브라우저 권한을 확인해주세요.');
-        }
-
-        async function handleMakeKakaoDraft() {
-          if (!selectedConsultation) return;
-          const text = `안녕하세요. 접수해주신 [${selectedConsultation.menuTitle || '상담'}] 리딩 정리본 보내드려요.\n\n${finalReadingDraft || ''}`;
-          setKakaoDraftDraft(text);
-          try {
-            await patchConsultation(selectedConsultation.id, { kakaoDraft: text });
-            await fetchConsultations();
-            setInfo('카톡용 문구 생성 및 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleCopyKakaoDraft() {
-          const ok = await copyText(kakaoDraftDraft);
-          if (ok) setInfo('카톡 문구 복사 완료');
-          else setError('복사 실패: 브라우저 권한을 확인해주세요.');
-        }
-
-        function fileStatusClass(s) {
-          if (s === 'processed') return 'status s-processed';
-          if (s === 'processing') return 'status s-processing';
-          if (s === 'error') return 'status s-error';
-          return 'status s-uploaded';
-        }
-
-        function renderStatusSteps(currentStatus) {
-          const idx = STATUS_ORDER.indexOf(currentStatus);
-          return React.createElement('div', { className: 'status-steps' },
-            ...STATUS_ORDER.map((statusCode, index) => React.createElement('div', {
-              key: statusCode,
-              className: `step ${index < idx ? 'done' : ''} ${index === idx ? 'active' : ''}`,
-            }, `${index + 1}. ${STATUS_LABELS[statusCode] || statusCode}`))
-          );
-        }
-
-        if (!authenticated) {
-          return React.createElement('div', { className: 'login-shell' },
-            React.createElement('div', { className: 'card login-card' },
-              React.createElement('h1', { style: { marginTop: 0 } }, 'Regina Admin Login'),
-              React.createElement('p', { className: 'muted' }, '관리자 토큰으로 로그인 후 대시보드 기능을 사용할 수 있습니다.'),
-              React.createElement('div', { className: 'field' },
-                React.createElement('label', null, 'Admin Token'),
-                React.createElement('input', {
-                  value: token,
-                  onChange: (e) => setToken(e.target.value),
-                  placeholder: 'ADMIN_TOKEN 입력',
-                })
-              ),
-              React.createElement('div', { className: 'row' },
-                React.createElement('button', { className: 'primary', onClick: login }, '로그인')
-              ),
-              status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
-            )
-          );
-        }
-
-        return React.createElement('div', { className: 'wrap' },
-          React.createElement('h1', null, 'Regina Admin Dashboard'),
-          React.createElement('div', { className: 'card' },
-            React.createElement('div', { className: 'row' },
-              React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
-              React.createElement('button', { className: 'primary', onClick: fetchFiles }, '파일 목록 새로고침'),
-              React.createElement('button', { className: 'primary', onClick: fetchConsultations }, '접수 목록 새로고침')
-            ),
-            status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
-          ),
-authenticated
-  ? React.createElement('div', { className: 'card' },
-      React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
-      React.createElement('div', { className: 'row' },
-        ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
-          key: tool.url,
-          href: tool.url,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          className: 'tool-btn',
-        }, tool.label))
-      )
-    )
-  : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.'),
-
-React.createElement('div', { className: 'layout-2col' },
-  React.createElement('div', { className: 'card' },
-    React.createElement('h3', { className: 'section-title' }, '상담 접수 목록'),
-    React.createElement('table', null,
-      React.createElement('thead', null,
-        React.createElement('tr', null,
-          React.createElement('th', null, '접수시각'),
-          React.createElement('th', null, '메뉴/이름'),
-          React.createElement('th', null, '가격'),
-          React.createElement('th', null, 'payment/status'),
-          React.createElement('th', null, '작업')
-        )
-      ),
-      React.createElement('tbody', null,
-        ...consultations.map((c) => React.createElement('tr', {
-          key: c.id,
-          className: `clickable ${selectedId === c.id ? 'selected' : ''}`,
-          onClick: () => setSelectedId(c.id),
-        },
-          React.createElement('td', null, c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR') : '-'),
-          React.createElement('td', null,
-            React.createElement('div', null, c.menuTitle || '-'),
-            React.createElement('div', { className: 'muted' }, `${c.name || '-'} / ${c.contactChannel || '-'}`)
-          ),
-          React.createElement('td', null, typeof c.price === 'number' ? `${c.price.toLocaleString('ko-KR')}원` : '-'),
-          React.createElement('td', null,
-            React.createElement('div', null, React.createElement('span', { className: 'chip payment' }, c.paymentStatus || (c.paymentConfirmed ? 'paid' : 'unpaid'))),
-            React.createElement('div', { style: { marginTop: '4px' } }, React.createElement('span', { className: getChipClass(c.status) }, c.status || 'submitted'))
-          ),
-          React.createElement('td', null,
-            !c.paymentConfirmed
-              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); confirmPayment(c.id); }, disabled: !authenticated }, '입금 확인')
-              : React.createElement('div', { className: 'muted' }, '입금확인'),
-            c.productType === 'auto' && c.status === 'paid'
-              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); runAutoReading(c.id); }, style: { marginTop: '4px' }, disabled: !authenticated }, '자동 리딩 실행')
-              : null
-          )
-        ))
-      )
-    )
-  ),
-            ),
-
-            React.createElement('div', { className: 'card' },
-              React.createElement('h3', { className: 'section-title' }, '선택 접수 상세 작업 패널'),
-              !selectedConsultation
-                ? React.createElement('div', { className: 'muted' }, '왼쪽 목록에서 접수건을 선택해주세요.')
-                : React.createElement(React.Fragment, null,
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '접수 정보'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '접수번호'), selectedConsultation.id),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '이름'), selectedConsultation.name || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '연락채널'), selectedConsultation.contactChannel || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '메뉴명'), selectedConsultation.menuTitle || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '가격'), typeof selectedConsultation.price === 'number' ? `${selectedConsultation.price.toLocaleString('ko-KR')}원` : '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '질문'), selectedConsultation.question || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '메모'), selectedConsultation.memo || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '결제상태'), React.createElement('span', { className: 'chip payment' }, selectedConsultation.paymentStatus || (selectedConsultation.paymentConfirmed ? 'paid' : 'unpaid'))),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '처리상태'), React.createElement('span', { className: getChipClass(selectedConsultation.status) }, selectedConsultation.status || 'submitted'))
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '처리 상태'),
-                    renderStatusSteps(selectedConsultation.status || 'submitted')
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, 'AI 추천'),
-                    React.createElement('div', { className: 'detail-grid' },
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'deck'), React.createElement('input', { value: recommendationForm.deck, onChange: (e) => setRecommendationForm({ ...recommendationForm, deck: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'spreadName'), React.createElement('input', { value: recommendationForm.spreadName, onChange: (e) => setRecommendationForm({ ...recommendationForm, spreadName: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'cardCount'), React.createElement('input', { type: 'number', min: 1, value: recommendationForm.cardCount, onChange: (e) => setRecommendationForm({ ...recommendationForm, cardCount: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'spreadPositions (쉼표 구분)'), React.createElement('input', { value: recommendationForm.spreadPositions, onChange: (e) => setRecommendationForm({ ...recommendationForm, spreadPositions: e.target.value }) })),
-                      React.createElement('div', { className: 'field full' }, React.createElement('label', null, 'supportTools (쉼표 구분)'), React.createElement('input', { value: recommendationForm.supportTools, onChange: (e) => setRecommendationForm({ ...recommendationForm, supportTools: e.target.value }) })),
-                      React.createElement('div', { className: 'field full' }, React.createElement('label', null, 'reason'), React.createElement('textarea', { value: recommendationForm.reason, onChange: (e) => setRecommendationForm({ ...recommendationForm, reason: e.target.value }) }))
-                    ),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleGenerateRecommendation, disabled: !authenticated }, '추천 생성'),
-                      React.createElement('button', { className: 'primary', onClick: handleSaveRecommendation, disabled: !authenticated }, '추천 저장')
-                    )
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '자동 드로우'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleAutoDraw, disabled: !authenticated }, '추천값으로 자동 드로우'),
-                      React.createElement('button', { className: 'primary', onClick: handleRedraw, disabled: !authenticated }, '다시 뽑기'),
-                      React.createElement('button', { className: 'primary', onClick: handleLockDraw, disabled: !authenticated || !drawDraft }, '결과 잠금')
-                    ),
-                    drawDraft
-                      ? React.createElement('pre', { className: 'codebox' }, JSON.stringify(drawDraft, null, 2))
-                      : React.createElement('div', { className: 'muted' }, '드로우 결과가 없습니다.')
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '최종 리딩'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleGenerateFinalReading, disabled: !authenticated }, '최종 리딩 생성'),
-                      React.createElement('button', { className: 'primary', onClick: handleSaveFinalReading, disabled: !authenticated }, '저장'),
-                      React.createElement('button', { className: 'primary', onClick: handleCopyFinalReading }, '복사')
-                    ),
-                    React.createElement('textarea', { value: finalReadingDraft, onChange: (e) => setFinalReadingDraft(e.target.value), style: { minHeight: '180px' } })
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '카톡용 문구'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleMakeKakaoDraft, disabled: !authenticated }, '카톡용 짧은 버전 만들기'),
-                      React.createElement('button', { className: 'primary', onClick: handleCopyKakaoDraft }, '카톡 문구 복사')
-                    ),
-                    React.createElement('textarea', { value: kakaoDraftDraft, onChange: (e) => setKakaoDraftDraft(e.target.value), style: { minHeight: '120px' } })
-                  )
-                )
-            )
-          ),
-
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', null, '지식 파일 업로드'),
-            React.createElement('div', { className: 'row' },
-              React.createElement('input', { value: form.deck, placeholder: 'deck', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
-              React.createElement('input', { value: form.topic, placeholder: 'topic', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
-              React.createElement('select', { value: form.priority, onChange: (e) => setForm({ ...form, priority: e.target.value }) },
-                React.createElement('option', { value: 'core' }, 'core'),
-                React.createElement('option', { value: 'support' }, 'support'),
-                React.createElement('option', { value: 'optional' }, 'optional')
-              ),
-              React.createElement('select', { value: form.type, onChange: (e) => setForm({ ...form, type: e.target.value }) },
-                React.createElement('option', { value: 'guidebook' }, 'guidebook'),
-                React.createElement('option', { value: 'interpretation' }, 'interpretation'),
-                React.createElement('option', { value: 'tone' }, 'tone'),
-                React.createElement('option', { value: 'rule' }, 'rule')
-              )
-            ),
-            React.createElement('input', {
-              type: 'file', multiple: true,
-              onChange: (e) => setForm({ ...form, files: Array.from(e.target.files || []) }),
-            }),
-            React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading || !authenticated }, uploading ? '처리 중...' : '업로드')
-          ),
-
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', null, '파일 목록'),
-            React.createElement('table', null,
-              React.createElement('thead', null,
-                React.createElement('tr', null,
-                  React.createElement('th', null, '파일명/크기'),
-                  React.createElement('th', null, 'deck/topic'),
-                  React.createElement('th', null, 'priority/type'),
-                  React.createElement('th', null, '상태'),
-                  React.createElement('th', null, '작업')
-                )
-              ),
-              React.createElement('tbody', null,
-                ...files.map((f) => React.createElement('tr', { key: f.id },
-                  React.createElement('td', null,
-                    React.createElement('div', null, f.originalName),
-                    React.createElement('div', { className: 'muted' }, formatBytes(f.size))
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('input', { value: f.deck || '', onChange: (e) => f.deck = e.target.value }),
-                    React.createElement('input', { value: f.topic || '', onChange: (e) => f.topic = e.target.value, style: { marginTop: '4px' } })
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('select', { value: f.priority || 'optional', onChange: (e) => f.priority = e.target.value },
-                      React.createElement('option', { value: 'core' }, 'core'),
-                      React.createElement('option', { value: 'support' }, 'support'),
-                      React.createElement('option', { value: 'optional' }, 'optional')
-                    ),
-                    React.createElement('select', { value: f.type || 'guidebook', onChange: (e) => f.type = e.target.value, style: { marginTop: '4px' } },
-                      React.createElement('option', { value: 'guidebook' }, 'guidebook'),
-                      React.createElement('option', { value: 'interpretation' }, 'interpretation'),
-                      React.createElement('option', { value: 'tone' }, 'tone'),
-                      React.createElement('option', { value: 'rule' }, 'rule')
-                    )
-                  ),
-                  React.createElement('td', null, React.createElement('span', { className: fileStatusClass(f.status) }, f.status || '-')),
-                  React.createElement('td', null,
-                    React.createElement('button', { className: 'primary', onClick: () => updateRow(f), disabled: !authenticated }, '저장'),
-                    React.createElement('button', { className: 'danger', onClick: () => removeRow(f.id), style: { marginTop: '4px' }, disabled: !authenticated }, '삭제')
-                  )
-                ))
-              )
-            )
-          )
-        );
-      }
-
-      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-    </script>
-  </body>
+  <script>
+    const state = { selectedConsultationId: null, selectedConsultation: null, consultations: [], files: [] };
+    const $ = (id) => document.getElementById(id);
+    function showStatus(el, text, type = 'ok') { el.textContent = text; el.className = `status ${type}`; el.classList.remove('hidden'); }
+    function hideStatus(el) { el.classList.add('hidden'); }
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
+      let data = null; const text = await res.text();
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { ok: false, error: text || `HTTP ${res.status}` }; }
+      if (!res.ok || data.ok === false) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+      return data;
+    }
+    async function ensureSession() { try { await fetchJson('/api/admin/me'); $('loginView').classList.add('hidden'); $('adminView').classList.remove('hidden'); await loadAll(); } catch { $('loginView').classList.remove('hidden'); $('adminView').classList.add('hidden'); } }
+    async function login() { const password = $('password').value.trim(); if (!password) return showStatus($('loginStatus'), '비밀번호를 입력해주세요.', 'error'); try { hideStatus($('loginStatus')); await fetchJson('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) }); $('password').value = ''; $('loginView').classList.add('hidden'); $('adminView').classList.remove('hidden'); await loadAll(); } catch (error) { showStatus($('loginStatus'), error.message || '로그인 실패', 'error'); } }
+    async function logout() { try { await fetchJson('/api/admin/logout', { method: 'POST' }); } catch {} location.reload(); }
+    async function loadAll() { await Promise.all([loadConsultations(), loadFiles()]); }
+    function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+    function nl2br(v){return escapeHtml(v).replace(/\n/g,'<br>');}
+    function formatDate(v){if(!v) return '-'; const d=new Date(v); return Number.isNaN(d.getTime())?String(v):d.toLocaleString('ko-KR');}
+    function renderConsultations(){const root=$('consultationsList'); root.innerHTML=''; if(!state.consultations.length){root.innerHTML='<div class="muted">아직 접수 내역이 없습니다.</div>'; return;} state.consultations.forEach((item)=>{const div=document.createElement('div'); div.className='item'+(state.selectedConsultationId===item.id?' active':''); div.innerHTML=`<div class="item-title">${escapeHtml(item.name||item.nickname||item.contact||'이름 없음')}</div><div class="item-meta"><span class="badge">${escapeHtml(item.menuTitle||item.menu||'메뉴 미지정')}</span><span>${escapeHtml(item.contact||item.contactChannel||'-')}</span><span>${formatDate(item.createdAt||item.created_at)}</span></div><div class="muted" style="margin-top:8px;">${escapeHtml((item.question||'').slice(0,120)||'질문 없음')}</div>`; div.addEventListener('click',()=>selectConsultation(item.id)); root.appendChild(div);});}
+    function renderFiles(){const root=$('filesList'); root.innerHTML=''; if(!state.files.length){root.innerHTML='<div class="muted">아직 업로드된 파일이 없습니다.</div>'; return;} state.files.forEach((file)=>{const div=document.createElement('div'); div.className='item'; div.innerHTML=`<div class="item-title">${escapeHtml(file.originalName||file.filename||file.storedName||'이름 없음')}</div><div class="item-meta"><span class="badge">${escapeHtml(file.type||'-')}</span><span>${escapeHtml(file.deck||'-')}</span><span>${escapeHtml(file.topic||'-')}</span><span>${escapeHtml(file.priority||'-')}</span><span>${escapeHtml(file.status||'-')}</span></div>`; root.appendChild(div);});}
+    function renderConsultationDetail(){const root=$('consultationDetail'); const item=state.selectedConsultation; if(!item){root.className='muted'; root.textContent='왼쪽에서 상담 접수를 선택해주세요.'; return;} root.className=''; root.innerHTML=`<div class="kv"><strong>ID</strong><div>${escapeHtml(item.id||'-')}</div></div><div class="kv"><strong>성함</strong><div>${escapeHtml(item.name||item.nickname||'-')}</div></div><div class="kv"><strong>연락처</strong><div>${escapeHtml(item.contact||item.contactChannel||'-')}</div></div><div class="kv"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle||item.menu||'-')}</div></div><div class="kv"><strong>추가 메모</strong><div>${nl2br(item.memo||'-')}</div></div><div class="kv"><strong>질문</strong><div>${nl2br(item.question||'-')}</div></div>`; $('recommendationText').value=item.recommendation||''; $('drawResultText').value=(item.drawResult&&JSON.stringify(item.drawResult,null,2))||item.draw_result||''; $('finalReadingText').value=item.finalReading||item.final_reading||''; $('kakaoText').value=item.kakaoText||item.kakao_text||'';}
+    async function loadConsultations(){const data=await fetchJson('/api/admin/consultations'); state.consultations=data.consultations||data.items||[]; renderConsultations();}
+    async function loadFiles(){const data=await fetchJson('/api/admin/files'); state.files=data.files||[]; renderFiles();}
+    async function selectConsultation(id){const data=await fetchJson(`/api/admin/consultations/${encodeURIComponent(id)}`); state.selectedConsultationId=id; state.selectedConsultation=data.consultation||data.item||null; renderConsultations(); renderConsultationDetail();}
+    async function generateRecommendation(){if(!state.selectedConsultationId) return showStatus($('recommendationStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{showStatus($('recommendationStatus'),'추천 생성 중...','warn'); const data=await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/recommendation/generate`,{method:'POST'}); $('recommendationText').value=data.recommendation||''; showStatus($('recommendationStatus'),'추천 생성 완료','ok');}catch(e){showStatus($('recommendationStatus'),e.message||'추천 생성 실패','error');}}
+    async function saveRecommendation(){if(!state.selectedConsultationId) return showStatus($('recommendationStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/recommendation`,{method:'POST',body:JSON.stringify({recommendation:$('recommendationText').value})}); showStatus($('recommendationStatus'),'추천 저장 완료','ok');}catch(e){showStatus($('recommendationStatus'),e.message||'추천 저장 실패','error');}}
+    async function autoDraw(){if(!state.selectedConsultationId) return showStatus($('drawStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{showStatus($('drawStatus'),'자동 드로우 실행 중...','warn'); const data=await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/draw/generate`,{method:'POST',body:JSON.stringify({recommendation:$('recommendationText').value})}); $('drawResultText').value=data.drawResult||data.result||''; showStatus($('drawStatus'),'자동 드로우 완료','ok');}catch(e){showStatus($('drawStatus'),e.message||'자동 드로우 실패','error');}}
+    async function lockDraw(){if(!state.selectedConsultationId) return showStatus($('drawStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/draw`,{method:'POST',body:JSON.stringify({drawResult:$('drawResultText').value})}); showStatus($('drawStatus'),'드로우 잠금 저장 완료','ok');}catch(e){showStatus($('drawStatus'),e.message||'드로우 저장 실패','error');}}
+    async function generateFinalReading(){if(!state.selectedConsultationId) return showStatus($('readingStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{showStatus($('readingStatus'),'최종 리딩 생성 중...','warn'); const data=await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/reading/generate`,{method:'POST',body:JSON.stringify({recommendation:$('recommendationText').value,drawResult:$('drawResultText').value})}); $('finalReadingText').value=data.reading||data.finalReading||''; showStatus($('readingStatus'),'최종 리딩 생성 완료','ok');}catch(e){showStatus($('readingStatus'),e.message||'최종 리딩 생성 실패','error');}}
+    async function saveFinalReading(){if(!state.selectedConsultationId) return showStatus($('readingStatus'),'먼저 상담 접수를 선택해주세요.','error'); try{await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/reading`,{method:'POST',body:JSON.stringify({finalReading:$('finalReadingText').value})}); showStatus($('readingStatus'),'최종 리딩 저장 완료','ok');}catch(e){showStatus($('readingStatus'),e.message||'최종 리딩 저장 실패','error');}}
+    function generateKakao(){const reading=$('finalReadingText').value.trim(); if(!reading) return showStatus($('kakaoStatus'),'최종 리딩이 비어 있습니다.','error'); const item=state.selectedConsultation||{}; const text=[`${item.name||item.nickname||'내담자님'} 안녕하세요.`,'','요청주신 리딩 결과 전달드려요.','',reading,'','추가 질문이 있으시면 이어서 남겨주세요.'].join('\n'); $('kakaoText').value=text; showStatus($('kakaoStatus'),'카톡 문구 생성 완료','ok');}
+    async function copyKakao(){const text=$('kakaoText').value.trim(); if(!text) return showStatus($('kakaoStatus'),'복사할 문구가 없습니다.','error'); try{await navigator.clipboard.writeText(text); showStatus($('kakaoStatus'),'복사 완료','ok');}catch{showStatus($('kakaoStatus'),'복사 실패','error');}}
+    async function uploadFile(){const file=$('uploadFile').files[0]; if(!file) return showStatus($('uploadStatus'),'업로드할 파일을 선택해주세요.','error'); try{showStatus($('uploadStatus'),'업로드 중...','warn'); const body=new FormData(); body.append('file', file); body.append('deck', $('uploadDeck').value.trim()); body.append('topic', $('uploadTopic').value.trim()); body.append('priority', $('uploadPriority').value); body.append('type', $('uploadType').value); const res=await fetch('/api/admin/upload',{method:'POST',credentials:'include',body}); const data=await res.json(); if(!res.ok||!data.ok) throw new Error(data.error||'업로드 실패'); $('uploadFile').value=''; $('uploadDeck').value=''; $('uploadTopic').value=''; showStatus($('uploadStatus'),'업로드 완료','ok'); await loadFiles(); }catch(e){showStatus($('uploadStatus'), e.message || '업로드 실패','error');}}
+    $('loginBtn').addEventListener('click', login); $('password').addEventListener('keydown', (e)=>{if(e.key==='Enter') login();});
+    $('logoutBtn').addEventListener('click', logout); $('refreshConsultationsBtn').addEventListener('click', loadConsultations); $('refreshFilesBtn').addEventListener('click', loadFiles);
+    $('generateRecommendationBtn').addEventListener('click', generateRecommendation); $('saveRecommendationBtn').addEventListener('click', saveRecommendation); $('autoDrawBtn').addEventListener('click', autoDraw); $('lockDrawBtn').addEventListener('click', lockDraw); $('generateFinalReadingBtn').addEventListener('click', generateFinalReading); $('saveFinalReadingBtn').addEventListener('click', saveFinalReading); $('generateKakaoBtn').addEventListener('click', generateKakao); $('copyKakaoBtn').addEventListener('click', copyKakao); $('uploadBtn').addEventListener('click', uploadFile);
+    ensureSession();
+  </script>
+</body>
 </html>

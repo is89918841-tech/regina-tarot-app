@@ -78,11 +78,53 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script>
-      const { useMemo, useState } = React;
-      const tarotDecks = ['유니버셜 타로', '나전의 빛 타로', '로제딕 타로'];
-      const oracleDecks = ['문 오라클', '스타 오라클', '위스퍼 오라클'];
-      const supportDecks = ['레노먼드', '룬스톤', '주역', '주역육효괘', '오간기/오방기'];
-      const tarotCards = Array.from({ length: 78 }, (_, i) => `${i + 1}번 카드`);
+      const { useMemo, useState, useEffect } = React;
+      const MANIFEST_URL = "/data/manifest.json";
+      const DECKS_URL = "/data/decks.json";
+
+      async function json(url) {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Failed to load ${url}`);
+        return res.json();
+      }
+
+      async function loadDeckData() {
+        const [manifest, decks] = await Promise.all([
+          json(MANIFEST_URL),
+          json(DECKS_URL),
+        ]);
+
+        const tarotDecks = Array.isArray(decks?.tarotDecks) && decks.tarotDecks.length
+          ? decks.tarotDecks
+          : ['유니버셜 타로', '나전의 빛 타로', '로제딕 타로'];
+
+        const oracleDecks = Array.isArray(decks?.oracleDecks) && decks.oracleDecks.length
+          ? decks.oracleDecks
+          : ['문 오라클', '스타 오라클', '위스퍼 오라클'];
+
+        const supportDecks = Array.isArray(decks?.supportDecks) && decks.supportDecks.length
+          ? decks.supportDecks
+          : ['레노먼드', '룬스톤', '주역', '주역육효괘', '오간기/오방기'];
+
+        let tarotCards = Array.from({ length: 78 }, (_, i) => `${i + 1}번 카드`);
+        const defaultPath = Array.isArray(manifest?.decks) && manifest.decks.length ? manifest.decks[0].path : '';
+        if (defaultPath) {
+          try {
+            const deckData = await json(`/data/${defaultPath}`);
+            if (Array.isArray(deckData?.cards) && deckData.cards.length) {
+              tarotCards = deckData.cards.map((card, idx) => card?.name || `${idx + 1}번 카드`);
+            }
+          } catch (_) {}
+        } else {
+          try {
+            const universal = await json('/data/universal.json');
+            if (Array.isArray(universal?.cards) && universal.cards.length) {
+              tarotCards = universal.cards.map((card, idx) => card?.name || `${idx + 1}번 카드`);
+            }
+          } catch (_) {}
+        }
+        return { tarotDecks, oracleDecks, supportDecks, tarotCards };
+      }
 
       function pickCards(count, mode, selectedNumbers) {
         if (mode === 'number' && selectedNumbers.length) {
@@ -93,9 +135,14 @@
       }
 
       function App() {
+        const [dataReady, setDataReady] = useState(false);
+        const [tarotDecks, setTarotDecks] = useState(['유니버셜 타로', '나전의 빛 타로', '로제딕 타로']);
+        const [oracleDecks, setOracleDecks] = useState(['문 오라클', '스타 오라클', '위스퍼 오라클']);
+        const [supportDecks, setSupportDecks] = useState(['레노먼드', '룬스톤', '주역', '주역육효괘', '오간기/오방기']);
+        const [tarotCards, setTarotCards] = useState(Array.from({ length: 78 }, (_, i) => `${i + 1}번 카드`));
         const [question, setQuestion] = useState('');
         const [topic, setTopic] = useState('');
-        const [deck, setDeck] = useState(tarotDecks[0]);
+        const [deck, setDeck] = useState('유니버셜 타로');
         const [allowReverse, setAllowReverse] = useState(true);
         const [reverseRatio, setReverseRatio] = useState(30);
         const [count, setCount] = useState(3);
@@ -106,12 +153,29 @@
         const [loading, setLoading] = useState(false);
         const [error, setError] = useState('');
 
+        useEffect(() => {
+          (async () => {
+            try {
+              const loaded = await loadDeckData();
+              setTarotDecks(loaded.tarotDecks);
+              setOracleDecks(loaded.oracleDecks);
+              setSupportDecks(loaded.supportDecks);
+              setTarotCards(loaded.tarotCards);
+              if (loaded.tarotDecks.length) setDeck(loaded.tarotDecks[0]);
+            } catch (_) {
+              // fallback to built-in defaults
+            } finally {
+              setDataReady(true);
+            }
+          })();
+        }, []);
+
         const badges = useMemo(() => ([
           `타로 덱 ${tarotDecks.length}종`,
           `오라클 덱 ${oracleDecks.length}종`,
           `보조덱 ${supportDecks.length}종`,
-          loading ? '데이터 로딩 중' : '데이터 준비 완료',
-        ]), [loading]);
+          !dataReady || loading ? '데이터 로딩 중' : '데이터 준비 완료',
+        ]), [dataReady, loading, tarotDecks.length, oracleDecks.length, supportDecks.length]);
 
         function toggleNumber(num) {
           if (mode !== 'number') return;

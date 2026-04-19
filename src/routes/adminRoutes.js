@@ -43,7 +43,7 @@ const upload = multer({
 });
 
 router.post('/session', (req, res) => {
-  const token = req.body?.token || req.get('x-admin-token');
+  const token = req.body?.token || req.body?.password || req.get('x-admin-token');
   if (!token || token !== env.adminToken) {
     return res.status(401).json({ ok: false, error: 'Invalid admin token' });
   }
@@ -54,6 +54,20 @@ router.post('/session', (req, res) => {
 });
 
 router.get('/session', adminAuth, (_, res) => {
+  return res.json({ ok: true, authenticated: true });
+});
+
+router.post('/login', (req, res) => {
+  const token = req.body?.password || req.body?.token || req.get('x-admin-token');
+  if (!token || token !== env.adminToken) {
+    return res.status(401).json({ ok: false, error: 'Invalid admin token' });
+  }
+  const session = createAdminSessionToken();
+  res.setHeader('Set-Cookie', buildSessionCookieHeader(session));
+  return res.json({ ok: true, authenticated: true });
+});
+
+router.get('/me', adminAuth, (_, res) => {
   return res.json({ ok: true, authenticated: true });
 });
 
@@ -76,9 +90,110 @@ router.get('/consultations', async (_, res, next) => {
   }
 });
 
+router.get('/consultations/:id', async (req, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    const consultation = consultations.find((item) => item.id === req.params.id);
+    if (!consultation) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    return res.json({ ok: true, consultation });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.patch('/consultations/:id', async (req, res, next) => {
   try {
     const updated = await updateConsultationById(req.params.id, req.body || {});
+    if (!updated) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    return res.json({ ok: true, consultation: updated });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/recommendation/generate', async (req, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    const consultation = consultations.find((item) => item.id === req.params.id);
+    if (!consultation) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+
+    const recommendation = `질문 요약: ${consultation.question || '-'}\n추천 덱: 로제딕 타로\n스프레드: 3카드 (현재/흐름/조언)\n보조도구: 레노먼드`;
+    return res.json({ ok: true, recommendation });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/recommendation', async (req, res, next) => {
+  try {
+    const updated = await updateConsultationById(req.params.id, {
+      recommendation: req.body?.recommendation || '',
+      status: 'recommended',
+    });
+    if (!updated) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    return res.json({ ok: true, consultation: updated });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/draw/generate', async (req, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    const consultation = consultations.find((item) => item.id === req.params.id);
+    if (!consultation) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    const drawResult = `현재: The Magician\n흐름: The Lovers\n조언: Strength`;
+    return res.json({ ok: true, drawResult });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/draw', async (req, res, next) => {
+  try {
+    const updated = await updateConsultationById(req.params.id, {
+      drawResult: req.body?.drawResult || '',
+      status: 'drawn',
+    });
+    if (!updated) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    return res.json({ ok: true, consultation: updated });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/reading/generate', async (req, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    const consultation = consultations.find((item) => item.id === req.params.id);
+    if (!consultation) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    const reading = `${consultation.name || '내담자님'} 안녕하세요.\n현재 흐름은 정리와 선택이 동시에 필요한 시기예요.\n조급함보다 우선순위를 세우고 한 단계씩 실행해보세요.`;
+    return res.json({ ok: true, reading });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/consultations/:id/reading', async (req, res, next) => {
+  try {
+    const updated = await updateConsultationById(req.params.id, {
+      finalReading: req.body?.finalReading || '',
+      status: 'finalized',
+    });
     if (!updated) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }

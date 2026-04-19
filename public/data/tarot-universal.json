@@ -1,0 +1,14 @@
+{
+  "cards": [
+    { "name": "The Fool" },
+    { "name": "The Magician" },
+    { "name": "The High Priestess" },
+    { "name": "The Empress" },
+    { "name": "The Emperor" },
+    { "name": "The Hierophant" },
+    { "name": "The Lovers" },
+    { "name": "The Chariot" },
+    { "name": "Strength" },
+    { "name": "The Hermit" }
+  ]
+}

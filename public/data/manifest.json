@@ -1,0 +1,5 @@
+{
+  "decks": [
+    { "id": "universal", "name": "유니버셜 타로", "path": "tarot-universal.json" }
+  ]
+}
