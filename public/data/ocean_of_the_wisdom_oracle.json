@@ -1,0 +1,238 @@
+{
+  "deck_name_ko": "오션 오브 더 위즈덤 오라클",
+  "deck_name_en": "Ocean of the Wisdom Oracle",
+  "type": "oracle",
+  "total_cards": 46,
+  "cards": [
+    {
+      "id": 1,
+      "title": "Crystal Caverns",
+      "message": "Flow with the rhythms of life and let the cascading waters of change carry you to new beginnings."
+    },
+    {
+      "id": 2,
+      "title": "Giant Clams",
+      "message": "Find peace in the depths of your being and let the quiet strength of your inner sanctuary protect you."
+    },
+    {
+      "id": 3,
+      "title": "Coral Sanctuaries",
+      "message": "Find strength in diversity and let the vibrant colors of life's experiences nourish your soul."
+    },
+    {
+      "id": 4,
+      "title": "Serene Place",
+      "message": "Listen to the whispers of your intuition, for it is the voice of your soul guiding you towards your highest good."
+    },
+    {
+      "id": 5,
+      "title": "Coral Crown",
+      "message": "Forgive yourself and others, freeing yourself from the burdens of the past."
+    },
+    {
+      "id": 6,
+      "title": "Sea Urchins",
+      "message": "Discover beauty in life's prickly moments and trust that every experience holds a lesson."
+    },
+    {
+      "id": 7,
+      "title": "Sharks",
+      "message": "Embrace your primal instincts and navigate life's waters with fierce determination."
+    },
+    {
+      "id": 8,
+      "title": "Pearl of Wisdom",
+      "message": "Embrace the wisdom of the ages and let the luminous light of truth guide your path."
+    },
+    {
+      "id": 9,
+      "title": "Anchor",
+      "message": "Anchor yourself in strength and resilience, finding stability amidst life's ever-changing tides."
+    },
+    {
+      "id": 10,
+      "title": "Coral Cathedral",
+      "message": "Honor the sacredness of each moment, and live fully in the present."
+    },
+    {
+      "id": 11,
+      "title": "Ancient Temple",
+      "message": "Seek strength in your past and let the echoes of history guide you towards the future."
+    },
+    {
+      "id": 12,
+      "title": "Lady of the Sea",
+      "message": "Embrace gratitude as the key to abundance and joy in your life."
+    },
+    {
+      "id": 13,
+      "title": "Whales",
+      "message": "Tap into your inner wisdom and navigate life's depths with grace and majesty."
+    },
+    {
+      "id": 14,
+      "title": "Neptune's Palace",
+      "message": "Let the currents of divine guidance lead you to your true purpose."
+    },
+    {
+      "id": 15,
+      "title": "Sunken Treasure",
+      "message": "Discover hidden riches within yourself and trust that abundance flows where intention goes."
+    },
+    {
+      "id": 16,
+      "title": "Underwater Caves",
+      "message": "Find strength in surrender, allowing life to unfold with grace and acceptance."
+    },
+    {
+      "id": 17,
+      "title": "Sea Sponges",
+      "message": "Find courage to explore the unknown and let curiosity lead you through life's passages."
+    },
+    {
+      "id": 18,
+      "title": "Mermaid's Mirror",
+      "message": "Remember that you are a co-creator of your reality, and that your thoughts and intentions have the power to shape your destiny."
+    },
+    {
+      "id": 19,
+      "title": "Mermaid Magic",
+      "message": "Embrace the magic within and let your intuition guide you through life's currents."
+    },
+    {
+      "id": 20,
+      "title": "Koi Fish Realm",
+      "message": "Release the need to control, and instead surrender to the divine flow of life, trusting that all is unfolding exactly as it should."
+    },
+    {
+      "id": 21,
+      "title": "Manta Rays",
+      "message": "Find serenity in graceful movement and let life's currents carry you to new heights."
+    },
+    {
+      "id": 22,
+      "title": "Shipwrecks",
+      "message": "Explore the depths of your past to uncover hidden treasures of wisdom and resilience."
+    },
+    {
+      "id": 23,
+      "title": "Seahorses",
+      "message": "Embrace your uniqueness and let your gentle spirit carry you through life's currents."
+    },
+    {
+      "id": 24,
+      "title": "Sea Witch's Lair",
+      "message": "Confront the shadows within and let the alchemy of your soul transform darkness into light."
+    },
+    {
+      "id": 25,
+      "title": "Eyes of the Ocean",
+      "message": "The eyes of the ocean see into the secrets of life. They gaze into our souls and reveal the truth and meaning of life."
+    },
+    {
+      "id": 26,
+      "title": "Ocean's Offering",
+      "message": "Listen to the whispers of your soul and let the beauty of simplicity guide you."
+    },
+    {
+      "id": 27,
+      "title": "Guardian Star",
+      "message": "Guardian Star, Guardian of the Ocean. Providing you with protection and strength, feel safe and peaceful."
+    },
+    {
+      "id": 28,
+      "title": "Coral Castle",
+      "message": "Live with intention and purpose, aligning your actions with your deepest values and desires."
+    },
+    {
+      "id": 29,
+      "title": "Ocean Goddess",
+      "message": "Embrace your inner creativity and flexibility, navigating life's twists and turns with ingenuity."
+    },
+    {
+      "id": 30,
+      "title": "Siren's Serenade",
+      "message": "Embrace the rhythm of life and let your movements flow with the currents of change."
+    },
+    {
+      "id": 31,
+      "title": "Monster Cave",
+      "message": "Choose love over fear in every moment, knowing that love is the highest vibration of all."
+    },
+    {
+      "id": 32,
+      "title": "Sea Dragons",
+      "message": "Embrace your inner power and let your majestic spirit soar through life's depths."
+    },
+    {
+      "id": 33,
+      "title": "Sea Turtles",
+      "message": "Navigate life's challenges with patience and grace, trusting that slow and steady progress leads to success."
+    },
+    {
+      "id": 34,
+      "title": "Trident",
+      "message": "Remember that true strength comes from within."
+    },
+    {
+      "id": 35,
+      "title": "Lost Civilization",
+      "message": "Find inspiration in collective vision and let the synergy of community guide your path."
+    },
+    {
+      "id": 36,
+      "title": "Dolphins",
+      "message": "Find joy in playful connections and let your intuition guide you to deeper understanding."
+    },
+    {
+      "id": 37,
+      "title": "High Tide",
+      "message": "Embrace transformation and harness the energy of change to fuel your growth."
+    },
+    {
+      "id": 38,
+      "title": "Coral Compass",
+      "message": "Trust in the guidance of your inner compass and let it lead you to your true north."
+    },
+    {
+      "id": 39,
+      "title": "Sea Creatures",
+      "message": "Find guidance in times of darkness and let your inner light shine bright."
+    },
+    {
+      "id": 40,
+      "title": "Echoes of Atlantis",
+      "message": "Embrace rebirth and transformation, knowing that every ending is a new beginning."
+    },
+    {
+      "id": 41,
+      "title": "Underwater Gardens",
+      "message": "Nurture the garden of your heart, cultivating seeds of compassion, gratitude and forgiveness."
+    },
+    {
+      "id": 42,
+      "title": "Jellyfish",
+      "message": "Embrace adaptability and go with the flow, allowing life's currents to guide you effortlessly."
+    },
+    {
+      "id": 43,
+      "title": "Siren's Call",
+      "message": "Follow the call of your heart and let its melody guide you to your true purpose."
+    },
+    {
+      "id": 44,
+      "title": "Nautilus Nebula",
+      "message": "Embrace the mysteries of the cosmos and let the vastness of the universe inspire your soul."
+    },
+    {
+      "id": 45,
+      "title": "Seaweed",
+      "message": "Find beauty in vulnerability and let your resilience shine through life's challenges."
+    },
+    {
+      "id": 46,
+      "title": "Oceanic Whispers",
+      "message": "Embrace your role as protector and guardian, standing strong against life's challenges."
+    }
+  ]
+}
