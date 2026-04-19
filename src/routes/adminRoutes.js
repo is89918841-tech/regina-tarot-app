@@ -64,6 +64,47 @@ const upload = multer({
   },
 });
 
+/**
+ * 임시 메모리 상담 데이터 저장소
+ * 나중에 실제 파일/DB 연결 전까지 관리자 화면 동작용
+ */
+const consultationStore = [
+  {
+    id: 'sample-1',
+    name: '테스트 내담자',
+    nickname: '테스트',
+    contact: 'kakao:test',
+    contactChannel: 'kakao:test',
+    menu: '핵심 리딩',
+    menuTitle: '핵심 리딩',
+    question: '이 사람의 현재 흐름이 궁금해요.',
+    memo: '관리자 테스트용 샘플 데이터입니다.',
+    createdAt: new Date().toISOString(),
+    recommendation: '',
+    drawResult: '',
+    finalReading: '',
+    kakaoText: '',
+    status: 'submitted',
+  },
+];
+
+async function listConsultations() {
+  return consultationStore;
+}
+
+async function updateConsultationById(id, patch) {
+  const idx = consultationStore.findIndex((item) => item.id === id);
+  if (idx === -1) return null;
+
+  consultationStore[idx] = {
+    ...consultationStore[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+
+  return consultationStore[idx];
+}
+
 router.post('/session', (req, res) => {
   const token = req.body?.token || req.body?.password || req.get('x-admin-token');
   if (!token || token !== env.adminToken) {
