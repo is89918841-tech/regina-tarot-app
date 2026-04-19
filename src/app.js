@@ -7,6 +7,11 @@ const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
 const consultationRoutes = require('./routes/consultationRoutes');
 const adminAuth = require('./middleware/adminAuth');
+const {
+  SESSION_COOKIE_NAME,
+  parseCookies,
+  verifyAdminSessionToken,
+} = require('./utils/adminSession');
 
 const app = express();
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -16,6 +21,20 @@ const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 ensureDir(env.uploadRoot).catch((error) => {
   console.error('Failed to ensure upload directory:', error);
 });
+
+function requireAdminPage(req, res, next) {
+  const headerToken = req.get('x-admin-token');
+  const cookies = parseCookies(req);
+  const sessionToken = cookies[SESSION_COOKIE_NAME];
+
+  const headerAuthed = headerToken && headerToken === env.adminToken;
+  const cookieAuthed = verifyAdminSessionToken(sessionToken);
+
+  if (!headerAuthed && !cookieAuthed) {
+    return res.redirect('/admin');
+  }
+  return next();
+}
 
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
@@ -39,28 +58,23 @@ app.get('/consultation.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
-app.get('/', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
-});
-
-app.get('/consultation.html', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
-});
-
-app.get('/admin', adminAuth, (_, res) => {
+app.get('/admin', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
+app.get(['/admin/helper', '/admin/helper.html'], requireAdminPage, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], requireAdminPage, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
-app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
-  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
+app.get(['/private/admin-helper.html', '/private/admin-grand-tableau.html'], (_req, res) => {
+  res.status(403).json({
+    ok: false,
+    error: 'Direct access is forbidden. Use protected /admin routes.',
+  });
 });
 
 app.use((error, _req, res, _next) => {
