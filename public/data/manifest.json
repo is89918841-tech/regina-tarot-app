@@ -1,0 +1,15 @@
+{
+  "tarot": {
+    "유니버셜 타로": "universal.json",
+    "로제딕 타로": "rosedic.json"
+  },
+  "oracle": {
+    "오션 오브 더 위즈덤 오라클": "ocean_of_the_wisdom_oracle_simple.json"
+  },
+  "aux": {
+    "갑골영패": "gapgol_simple.json",
+    "귀문방": "gwimunbang_titles.json"
+  },
+  "iching": "iching.json",
+  "yukyo": "주역육효_simple.json"
+}
