@@ -7,6 +7,7 @@ const { ensureDir } = require('./utils/fileStore');
 const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
+const consultationRoutes = require('./routes/consultationRoutes');
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
@@ -36,12 +37,16 @@ function buildReadingPrompt({ question, mode = 'standard', cards = [], spread = 
   const guide = MODE_GUIDE[mode] || MODE_GUIDE.standard;
 
   const cardsText = Array.isArray(cards) && cards.length
-    ? cards.map((card, index) => {
-        if (typeof card === 'string') {
-          return `- 카드 ${index + 1}: ${card}`;
-        }
-        return `- 카드 ${index + 1}: ${card.name || card.card || '-'}${card.position ? ` / 포지션: ${card.position}` : ''}`;
-      }).join('\n')
+    ? cards
+        .map((card, index) => {
+          if (typeof card === 'string') {
+            return `- 카드 ${index + 1}: ${card}`;
+          }
+          return `- 카드 ${index + 1}: ${card.name || card.card || '-'}${
+            card.position ? ` / 포지션: ${card.position}` : ''
+          }`;
+        })
+        .join('\n')
     : '- 카드 정보 없음';
 
   return `
@@ -78,16 +83,21 @@ app.get('/healthz', (_, res) => {
 });
 
 /* =========================
-   API
-========================= */
-app.use('/api/reading', readingRoutes);
-app.use('/api/admin', adminRoutes);
-
-/* =========================
-   Static
+   Static files
+   public 안의 /data, css, js, html 모두 여기서 열림
 ========================= */
 app.use(express.static(PUBLIC_DIR));
 
+/* =========================
+   API
+========================= */
+app.use('/api/reading', readingRoutes);
+app.use('/api/consultations', consultationRoutes);
+app.use('/api/admin', adminRoutes);
+
+/* =========================
+   Public pages
+========================= */
 app.get('/', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
@@ -105,38 +115,44 @@ app.get('/admin2.html', (_, res) => {
 });
 
 /* =========================
-   보조앱 / 그랑따블로
-   일단 열리는지 확인용으로 인증 없이 열기
+   Internal helper pages
 ========================= */
-app.get('/admin/helper', (_, res) => {
+app.get(['/admin/helper', '/admin/helper.html'], (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get('/admin/grand-tableau', (_, res) => {
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
 /*
 나중에 로그인 보호 다시 붙일 때는 아래처럼 바꾸면 됨:
 
-app.get('/admin/helper', adminAuth, (_, res) => {
+app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get('/admin/grand-tableau', adminAuth, (_, res) => {
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 */
 
 /* =========================
-   직접 리딩 API
+   Direct reading endpoint
 ========================= */
 app.post('/reading', async (req, res) => {
   try {
     const { question, mode, cards, spread, extra } = req.body || {};
 
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'question is required',
+      });
+    }
+
     const response = await openai.responses.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+      model: process.env.OPENAI_MODEL || env.model || 'gpt-4.1-mini',
       input: buildReadingPrompt({ question, mode, cards, spread, extra }),
     });
 
