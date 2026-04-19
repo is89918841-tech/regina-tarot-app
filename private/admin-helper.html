@@ -126,6 +126,35 @@
         return { tarotDecks, oracleDecks, supportDecks, tarotCards };
       }
 
+      function parseBoolean(value) {
+        if (typeof value !== 'string') return null;
+        if (value.toLowerCase() === 'true') return true;
+        if (value.toLowerCase() === 'false') return false;
+        return null;
+      }
+
+      function clamp(value, min, max) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return null;
+        return Math.max(min, Math.min(max, num));
+      }
+
+      function parseAuxCounts(raw) {
+        if (!raw) return {};
+        try {
+          if (raw.trim().startsWith('{')) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+          }
+        } catch (_) {}
+        return raw.split(',').reduce((acc, pair) => {
+          const [name, count] = pair.split(':');
+          if (!name) return acc;
+          acc[name.trim()] = Number(count) || 1;
+          return acc;
+        }, {});
+      }
+
       function pickCards(count, mode, selectedNumbers) {
         if (mode === 'number' && selectedNumbers.length) {
           return selectedNumbers.slice(0, count).map((n) => tarotCards[(n - 1) % tarotCards.length]);
@@ -149,6 +178,11 @@
         const [mode, setMode] = useState('random');
         const [selectedNumbers, setSelectedNumbers] = useState([]);
         const [tools, setTools] = useState({ lenormand: true, rune: false, iching: false, yukhyo: false, oracle: true, subdeck: false, ogan: false });
+        const [oracleDeck, setOracleDeck] = useState('');
+        const [oracleCount, setOracleCount] = useState(1);
+        const [toolCounts, setToolCounts] = useState({ lenormand: 1, rune: 1, iching: 1, yukhyo: 1 });
+        const [selectedAuxDecks, setSelectedAuxDecks] = useState([]);
+        const [auxDeckCounts, setAuxDeckCounts] = useState({});
         const [result, setResult] = useState({ main: [], support: {}, ai: '', copy: '' });
         const [loading, setLoading] = useState(false);
         const [error, setError] = useState('');
@@ -170,6 +204,83 @@
           })();
         }, []);
 
+        useEffect(() => {
+          if (!dataReady) return;
+          const params = new URLSearchParams(window.location.search);
+
+          const queryDeck = params.get('deck');
+          if (queryDeck && tarotDecks.includes(queryDeck)) setDeck(queryDeck);
+
+          const queryCount = clamp(params.get('count'), 1, 10);
+          if (queryCount !== null) setCount(queryCount);
+
+          const queryMode = params.get('mode');
+          if (queryMode === 'random') setMode('random');
+          if (queryMode === 'numbers' || queryMode === 'number') setMode('number');
+
+          const queryReversal = parseBoolean(params.get('reversal'));
+          if (queryReversal !== null) setAllowReverse(queryReversal);
+
+          const queryReverseRatio = clamp(params.get('reverseRatio'), 0, 100);
+          if (queryReverseRatio !== null) setReverseRatio(queryReverseRatio);
+
+          const queryOracle = parseBoolean(params.get('oracle'));
+          const queryRunes = parseBoolean(params.get('runes'));
+          const queryLenormand = parseBoolean(params.get('lenormand'));
+          const queryIching = parseBoolean(params.get('iching'));
+          const queryYukyo = parseBoolean(params.get('yukyo'));
+          const queryOgangi = parseBoolean(params.get('ogangi'));
+          const queryObanggi = parseBoolean(params.get('obanggi'));
+
+          setTools((prev) => ({
+            ...prev,
+            ...(queryOracle !== null ? { oracle: queryOracle } : {}),
+            ...(queryRunes !== null ? { rune: queryRunes } : {}),
+            ...(queryLenormand !== null ? { lenormand: queryLenormand } : {}),
+            ...(queryIching !== null ? { iching: queryIching } : {}),
+            ...(queryYukyo !== null ? { yukhyo: queryYukyo } : {}),
+            ...((queryOgangi !== null || queryObanggi !== null) ? { ogan: Boolean(queryOgangi || queryObanggi) } : {}),
+          }));
+
+          const queryOracleDeck = params.get('oracleDeck');
+          if (queryOracleDeck && oracleDecks.includes(queryOracleDeck)) setOracleDeck(queryOracleDeck);
+          const queryOracleCount = clamp(params.get('oracleCount'), 1, 5);
+          if (queryOracleCount !== null) setOracleCount(queryOracleCount);
+
+          const lenormandCount = clamp(params.get('lenormandCount'), 1, 5);
+          const runeCount = clamp(params.get('runeCount'), 1, 5);
+          const ichingCount = clamp(params.get('ichingCount'), 1, 5);
+          const yukyoCount = clamp(params.get('yukyoCount'), 1, 5);
+          setToolCounts((prev) => ({
+            ...prev,
+            ...(lenormandCount !== null ? { lenormand: lenormandCount } : {}),
+            ...(runeCount !== null ? { rune: runeCount } : {}),
+            ...(ichingCount !== null ? { iching: ichingCount } : {}),
+            ...(yukyoCount !== null ? { yukhyo: yukyoCount } : {}),
+          }));
+
+          const aux = (params.get('aux') || '')
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+          if (aux.length) {
+            const validAux = aux.filter((name) => supportDecks.includes(name));
+            setSelectedAuxDecks(validAux);
+            if (validAux.length) setTools((prev) => ({ ...prev, subdeck: true }));
+          }
+
+          const rawAuxCounts = params.get('auxCounts');
+          if (rawAuxCounts) {
+            const parsed = parseAuxCounts(rawAuxCounts);
+            const normalized = Object.entries(parsed).reduce((acc, [name, raw]) => {
+              const safe = clamp(raw, 1, 10);
+              if (safe !== null) acc[name] = safe;
+              return acc;
+            }, {});
+            setAuxDeckCounts(normalized);
+          }
+        }, [dataReady, tarotDecks, oracleDecks, supportDecks]);
+
         const badges = useMemo(() => ([
           `타로 덱 ${tarotDecks.length}종`,
           `오라클 덱 ${oracleDecks.length}종`,
@@ -184,12 +295,19 @@
 
         function buildSupport() {
           const support = {};
-          if (tools.lenormand) support['레노먼드'] = ['기수', '정원'][Math.floor(Math.random() * 2)];
-          if (tools.rune) support['룬'] = ['Fehu', 'Algiz'][Math.floor(Math.random() * 2)];
-          if (tools.iching) support['주역'] = ['31 택산함', '24 지뢰복'][Math.floor(Math.random() * 2)];
-          if (tools.yukhyo) support['주역육효괘'] = ['풍천소축', '수뢰둔'][Math.floor(Math.random() * 2)];
-          if (tools.oracle) support['오라클'] = oracleDecks[Math.floor(Math.random() * oracleDecks.length)] + ' - Renewal';
-          if (tools.subdeck) support['보조덱'] = '달빛의 지혜';
+          if (tools.lenormand) support['레노먼드'] = `${toolCounts.lenormand}장: ` + ['기수', '정원'][Math.floor(Math.random() * 2)];
+          if (tools.rune) support['룬'] = `${toolCounts.rune}장: ` + ['Fehu', 'Algiz'][Math.floor(Math.random() * 2)];
+          if (tools.iching) support['주역'] = `${toolCounts.iching}장: ` + ['31 택산함', '24 지뢰복'][Math.floor(Math.random() * 2)];
+          if (tools.yukhyo) support['주역육효괘'] = `${toolCounts.yukhyo}장: ` + ['풍천소축', '수뢰둔'][Math.floor(Math.random() * 2)];
+          if (tools.oracle) {
+            const chosenOracleDeck = oracleDeck || oracleDecks[Math.floor(Math.random() * oracleDecks.length)];
+            support['오라클'] = `${chosenOracleDeck} (${oracleCount}장) - Renewal`;
+          }
+          if (tools.subdeck) {
+            support['보조덱'] = selectedAuxDecks.length
+              ? selectedAuxDecks.map((name) => `${name}(${auxDeckCounts[name] || 1})`).join(', ')
+              : '달빛의 지혜';
+          }
           if (tools.ogan) support['오간기/오방기'] = '동쪽/목기 상승';
           return support;
         }

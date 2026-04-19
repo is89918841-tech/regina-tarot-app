@@ -203,6 +203,47 @@ router.post('/consultations/:id/reading', async (req, res, next) => {
   }
 });
 
+router.post('/recommend', async (req, res) => {
+  const question = String(req.body?.question || '').toLowerCase();
+  const recommendation = {
+    deck: '세피로트 타로',
+    count: 6,
+    mode: 'random',
+    reversal: true,
+    reverseRatio: 50,
+    oracle: false,
+    runes: false,
+    lenormand: true,
+    lenormandCount: 3,
+    iching: false,
+    yukyo: true,
+    yukyoCount: 1,
+    ogangi: true,
+    obanggi: false,
+    aux: ['갑골영패'],
+    auxCounts: { 갑골영패: 1 },
+  };
+
+  if (question.includes('연애') || question.includes('재회') || question.includes('관계')) {
+    recommendation.deck = '로제딕 타로';
+    recommendation.count = 6;
+    recommendation.oracle = true;
+    recommendation.oracleDeck = '오션 오브 위즈덤 오라클';
+    recommendation.oracleCount = 1;
+    recommendation.aux = ['갑골영패', '귀문방'];
+    recommendation.auxCounts = { 갑골영패: 1, 귀문방: 1 };
+  } else if (question.includes('직장') || question.includes('이직') || question.includes('사업')) {
+    recommendation.deck = '세피로트 타로';
+    recommendation.lenormand = false;
+    recommendation.iching = true;
+    recommendation.ichingCount = 1;
+    recommendation.aux = ['귀문방'];
+    recommendation.auxCounts = { 귀문방: 1 };
+  }
+
+  return res.json({ ok: true, recommendation });
+});
+
 router.post('/upload', upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
