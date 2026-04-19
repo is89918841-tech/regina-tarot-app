@@ -142,31 +142,33 @@ function App(){
           <div className="row">{mode==="numbers"&&<button className="btn" type="button" onClick={()=>{ const deck=expandTo78(tarotMap[tarotDeck]||[]); setNumMap(shuffle(deck)); setSelectedNums([]); }}>숫자맵 다시 섞기</button>}<button className="btn primary" type="button" onClick={handleDraw}>{mode==="random"?"랜덤 뽑기 실행":"선택 번호로 뽑기"}</button></div>
         </div></section>
 
-        <section className="panel"><div className="panel-inner stack">
-          <div className="between"><h2 className="section-title" style={{margin:0}}>결과</h2><button className="btn good" type="button" onClick={handleCopy}>결과 복사</button></div>
-          {result ? <><section className="panel">
-  <div className="panel-inner stack">
-    <div className="between">
-      <h2 className="section-title" style={{margin:0}}>결과</h2>
-      <button className="btn good" type="button" onClick={handleCopy}>
-        결과 복사
-      </button>
-    </div>
+        <section className="panel">
+          <div className="panel-inner stack">
 
-    {result ? (
-      <div className="result-box">
-        {resultText}
-      </div>
-    ) : (
-      <div className="result-box">
-        아직 결과가 없어요. 왼쪽에서 설정을 잡고 카드를 뽑으면 여기 정리됩니다.
-      </div>
-    )}
-  </div>
-</section>
-  </div>;
-}
-ReactDOM.render(<App />, document.getElementById("root"));
+            <div className="between">
+              <h2 className="section-title" style={{ margin: 0 }}>결과</h2>
+              <button className="btn good" type="button" onClick={handleCopy}>
+                결과 복사
+              </button>
+            </div>
+
+            {result ? (
+              <div className="result-box">
+                {resultText}
+              </div>
+            ) : (
+              <div className="result-box">
+                아직 결과가 없어요. 왼쪽에서 설정을 잡고 카드를 뽑으면 여기 정리됩니다.
+              </div>
+            )}
+
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 </body>
 </html>
