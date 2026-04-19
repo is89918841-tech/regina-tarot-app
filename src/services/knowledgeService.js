@@ -66,6 +66,8 @@ async function indexUpload({ file }) {
   const entry = {
     id: `file_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     originalName: file.originalname,
+    originalNameRaw: file.originalNameRaw || file.originalname,
+    originalNameNormalized: file.originalNameNormalized || file.originalname,
     storedName: file.filename,
     localPath: file.path,
     mimeType: file.mimetype,
@@ -79,6 +81,7 @@ async function indexUpload({ file }) {
     vectorStoreFileId: null,
     vectorStoreFileStatus: null,
     error: null,
+    errorDetail: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -117,9 +120,11 @@ async function indexUpload({ file }) {
     const updated = await updateStoredEntry(entry.id, processingResult);
     return updated;
   } catch (error) {
+    const apiErrorDetail = error?.response?.data || error?.error || null;
     const failed = await updateStoredEntry(entry.id, {
       status: 'error',
       error: error.message,
+      errorDetail: apiErrorDetail ? JSON.stringify(apiErrorDetail) : null,
     });
     return failed;
   }
