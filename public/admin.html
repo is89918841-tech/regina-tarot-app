@@ -618,7 +618,7 @@
             ),
             status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
           ),
-authenticated
+(authenticated
   ? React.createElement('div', { className: 'card' },
       React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
       React.createElement('div', { className: 'row' },
@@ -632,7 +632,7 @@ authenticated
       )
     )
   : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.'),
-
+),
 React.createElement('div', { className: 'layout-2col' },
   React.createElement('div', { className: 'card' },
     React.createElement('h3', { className: 'section-title' }, '상담 접수 목록'),
@@ -673,7 +673,7 @@ React.createElement('div', { className: 'layout-2col' },
         ))
       )
     )
-
+),
             React.createElement('div', { className: 'card' },
               React.createElement('h3', { className: 'section-title' }, '선택 접수 상세 작업 패널'),
               !selectedConsultation
