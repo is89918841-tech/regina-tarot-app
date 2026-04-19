@@ -144,11 +144,26 @@ function App(){
 
         <section className="panel"><div className="panel-inner stack">
           <div className="between"><h2 className="section-title" style={{margin:0}}>결과</h2><button className="btn good" type="button" onClick={handleCopy}>결과 복사</button></div>
-          {result ? <><div className="draw-list">{result.tarot.map((item,idx)=><div key={idx} className="draw-item"><div className="draw-pos">{item.position}</div><div className="draw-name">{item.card}</div></div>)}</div><div className="result-box">{makeTextResult(result)}</div></> : <div className="result-box">아직 결과가 없어요. 왼쪽에서 설정을 잡고 카드를 뽑으면 여기 정리됩니다.</div>}
-          <div className="footer-note">로딩 상태: {loaded ? "완료" : (loadError ? "오류" : "불러오는 중")} · 타로 {allTarotDecks.length} · 오라클 {allOracleDecks.length} · 보조덱 {allAuxDecks.length} · 주역 {iching64.length} · 주역육효 {yukyoCards.length}</div>
-        </div></section>
-      </main>
+          {result ? <><section className="panel">
+  <div className="panel-inner stack">
+    <div className="between">
+      <h2 className="section-title" style={{margin:0}}>결과</h2>
+      <button className="btn good" type="button" onClick={handleCopy}>
+        결과 복사
+      </button>
     </div>
+
+    {result ? (
+      <div className="result-box">
+        {resultText}
+      </div>
+    ) : (
+      <div className="result-box">
+        아직 결과가 없어요. 왼쪽에서 설정을 잡고 카드를 뽑으면 여기 정리됩니다.
+      </div>
+    )}
+  </div>
+</section>
   </div>;
 }
 ReactDOM.render(<App />, document.getElementById("root"));
