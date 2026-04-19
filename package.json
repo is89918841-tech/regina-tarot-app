@@ -1,7 +1,6 @@
 {
   "name": "regina-tarot-app",
   "version": "2.1.0",
-  "description": "Regina Divination Platform server + admin dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

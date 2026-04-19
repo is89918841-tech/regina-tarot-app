@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const fs = require('fs/promises');
 const multer = require('multer');
 const env = require('../config/env');
@@ -10,7 +9,6 @@ const {
   deleteFile,
   updateFileMetadata,
 } = require('../services/knowledgeService');
-const { listConsultations, updateConsultationById } = require('../services/consultationService');
 const {
   SESSION_COOKIE_NAME,
   parseCookies,
@@ -19,6 +17,10 @@ const {
   buildClearSessionCookieHeader,
   revokeSessionToken,
 } = require('../utils/adminSession');
+const {
+  normalizeUploadedFilename,
+  isSupportedUploadType,
+} = require('../utils/uploadFilename');
 
 const router = express.Router();
 
@@ -31,15 +33,35 @@ const storage = multer.diskStorage({
       cb(error);
     }
   },
-  filename: (_, file, cb) => {
-    const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, `${Date.now()}_${safe}`);
+  filename: (req, file, cb) => {
+    const normalized = normalizeUploadedFilename(file);
+    req.uploadFileMeta = normalized;
+    cb(null, normalized.storedName);
   },
 });
 
 const upload = multer({
   storage,
   limits: { fileSize: env.maxUploadSizeMb * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const normalized = normalizeUploadedFilename(file);
+    const supported = isSupportedUploadType({
+      mimetype: file.mimetype,
+      extension: normalized.extension,
+    });
+
+    if (!supported) {
+      const error = new Error(
+        `Unsupported file type. Allowed: PDF, TXT, DOCX. Received mimetype: ${file.mimetype || 'unknown'}, Received filename: ${file.originalname || 'unknown'}`,
+      );
+      error.code = 'UNSUPPORTED_FILE_TYPE';
+      error.status = 400;
+      return cb(error);
+    }
+
+    req.uploadFileMeta = normalized;
+    return cb(null, true);
+  },
 });
 
 router.post('/session', (req, res) => {
@@ -94,9 +116,13 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
       return res.status(400).json({ ok: false, error: 'file field is required' });
     }
 
+    const meta = req.uploadFileMeta || normalizeUploadedFilename(req.file);
+
     const saved = await indexUpload({
       file: {
-        originalname: req.file.originalname,
+        originalname: meta.displayName,
+        originalNameRaw: meta.originalNameRaw,
+        originalNameNormalized: meta.originalNameNormalized,
         filename: req.file.filename,
         path: req.file.path,
         mimetype: req.file.mimetype,
@@ -115,6 +141,9 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
         ok: false,
         error: `Upload exceeds limit (${env.maxUploadSizeMb}MB).`,
       });
+    }
+    if (error.code === 'UNSUPPORTED_FILE_TYPE') {
+      return res.status(error.status || 400).json({ ok: false, error: error.message });
     }
     return next(error);
   }

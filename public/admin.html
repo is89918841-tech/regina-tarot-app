@@ -31,29 +31,6 @@
       .s-uploaded, .s-saved { background: #1e3a8a; }
       .msg-error { color: #fecaca; }
       .msg-info { color: #bfdbfe; }
-      .chip { display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px; background: #334155; }
-      .chip.submitted { background:#475569; }
-      .chip.paid { background:#a16207; }
-      .chip.recommended { background:#1d4ed8; }
-      .chip.drawn { background:#6d28d9; }
-      .chip.finalized { background:#166534; }
-      .chip.sent { background:#0f766e; }
-      .chip.payment { background:#7c3aed; }
-      .layout-2col { display: grid; grid-template-columns: minmax(420px, 1fr) minmax(520px, 1.2fr); gap: 16px; }
-      .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-      .login-card { width: 100%; max-width: 460px; }
-      .section-title { margin: 0 0 8px; font-size: 16px; }
-      .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 10px; }
-      .field { display: flex; flex-direction: column; gap: 6px; }
-      .field.full { grid-column: 1 / -1; }
-      .kv { margin: 0; }
-      .kv strong { display: inline-block; min-width: 90px; color: #cbd5e1; }
-      .status-steps { display: flex; flex-wrap: wrap; gap: 8px; }
-      .step { padding: 6px 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; font-size: 12px; }
-      .step.active { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa inset; }
-      .step.done { border-color: #22c55e; }
-      pre.codebox { margin: 8px 0 0; background: #0b1220; border: 1px solid #334155; border-radius: 10px; padding: 10px; overflow: auto; font-size: 12px; }
-      @media (max-width: 1100px) { .layout-2col { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
@@ -332,77 +309,43 @@
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '조회 실패');
             setFiles(data.files);
+            setInfo(`총 ${data.files.length}개 파일`);
           } catch (e) {
             setError(e.message);
           }
-        }
-
-        async function fetchConsultations() {
-          try {
-            const res = await fetch('/api/admin/consultations', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '접수 목록 조회 실패');
-            setConsultations(data.consultations || []);
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function patchConsultation(id, payload) {
-          const res = await fetch(`/api/admin/consultations/${id}`, {
-            method: 'PATCH',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || '상담 업데이트 실패');
-          return data.consultation;
-        }
-
-        async function confirmPayment(id) {
-          try {
-            const res = await fetch(`/api/consultations/${id}/confirm-payment`, { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '입금 확인 실패');
-            await fetchConsultations();
-            setInfo('입금 확인 처리 완료');
-          } catch (e) { setError(e.message); }
-        }
-
-        async function runAutoReading(id) {
-          try {
-            const res = await fetch(`/api/consultations/${id}/run-auto-reading`, { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '자동 리딩 실행 실패');
-            await fetchConsultations();
-            setInfo('자동 리딩 실행 완료');
-          } catch (e) { setError(e.message); }
         }
 
         async function upload() {
-          if (!form.files || form.files.length === 0) return setError('파일을 선택해주세요.');
+          if (!form.file) return setError('파일을 선택해주세요.');
           if (!authenticated) return setError('먼저 인증해주세요.');
 
-          const fileMb = form.files[0].size / (1024 * 1024);
-          if (fileMb > MAX_FILE_MB) return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요.`);
+          const fileMb = form.file.size / (1024 * 1024);
+          if (fileMb > MAX_FILE_MB) {
+            return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요. 현재 ${fileMb.toFixed(2)}MB`);
+          }
 
           setUploading(true);
-          try {
-            for (const file of form.files) {
-              const body = new FormData();
-              body.append('file', file);
-              body.append('deck', form.deck);
-              body.append('topic', form.topic);
-              body.append('priority', form.priority);
-              body.append('type', form.type);
+          setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
 
-              const res = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body });
-              const data = await res.json();
-              if (!data.ok) throw new Error(`${file.name} 업로드 실패`);
-            }
+          try {
+            const body = new FormData();
+            body.append('file', form.file);
+            body.append('deck', form.deck);
+            body.append('topic', form.topic);
+            body.append('priority', form.priority);
+            body.append('type', form.type);
+
+            const res = await fetch('/api/admin/upload', {
+              method: 'POST',
+              credentials: 'include',
+              body,
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || '업로드 실패');
+
+            setInfo(`업로드 완료: 상태=${data.file.status}`);
+            setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
             await fetchFiles();
-            setInfo('파일 업로드 완료');
           } catch (e) {
             setError(e.message);
           } finally {
@@ -420,8 +363,11 @@
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '수정 실패');
+            setInfo('메타데이터 수정 완료');
             await fetchFiles();
-          } catch (e) { setError(e.message); }
+          } catch (e) {
+            setError(e.message);
+          }
         }
 
         async function removeRow(id) {
@@ -430,80 +376,37 @@
             const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE', credentials: 'include' });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '삭제 실패');
+            setInfo('삭제 완료');
             await fetchFiles();
-          } catch (e) { setError(e.message); }
-        }
-
-        async function handleGenerateRecommendation() {
-          if (!selectedConsultation) return;
-          const mock = buildMockRecommendation(selectedConsultation.question);
-          setRecommendationForm({
-            deck: mock.deck,
-            spreadName: mock.spreadName,
-            cardCount: mock.cardCount,
-            spreadPositions: joinCsv(mock.spreadPositions),
-            supportTools: joinCsv(mock.supportTools),
-            reason: mock.reason,
-          });
-          setInfo('추천 초안을 생성했습니다. 필요한 경우 수정 후 저장하세요.');
-        }
-
-        async function handleSaveRecommendation() {
-          if (!selectedConsultation) return;
-          try {
-            const recommendation = {
-              deck: recommendationForm.deck.trim(),
-              spreadName: recommendationForm.spreadName.trim(),
-              cardCount: Number(recommendationForm.cardCount) || 3,
-              spreadPositions: splitCsv(recommendationForm.spreadPositions),
-              supportTools: splitCsv(recommendationForm.supportTools),
-              reason: recommendationForm.reason.trim(),
-            };
-            await patchConsultation(selectedConsultation.id, {
-              recommendation,
-              status: 'recommended',
-            });
-            await fetchConsultations();
-            setInfo('추천 저장 완료');
           } catch (e) {
             setError(e.message);
           }
         }
 
-        async function handleAutoDraw() {
-          if (!selectedConsultation) return;
-          const recommendation = {
-            deck: recommendationForm.deck.trim(),
-            spreadName: recommendationForm.spreadName.trim(),
-            cardCount: Number(recommendationForm.cardCount) || 3,
-            spreadPositions: splitCsv(recommendationForm.spreadPositions),
-            supportTools: splitCsv(recommendationForm.supportTools),
-            reason: recommendationForm.reason.trim(),
-          };
-          const result = buildMockDrawResult(recommendation);
-          setDrawDraft(result);
-          setInfo('자동 드로우 결과를 생성했습니다. 잠금 후 저장하세요.');
+        function statusClass(status) {
+          if (status === 'processed') return 'status s-processed';
+          if (status === 'processing') return 'status s-processing';
+          if (status === 'error') return 'status s-error';
+          return 'status s-uploaded';
         }
 
-        async function handleRedraw() {
-          await handleAutoDraw();
-        }
-
-        async function handleLockDraw() {
-          if (!selectedConsultation || !drawDraft) return;
-          try {
-            const locked = { ...drawDraft, locked: true };
-            await patchConsultation(selectedConsultation.id, {
-              drawResult: locked,
-              status: 'drawn',
-            });
-            await fetchConsultations();
-            setInfo('드로우 결과 잠금 및 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
+        return React.createElement('div', { className: 'wrap' },
+          React.createElement('h1', null, 'Regina Admin Dashboard'),
+          React.createElement('div', { className: 'card' },
+            React.createElement('label', null, 'Admin Token'),
+            React.createElement('input', { value: token, onChange: (e) => setToken(e.target.value), placeholder: 'ADMIN_TOKEN 입력' }),
+            React.createElement('div', { className: 'row' },
+              React.createElement('button', { className: 'primary', onClick: login }, '세션 로그인'),
+              React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
+              React.createElement('button', { className: 'primary', onClick: fetchFiles, disabled: !authenticated }, '파일 목록 새로고침')
+            ),
+            React.createElement('div', { className: 'muted' }, `권장 최대 파일 크기: ${MAX_FILE_MB}MB (PDF/TXT/DOCX)`)
+          ),
+          React.createElement('div', { className: 'card' },
+            React.createElement('h3', null, '지식 파일 업로드'),
+            React.createElement('div', { className: 'row' },
+              React.createElement('input', { value: form.deck, placeholder: 'deck (예: 나전의 빛 타로)', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
+              React.createElement('input', { value: form.topic, placeholder: 'topic (예: 연애)', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
         async function handleGenerateFinalReading() {
           if (!selectedConsultation) return;
           const merged = {
@@ -809,7 +712,11 @@ React.createElement('div', { className: 'layout-2col' },
                       React.createElement('option', { value: 'rule' }, 'rule')
                     )
                   ),
-                  React.createElement('td', null, React.createElement('span', { className: fileStatusClass(f.status) }, f.status || '-')),
+                  React.createElement('td', null,
+                    React.createElement('span', { className: statusClass(f.status) }, f.status || '-'),
+                    f.error ? React.createElement('div', { className: 'muted msg-error' }, f.error) : null,
+                    f.errorDetail ? React.createElement('div', { className: 'muted msg-error' }, f.errorDetail) : null
+                  ),
                   React.createElement('td', null,
                     React.createElement('button', { className: 'primary', onClick: () => updateRow(f), disabled: !authenticated }, '저장'),
                     React.createElement('button', { className: 'danger', onClick: () => removeRow(f.id), style: { marginTop: '4px' }, disabled: !authenticated }, '삭제')

@@ -27,22 +27,6 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 }
 ```
 
-### Consultation Intake API
-
-`POST /api/consultations`
-
-```json
-{
-  "menuId": "chat-love",
-  "menuTitle": "연애 리딩",
-  "name": "홍길동",
-  "contactChannel": "카카오톡 ID 또는 오픈채팅 링크",
-  "question": "핵심 질문"
-}
-```
-
-접수 데이터는 서버 파일 저장소(`CONSULTATION_STORE_PATH`)에 누적 저장됩니다.
-
 ### Admin API (x-admin-token 필수)
 
 - `POST /api/admin/session` (admin token으로 HttpOnly 세션 생성)
@@ -51,10 +35,8 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
   - 필수: `file`
   - 선택: `deck`, `topic`, `priority(core|support|optional)`, `type(guidebook|interpretation|tone|rule)`
 - `GET /api/admin/files`
-- `GET /api/admin/consultations`
 - `PATCH /api/admin/files/:id`
 - `DELETE /api/admin/files/:id`
-
 
 ### Admin Session 흐름
 
@@ -63,6 +45,13 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 3. `GET /api/admin/session`으로 세션 복원/검증을 수행합니다.
 4. 서버는 서명 검증 + 세션 만료 시간(`ADMIN_SESSION_MAX_AGE_SEC`)을 모두 검사합니다.
 5. `POST /api/admin/logout`은 쿠키를 즉시 만료시키고(클리어), 내부 revoke hook에 토큰을 등록합니다.
+
+### 업로드 파일명/타입 처리
+
+- 파일 타입 검증은 **mimetype + 확장자**를 함께 사용합니다.
+- 허용 형식: PDF / TXT / DOCX
+- 원본 파일명이 깨져도 latin1->utf8 복구를 시도하고, 실패 시 안전한 저장명(`timestamp_upload_token.ext`)으로 저장합니다.
+- 메타데이터에는 `originalNameRaw`, `originalNameNormalized`, `storedName`를 분리 보관합니다.
 
 ## 벡터스토어 처리 상태 로직
 
@@ -88,7 +77,6 @@ Regina 스타일의 구조화된 타로 리딩을 생성하고, 관리자 전용
 - `SECURE_COOKIE` (`true` 권장: HTTPS 환경에서 세션 쿠키 보안 강화)
 - `UPLOAD_PATH` (기본: `/data/uploads`)
 - `METADATA_STORE_PATH` (기본: `/data/uploads/metadata.json`)
-- `CONSULTATION_STORE_PATH` (기본: `/data/uploads/consultations.json`)
 - `MAX_UPLOAD_SIZE_MB` (기본: `100`)
 - `VECTOR_PROCESSING_TIMEOUT_MS` (기본: `180000`)
 - `VECTOR_PROCESSING_POLL_MS` (기본: `3000`)
