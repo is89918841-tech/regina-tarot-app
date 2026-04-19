@@ -65,8 +65,8 @@ const upload = multer({
 });
 
 /**
- * 임시 메모리 상담 데이터 저장소
- * 나중에 실제 파일/DB 연결 전까지 관리자 화면 동작용
+ * 임시 메모리 저장소
+ * 나중에 실제 접수 저장소 연결 전까지 관리자 화면 동작용
  */
 const consultationStore = [
   {
@@ -116,7 +116,7 @@ router.post('/session', (req, res) => {
   return res.json({ ok: true, authenticated: true });
 });
 
-router.get('/session', adminAuth, (_, res) => {
+router.get('/session', adminAuth, (_req, res) => {
   return res.json({ ok: true, authenticated: true });
 });
 
@@ -125,12 +125,13 @@ router.post('/login', (req, res) => {
   if (!token || token !== env.adminToken) {
     return res.status(401).json({ ok: false, error: 'Invalid admin token' });
   }
+
   const session = createAdminSessionToken();
   res.setHeader('Set-Cookie', buildSessionCookieHeader(session));
   return res.json({ ok: true, authenticated: true });
 });
 
-router.get('/me', adminAuth, (_, res) => {
+router.get('/me', adminAuth, (_req, res) => {
   return res.json({ ok: true, authenticated: true });
 });
 
@@ -144,7 +145,7 @@ router.post('/logout', (req, res) => {
 
 router.use(adminAuth);
 
-router.get('/consultations', async (_, res, next) => {
+router.get('/consultations', async (_req, res, next) => {
   try {
     const consultations = await listConsultations();
     return res.json({ ok: true, consultations });
@@ -157,9 +158,11 @@ router.get('/consultations/:id', async (req, res, next) => {
   try {
     const consultations = await listConsultations();
     const consultation = consultations.find((item) => item.id === req.params.id);
+
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
+
     return res.json({ ok: true, consultation });
   } catch (error) {
     return next(error);
@@ -182,11 +185,17 @@ router.post('/consultations/:id/recommendation/generate', async (req, res, next)
   try {
     const consultations = await listConsultations();
     const consultation = consultations.find((item) => item.id === req.params.id);
+
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
 
-    const recommendation = `질문 요약: ${consultation.question || '-'}\n추천 덱: 로제딕 타로\n스프레드: 3카드 (현재/흐름/조언)\n보조도구: 레노먼드`;
+    const recommendation =
+      `질문 요약: ${consultation.question || '-'}\n` +
+      `추천 덱: 로제딕 타로\n` +
+      `스프레드: 3카드 (현재/흐름/조언)\n` +
+      `보조도구: 레노먼드`;
+
     return res.json({ ok: true, recommendation });
   } catch (error) {
     return next(error);
@@ -199,9 +208,11 @@ router.post('/consultations/:id/recommendation', async (req, res, next) => {
       recommendation: req.body?.recommendation || '',
       status: 'recommended',
     });
+
     if (!updated) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
+
     return res.json({ ok: true, consultation: updated });
   } catch (error) {
     return next(error);
@@ -212,9 +223,11 @@ router.post('/consultations/:id/draw/generate', async (req, res, next) => {
   try {
     const consultations = await listConsultations();
     const consultation = consultations.find((item) => item.id === req.params.id);
+
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
+
     const drawResult = `현재: The Magician\n흐름: The Lovers\n조언: Strength`;
     return res.json({ ok: true, drawResult });
   } catch (error) {
@@ -228,9 +241,11 @@ router.post('/consultations/:id/draw', async (req, res, next) => {
       drawResult: req.body?.drawResult || '',
       status: 'drawn',
     });
+
     if (!updated) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
+
     return res.json({ ok: true, consultation: updated });
   } catch (error) {
     return next(error);
@@ -241,10 +256,16 @@ router.post('/consultations/:id/reading/generate', async (req, res, next) => {
   try {
     const consultations = await listConsultations();
     const consultation = consultations.find((item) => item.id === req.params.id);
+
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
-    const reading = `${consultation.name || '내담자님'} 안녕하세요.\n현재 흐름은 정리와 선택이 동시에 필요한 시기예요.\n조급함보다 우선순위를 세우고 한 단계씩 실행해보세요.`;
+
+    const reading =
+      `${consultation.name || '내담자님'} 안녕하세요.\n` +
+      `현재 흐름은 정리와 선택이 동시에 필요한 시기예요.\n` +
+      `조급함보다 우선순위를 세우고 한 단계씩 실행해보세요.`;
+
     return res.json({ ok: true, reading });
   } catch (error) {
     return next(error);
@@ -257,9 +278,11 @@ router.post('/consultations/:id/reading', async (req, res, next) => {
       finalReading: req.body?.finalReading || '',
       status: 'finalized',
     });
+
     if (!updated) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
+
     return res.json({ ok: true, consultation: updated });
   } catch (error) {
     return next(error);
@@ -305,7 +328,7 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
   }
 });
 
-router.get('/files', async (_, res, next) => {
+router.get('/files', async (_req, res, next) => {
   try {
     const files = await listFiles();
     return res.json({ ok: true, files });
@@ -326,6 +349,7 @@ router.patch('/files/:id', async (req, res, next) => {
     if (!updated) {
       return res.status(404).json({ ok: false, error: 'File not found' });
     }
+
     return res.json({ ok: true, file: updated });
   } catch (error) {
     return next(error);
