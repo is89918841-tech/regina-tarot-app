@@ -39,7 +39,7 @@ app.get('/consultation.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
-app.get('/admin', (_, res) => {
+app.get('/admin', adminAuth, (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
