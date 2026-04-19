@@ -6,6 +6,12 @@ const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
 const consultationRoutes = require('./routes/consultationRoutes');
+const adminAuth = require('./middleware/adminAuth');
+const {
+  SESSION_COOKIE_NAME,
+  parseCookies,
+  verifyAdminSessionToken,
+} = require('./utils/adminSession');
 const requireAdminPage = require('./middleware/requireAdminPage');
 
 const app = express();
@@ -16,6 +22,20 @@ const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 ensureDir(env.uploadRoot).catch((error) => {
   console.error('Failed to ensure upload directory:', error);
 });
+
+function requireAdminPage(req, res, next) {
+  const headerToken = req.get('x-admin-token');
+  const cookies = parseCookies(req);
+  const sessionToken = cookies[SESSION_COOKIE_NAME];
+
+  const headerAuthed = headerToken && headerToken === env.adminToken;
+  const cookieAuthed = verifyAdminSessionToken(sessionToken);
+
+  if (!headerAuthed && !cookieAuthed) {
+    return res.redirect('/admin');
+  }
+  return next();
+}
 
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
