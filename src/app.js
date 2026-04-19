@@ -7,7 +7,9 @@ const { ensureDir } = require('./utils/fileStore');
 const env = require('./config/env');
 const adminRoutes = require('./routes/adminRoutes');
 const readingRoutes = require('./routes/readingRoutes');
-const consultationRoutes = require('./routes/consultationRoutes');
+app.get('/admin2.html', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'admin2.html'));
+});
 const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
