@@ -3,774 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>레지나 리딩 보조앱 (관리자 허브)</title>
+  <title>레지나 리딩 보조앱 (관리자용 간소화)</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    :root{
-      --bg:#07101f; --panel:rgba(13,22,40,.92); --line:#263554; --line2:#33456d;
-      --text:#eef3ff; --muted:#98a7c7; --accent:#6772ff; --accent2:#4655ff;
-      --good:#1f9a68; --shadow:0 18px 60px rgba(0,0,0,.34); --radius:22px;
-    }
+    :root{--bg:#07101f;--panel:rgba(13,22,40,.92);--line:#263554;--line2:#33456d;--text:#eef3ff;--muted:#98a7c7;--accent:#6772ff;--accent2:#4655ff;--good:#1f9a68;--shadow:0 18px 60px rgba(0,0,0,.34);--radius:22px}
     *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{
-      background:radial-gradient(circle at top,#112654 0%, #07101f 36%, #040b15 100%);
-      color:var(--text); font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
-    }
+    body{background:radial-gradient(circle at top,#112654 0%,#07101f 36%,#040b15 100%);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
     button,input,select,textarea{font:inherit}
     .wrap{max-width:1320px;margin:0 auto;padding:22px 16px 40px}
-    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px}
     .layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:14px}
     .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
-    .panel-inner{padding:18px}
-    .title{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0}
-    .subtitle{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6}
-    .grid{display:grid;gap:14px}
-    .stack{display:grid;gap:10px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .between{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-    .section-title{font-size:13px;font-weight:800;color:#d9e1ff;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}
-    .field{display:grid;gap:7px}
-    .label{font-size:13px;font-weight:700;color:#dde5ff}
-    .input,.select,.textarea{
-      width:100%;background:rgba(7,13,25,.9);color:var(--text);border:1px solid var(--line2);
-      border-radius:14px;padding:12px 13px;outline:none;transition:.18s ease;
-    }
-    .textarea{min-height:120px;resize:vertical}
-    .input:focus,.select:focus,.textarea:focus{border-color:#7d87ff;box-shadow:0 0 0 4px rgba(109,118,255,.14)}
-    .btn{
-      appearance:none;border:1px solid var(--line2);background:#1a2643;color:var(--text);padding:11px 14px;
-      border-radius:14px;font-weight:700;cursor:pointer;transition:.16s ease;white-space:nowrap;
-    }
-    .btn:hover{transform:translateY(-1px);border-color:#6274aa}
-    .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}
-    .btn.good{background:linear-gradient(180deg,#229b6b,#167650);border-color:transparent}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#131f38;border:1px solid var(--line);font-size:12px;color:#c3cef0}
-    .chip.on{border-color:#7f8cff;background:rgba(109,118,255,.14);color:#fff}
-    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .kpi-item{background:rgba(8,14,28,.65);border:1px solid var(--line);border-radius:16px;padding:12px}
-    .kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px}
-    .kpi-value{font-size:18px;font-weight:800}
-    .deck-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .mini-card{background:rgba(8,14,28,.72);border:1px solid var(--line);border-radius:16px;padding:12px}
-    .tiny{font-size:12px;color:var(--muted)}
-    .stepper{display:inline-flex;align-items:center;gap:8px}
-    .stepper input{width:62px;text-align:center}
-    .mini-btn{width:38px;height:38px;padding:0;border-radius:12px}
-    .range-wrap{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
-    .checkbox{width:18px;height:18px;accent-color:var(--accent)}
-    .toggle-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px;border-radius:16px;background:rgba(8,14,28,.72);border:1px solid var(--line)}
-    .toggle-card.on{border-color:#6e7dff;background:rgba(109,118,255,.12)}
-    .toggle-card-title{font-size:14px;font-weight:700}
-    .toggle-card-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
-    .number-board-wrap{background:rgba(7,13,25,.72);border:1px solid var(--line);border-radius:18px;padding:12px}
-    .number-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .panel-inner{padding:18px}.title{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0}.subtitle{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6}
+    .grid{display:grid;gap:14px}.stack{display:grid;gap:10px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .section-title{font-size:13px;font-weight:800;color:#d9e1ff;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}.field{display:grid;gap:7px}.label{font-size:13px;font-weight:700;color:#dde5ff}
+    .input,.select{width:100%;background:rgba(7,13,25,.9);color:var(--text);border:1px solid var(--line2);border-radius:14px;padding:12px 13px;outline:none;transition:.18s ease}
+    .btn{appearance:none;border:1px solid var(--line2);background:#1a2643;color:var(--text);padding:11px 14px;border-radius:14px;font-weight:700;cursor:pointer;transition:.16s ease;white-space:nowrap}
+    .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}.btn.good{background:linear-gradient(180deg,#229b6b,#167650);border-color:transparent}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#131f38;border:1px solid var(--line);font-size:12px;color:#c3cef0}.chip.on{border-color:#7f8cff;background:rgba(109,118,255,.14);color:#fff}
+    .deck-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mini-card{background:rgba(8,14,28,.72);border:1px solid var(--line);border-radius:16px;padding:12px}.tiny{font-size:12px;color:var(--muted)}
+    .stepper{display:inline-flex;align-items:center;gap:8px}.stepper input{width:62px;text-align:center}.mini-btn{width:38px;height:38px;padding:0;border-radius:12px}
+    .range-wrap{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}.checkbox{width:18px;height:18px;accent-color:var(--accent)}
+    .toggle-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px;border-radius:16px;background:rgba(8,14,28,.72);border:1px solid var(--line)}.toggle-card.on{border-color:#6e7dff;background:rgba(109,118,255,.12)}
+    .toggle-card-title{font-size:14px;font-weight:700}.toggle-card-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+    .number-board-wrap{background:rgba(7,13,25,.72);border:1px solid var(--line);border-radius:18px;padding:12px}.number-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
     .number-board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;max-height:420px;overflow:auto;padding-right:4px}
-    .num-btn{border:1px solid var(--line);background:#0f1930;color:#e7edff;border-radius:12px;min-height:46px;font-weight:700;cursor:pointer}
-    .num-btn:hover{border-color:#6778ad;background:#162443}
-    .num-btn.selected{background:linear-gradient(180deg,#6d76ff,#4c58ff);border-color:transparent;color:#fff;box-shadow:0 10px 24px rgba(79,89,255,.34)}
-    .num-btn.locked{opacity:.44;cursor:not-allowed}
-    .status{font-size:13px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(7,13,25,.68);color:#dbe4ff}
-    .status.error{color:#ffd1db;border-color:rgba(217,107,136,.45);background:rgba(77,18,34,.22)}
-    .status.good{color:#d1ffe8;border-color:rgba(31,143,99,.45);background:rgba(17,77,53,.24)}
-    .help{font-size:12px;color:var(--muted);line-height:1.55}
-    .draw-list{display:grid;gap:7px}
-    .draw-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(8,14,28,.72);border:1px solid var(--line)}
-    .draw-pos{min-width:56px;font-size:12px;font-weight:800;color:#b7c2ea;padding-top:2px}
-    .draw-name{font-size:14px;line-height:1.5}
-    .copy-box{display:grid;gap:10px}
-    .copy-area{
-      width:100%; min-height:240px; resize:vertical; background:rgba(6,11,22,.95); color:#f7f9ff;
-      border:1px solid var(--line2); border-radius:16px; padding:14px; line-height:1.7;
-    }
-    .copy-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .footer-note{margin-top:12px;font-size:12px;color:var(--muted)}
-    @media (max-width:1080px){.hero,.layout{grid-template-columns:1fr}}
-    @media (max-width:780px){
-      .deck-summary,.kpi{grid-template-columns:1fr 1fr}
-      .number-board{grid-template-columns:repeat(5,minmax(0,1fr))}
-      .title{font-size:28px}
-    }
+    .num-btn{border:1px solid var(--line);background:#0f1930;color:#e7edff;border-radius:12px;min-height:46px;font-weight:700;cursor:pointer}.num-btn.selected{background:linear-gradient(180deg,#6d76ff,#4c58ff);border-color:transparent;color:#fff}.num-btn.locked{opacity:.44;cursor:not-allowed}
+    .status{font-size:13px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(7,13,25,.68);color:#dbe4ff}.status.error{color:#ffd1db;border-color:rgba(217,107,136,.45);background:rgba(77,18,34,.22)}
+    .draw-list{display:grid;gap:7px}.draw-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(8,14,28,.72);border:1px solid var(--line)}.draw-pos{min-width:56px;font-size:12px;font-weight:800;color:#b7c2ea;padding-top:2px}.draw-name{font-size:14px;line-height:1.5}
+    .result-box{white-space:pre-wrap;background:rgba(8,14,28,.8);border:1px solid var(--line);border-radius:18px;padding:16px;font-size:14px;line-height:1.7;color:#f7f9ff;min-height:220px}.footer-note{margin-top:12px;font-size:12px;color:var(--muted)}
+    @media (max-width:1080px){.layout{grid-template-columns:1fr}} @media (max-width:780px){.deck-summary{grid-template-columns:1fr}.number-board{grid-template-columns:repeat(5,minmax(0,1fr))}.title{font-size:28px}}
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script type="text/babel">
+const { useEffect, useMemo, useState } = React;
+const MANIFEST_URL='/data/manifest.json', DECKS_URL='/data/decks.json', UNIVERSAL_URL='/data/universal.json';
+const RUNES_24=["Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz","Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera","Eihwaz","Perthro","Algiz","Sowilo","Tiwaz","Berkano","Ehwaz","Mannaz","Laguz","Ingwaz","Othala","Dagaz"];
+const LENORMAND_36=["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","7 뱀","8 관","9 꽃다발","10 낫","11 채찍","12 새","13 아이","14 여우","15 곰","16 별","17 황새","18 개","19 탑","20 정원","21 산","22 갈림길","23 쥐","24 하트","25 반지","26 책","27 편지","28 남자","29 여자","30 백합","31 태양","32 달","33 열쇠","34 물고기","35 닻","36 십자가"];
+const OGANGI_5=["목(木)","화(火)","토(土)","금(金)","수(水)"], OBANGGI_5=["동","서","남","북","중앙"];
+const ORACLE_KEYWORD_FALLBACK=["경계","확장","정화","인내","회복","소통","결단","유연성","균형","휴식","몰입","신뢰","재정비","성장","재시도","축복","배움","경로수정","연결","해방","용기","겸손","보호","변화","기회","통찰","전환","안정","기초","자기돌봄","성찰","협력","해소","도약","선택","실행","타이밍","감사","용서","열림","집중","휴지기"];
+async function loadJson(url){ const res=await fetch(url,{cache:"no-store"}); if(!res.ok) throw new Error(`JSON fetch 실패: ${url} (${res.status})`); return res.json(); }
+function shuffle(arr){ const next=[...arr]; for(let i=next.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [next[i],next[j]]=[next[j],next[i]]; } return next; }
+function clamp(v,min,max,fallback=min){ const n=Number(v); if(Number.isNaN(n)) return fallback; return Math.min(max,Math.max(min,n)); }
+function cleanAuxValue(entry){ if(typeof entry==="string") return entry; if(!entry||typeof entry!=="object") return ""; const head=entry.hanzi??entry.괘명??entry.name??""; const body=entry.ko??entry.한글??entry.meaning??""; const extra=entry.의미??""; const tail=[body,extra].filter(Boolean).join(" / "); return tail?`${head} (${tail})`:String(head||""); }
+function expandTo78(deck){ if(!Array.isArray(deck)||deck.length===0) return []; const out=[]; while(out.length<78) out.push(...deck); return out.slice(0,78); }
+function makeTextResult(r){ if(!r) return ""; const lines=[`**덱**: ${r.tarotDeck}`,`**장수**: ${r.cardCount}`,"","**포지션별 드로우**",...r.tarot.map((t,i)=>`- ${t.position||`카드 ${i+1}`}: ${t.card}`)]; if(r.runes?.length) lines.push(`**룬**: ${r.runes.join(", ")}`); if(r.oracles?.length) lines.push(`**오라클**: ${r.oracles.map(v=>v.includes(": ")?v.split(": ").slice(1).join(": "):v).join(", ")}`); if(r.lenormand?.length) lines.push(`**레노먼드**: ${r.lenormand.join(", ")}`); if(r.iching?.length) lines.push(`**주역**: ${r.iching.join(", ")}`); if(r.aux?.length) lines.push(`**보조**: ${r.aux.join(", ")}`); return lines.join("\n"); }
+function Stepper({value,min,max,onChange}){ return <div className="stepper"><button type="button" className="btn mini-btn" onClick={()=>onChange(clamp(value-1,min,max,min))}>-</button><input className="input" value={value} onChange={e=>onChange(clamp(e.target.value,min,max,min))}/><button type="button" className="btn mini-btn" onClick={()=>onChange(clamp(value+1,min,max,min))}>+</button></div>; }
 
-  <script type="text/babel">
-    const { useEffect, useMemo, useRef, useState } = React;
+function App(){
+  const [tarotMap,setTarotMap]=useState({}), [oracleMap,setOracleMap]=useState({}), [auxDeckMap,setAuxDeckMap]=useState({}), [iching64,setIching64]=useState([]), [yukyoCards,setYukyoCards]=useState([]), [loaded,setLoaded]=useState(false), [loadError,setLoadError]=useState(""), [loadWarning,setLoadWarning]=useState("");
+  const [tarotDeck,setTarotDeck]=useState(""), [allowReversal,setAllowReversal]=useState(true), [reverseRatio,setReverseRatio]=useState(45), [cardCount,setCardCount]=useState(3), [mode,setMode]=useState("random"), [numMap,setNumMap]=useState([]), [selectedNums,setSelectedNums]=useState([]);
+  const [useRunes,setUseRunes]=useState(false), [runeCount,setRuneCount]=useState(2), [useLenormand,setUseLenormand]=useState(false), [lenormandCount,setLenormandCount]=useState(3), [useIching,setUseIching]=useState(false), [ichingCount,setIchingCount]=useState(1), [useYukyo,setUseYukyo]=useState(false), [yukyoCount,setYukyoCount]=useState(1), [useOracle,setUseOracle]=useState(false), [oracleDeck,setOracleDeck]=useState(""), [oracleCount,setOracleCount]=useState(1), [useOgangi,setUseOgangi]=useState(false), [useObanggi,setUseObanggi]=useState(false), [useAuxDeck,setUseAuxDeck]=useState(false), [selectedAuxDecks,setSelectedAuxDecks]=useState([]), [auxDeckCounts,setAuxDeckCounts]=useState({}), [result,setResult]=useState(null);
+  const allTarotDecks=useMemo(()=>Object.keys(tarotMap),[tarotMap]), allOracleDecks=useMemo(()=>Object.keys(oracleMap),[oracleMap]), allAuxDecks=useMemo(()=>Object.keys(auxDeckMap),[auxDeckMap]);
 
-    const MANIFEST_URL = '/data/manifest.json';
-    const DECKS_URL = '/data/decks.json';
-    const UNIVERSAL_URL = '/data/universal.json';
+  useEffect(()=>{ (async()=>{ try{
+    const manifest=await loadJson(MANIFEST_URL);
+    const tarotObj=Object.fromEntries(await Promise.all(Object.entries(manifest.tarot||{}).map(async([name,path])=>{ const raw=await loadJson(`/data/${path}`); const list=Array.isArray(raw)?raw:(raw&&typeof raw==="object"?Object.values(raw).flat().filter(Boolean):[]); return [name,list]; })));
+    const oracleObj=Object.fromEntries(await Promise.all(Object.entries(manifest.oracle||{}).map(async([name,path])=>{ const raw=await loadJson(`/data/${path}`); const list=Array.isArray(raw)?raw:(raw&&typeof raw==="object"?Object.values(raw).flat().filter(Boolean):[]); return [name,list]; })));
+    const auxObj=Object.fromEntries(await Promise.all(Object.entries(manifest.aux||{}).map(async([name,path])=>{ const raw=await loadJson(`/data/${path}`); let list=[]; if(Array.isArray(raw)) list=raw.map(cleanAuxValue).filter(Boolean); else if(raw&&typeof raw==="object") list=Object.values(raw).flat().map(cleanAuxValue).filter(Boolean); return [name,list]; })));
+    if(manifest.iching) setIching64(await loadJson(`/data/${manifest.iching}`));
+    if(manifest.yukyo){ const y=await loadJson(`/data/${manifest.yukyo}`); setYukyoCards(Array.isArray(y)?y:(y.cards||[])); }
+    try{
+      const decks=await loadJson(DECKS_URL); let universal78=null; try{ universal78=await loadJson(UNIVERSAL_URL); }catch(_){ setLoadWarning("/data/universal.json 을 못 불러와도 78장 기준 fallback 으로 열리게 했어요."); }
+      if(decks.tarot_decks){ for(const [name,cfg] of Object.entries(decks.tarot_decks)){ if(cfg?.alias_of==="UNIVERSAL_78"){ if(Array.isArray(universal78)&&universal78.length===78) tarotObj[name]=[...universal78]; else if(Array.isArray(tarotObj["유니버셜 타로"])&&tarotObj["유니버셜 타로"].length) tarotObj[name]=expandTo78(tarotObj["유니버셜 타로"]); else if(Array.isArray(tarotObj[name])&&tarotObj[name].length) tarotObj[name]=expandTo78(tarotObj[name]); } } }
+      if(decks.oracle_decks){ for(const [name,cfg] of Object.entries(decks.oracle_decks)){ if(Array.isArray(cfg?.cards)&&cfg.cards.length) oracleObj[name]=cfg.cards; else if(!oracleObj[name]) oracleObj[name]=[]; } }
+    }catch(_){ setLoadWarning("decks.json 병합이 실패해도 fallback 기준으로 열리게 했어요."); }
+    setTarotMap(tarotObj); setOracleMap(oracleObj); setAuxDeckMap(auxObj); setTarotDeck(Object.keys(tarotObj)[0]||""); setOracleDeck(Object.keys(oracleObj)[0]||""); setLoaded(true);
+  }catch(err){ setLoadError(String(err?.message||err)); } })(); },[]);
 
-    const RUNES_24 = ["Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz","Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera","Eihwaz","Perthro","Algiz","Sowilo","Tiwaz","Berkano","Ehwaz","Mannaz","Laguz","Ingwaz","Othala","Dagaz"];
-    const LENORMAND_36 = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","7 뱀","8 관","9 꽃다발","10 낫","11 채찍","12 새","13 아이","14 여우","15 곰","16 별","17 황새","18 개","19 탑","20 정원","21 산","22 갈림길","23 쥐","24 하트","25 반지","26 책","27 편지","28 남자","29 여자","30 백합","31 태양","32 달","33 열쇠","34 물고기","35 닻","36 십자가"];
-    const OGANGI_5 = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
-    const OBANGGI_5 = ["동","서","남","북","중앙"];
-    const ORACLE_KEYWORD_FALLBACK = ["경계","확장","정화","인내","회복","소통","결단","유연성","균형","휴식","몰입","신뢰","재정비","성장","재시도","축복","배움","경로수정","연결","해방","용기","겸손","보호","변화","기회","통찰","전환","안정","기초","자기돌봄","성찰","협력","해소","도약","선택","실행","타이밍","감사","용서","열림","집중","휴지기"];
+  useEffect(()=>{ const deck=expandTo78(tarotMap[tarotDeck]||[]); if(deck.length){ if(numMap.length!==deck.length||!numMap.every(c=>deck.includes(c))){ setNumMap(shuffle(deck)); setSelectedNums([]); } } },[tarotDeck,tarotMap]);
+  useEffect(()=>{ const onKey=e=>{ const tag=e.target?.tagName?.toUpperCase?.()||""; if(tag==="INPUT"||tag==="TEXTAREA"||e.target?.isContentEditable) return; if(e.key>="1"&&e.key<="9") setCardCount(Number(e.key)); else if(e.key==="0") setCardCount(10); else if(e.key==="-" ) setCardCount(11); else if(e.key==="=") setCardCount(12); else if((e.key||"").toLowerCase()==="q") setCardCount(13); }; window.addEventListener("keydown",onKey); return ()=>window.removeEventListener("keydown",onKey); },[]);
 
-    async function loadJson(url){
-      const res = await fetch(url, { cache:"no-store" });
-      if(!res.ok) throw new Error(`JSON fetch 실패: ${url} (${res.status})`);
-      return res.json();
-    }
-    function shuffle(arr){
-      const next = [...arr];
-      for(let i = next.length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [next[i], next[j]] = [next[j], next[i]];
-      }
-      return next;
-    }
-    function clamp(value, min, max, fallback=min){
-      const n = Number(value);
-      if(Number.isNaN(n)) return fallback;
-      return Math.min(max, Math.max(min, n));
-    }
-    function cleanAuxValue(entry){
-      if(typeof entry === "string") return entry;
-      if(!entry || typeof entry !== "object") return "";
-      const head = entry.hanzi ?? entry.괘명 ?? entry.name ?? "";
-      const body = entry.ko ?? entry.한글 ?? entry.meaning ?? "";
-      const extra = entry.의미 ?? "";
-      const tail = [body, extra].filter(Boolean).join(" / ");
-      return tail ? `${head} (${tail})` : String(head || "");
-    }
-    function expandTo78(deck){
-      if(!Array.isArray(deck) || deck.length === 0) return [];
-      const out = [];
-      while(out.length < 78) out.push(...deck);
-      return out.slice(0, 78);
-    }
-    function makeTextResult(result){
-      if(!result) return "";
-      const lines = [
-        `**덱**: ${result.tarotDeck}`,
-        `**장수**: ${result.cardCount}`,
-        "",
-        "**포지션별 드로우**",
-        ...result.tarot.map((item, idx) => `- ${item.position || `카드 ${idx+1}`}: ${item.card}`)
-      ];
-      if(result.runes?.length) lines.push(`**룬**: ${result.runes.join(", ")}`);
-      if(result.oracles?.length) lines.push(`**오라클**: ${result.oracles.map(v => v.includes(": ") ? v.split(": ").slice(1).join(": ") : v).join(", ")}`);
-      if(result.lenormand?.length) lines.push(`**레노먼드**: ${result.lenormand.join(", ")}`);
-      if(result.iching?.length) lines.push(`**주역**: ${result.iching.join(", ")}`);
-      if(result.aux?.length) lines.push(`**보조**: ${result.aux.join(", ")}`);
-      return lines.join("\n");
-    }
+  function toggleNum(n){ setSelectedNums(prev=>prev.includes(n)?prev.filter(v=>v!==n):(prev.length>=cardCount?prev:[...prev,n])); }
+  function toggleAuxDeck(name){ setSelectedAuxDecks(prev=>prev.includes(name)?prev.filter(v=>v!==name):[...prev,name]); setAuxDeckCounts(prev=>({...prev,[name]:prev[name]||1})); }
+  function drawTarot(){
+    const deck=expandTo78(tarotMap[tarotDeck]||[]); if(!deck.length){ alert("선택된 타로 덱 데이터가 비어 있어요."); return null; }
+    if(mode==="random"){ const cards=shuffle(deck).slice(0,cardCount).map(name=>({name,reversed:allowReversal&&Math.random()*100<reverseRatio})); return cards.map((x,i)=>({position:`카드 ${i+1}`,card:`${x.name}${x.reversed?" (역방향)":""}`})); }
+    if(selectedNums.length!==cardCount){ alert(`숫자 뽑기는 ${cardCount}개 번호를 골라야 해요. 현재 ${selectedNums.length}개예요.`); return null; }
+    const cards=selectedNums.map(n=>({name:numMap[n-1]||deck[n-1]||"",reversed:allowReversal&&Math.random()*100<reverseRatio}));
+    return cards.map((x,i)=>({position:`카드 ${i+1}`,card:`${x.name}${x.reversed?" (역방향)":""}`}));
+  }
+  function drawYukyo(){ if(!yukyoCards.length) return []; const picks=shuffle(yukyoCards).slice(0,yukyoCount).map(card=>{ if(!card) return ""; const name=card.괘명||card.name||""; const kor=card.한글?`(${card.한글})`:""; const meaning=card.의미?` — ${card.의미}`:""; const up=card.상괘?` — 상:${card.상괘}`:""; const low=card.하괘?` 하:${card.하괘}`:""; return `${name}${kor}${meaning}${up}${low}`.trim(); }).filter(Boolean); if(yukyoCount===13&&picks.length===13){ const months=["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]; return [`주역육효괘(총운): ${picks[0]}`,...months.map((m,i)=>`주역육효괘(${m}): ${picks[i+1]}`)]; } if(picks.length===1) return [`주역육효괘: ${picks[0]}`]; const labels=["본괘","조언","결과"]; return picks.map((v,i)=>`주역육효괘(${labels[i]||i+1}): ${v}`); }
+  function drawAuxDecks(){ const out=[]; for(const name of selectedAuxDecks){ const source=auxDeckMap[name]||[]; const count=clamp(auxDeckCounts[name]||1,1,13,1); const picks=shuffle(source).slice(0,Math.min(count,source.length||count)); for(const item of picks){ if(String(name).includes("귀문방")) out.push(`${name}: ${item} (${Math.random()<0.5?"정방향":"역방향"})`); else out.push(`${name}: ${item}`); } } return out; }
+  function handleDraw(){ const tarot=drawTarot(); if(!tarot) return; setResult({ tarotDeck, cardCount, tarot, runes:useRunes?shuffle(RUNES_24).slice(0,runeCount):[], lenormand:useLenormand?shuffle(LENORMAND_36).slice(0,lenormandCount):[], iching:useIching?shuffle(iching64).slice(0,ichingCount):[], oracles:useOracle?shuffle([...(oracleMap[oracleDeck]?.length?oracleMap[oracleDeck]:ORACLE_KEYWORD_FALLBACK)]).slice(0,oracleCount).map(v=>`${oracleDeck}: ${v}`):[], aux:[...(useOgangi?[`오간기: ${shuffle(OGANGI_5)[0]}`]:[]),...(useObanggi?[`오방기: ${shuffle(OBANGGI_5)[0]}`]:[]),...(useAuxDeck?drawAuxDecks():[]),...(useYukyo?drawYukyo():[])] }); }
+  async function handleCopy(){ const text=makeTextResult(result); if(!text){ alert("먼저 카드를 뽑아주세요."); return; } try{ await navigator.clipboard.writeText(text); alert("복사 완료!"); }catch(_){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.top="-1000px"; ta.style.opacity="0"; document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("복사 완료!"); } }
+  function handleReset(){ setAllowReversal(true); setReverseRatio(45); setCardCount(3); setMode("random"); setSelectedNums([]); setUseRunes(false); setRuneCount(2); setUseLenormand(false); setLenormandCount(3); setUseIching(false); setIchingCount(1); setUseYukyo(false); setYukyoCount(1); setUseOracle(false); setOracleCount(1); setUseOgangi(false); setUseObanggi(false); setUseAuxDeck(false); setSelectedAuxDecks([]); setAuxDeckCounts({}); setResult(null); }
 
-    function Stepper({ value, min, max, onChange }){
-      return (
-        <div className="stepper">
-          <button type="button" className="btn mini-btn" onClick={() => onChange(clamp(value - 1, min, max, min))}>-</button>
-          <input className="input" value={value} onChange={(e) => onChange(clamp(e.target.value, min, max, min))} />
-          <button type="button" className="btn mini-btn" onClick={() => onChange(clamp(value + 1, min, max, min))}>+</button>
+  const currentDeckCards=expandTo78(tarotMap[tarotDeck]||[]), resultText=useMemo(()=>makeTextResult(result),[result]);
+
+  return <div className="wrap">
+    <section className="panel" style={{marginBottom:14}}>
+      <div className="panel-inner">
+        <div className="chips">
+          <span className="chip on">관리자용 드로우 툴</span><span className="chip">랜덤/숫자 뽑기 유지</span><span className="chip">추천 UI 제거</span><span className="chip">복사 버튼 1개</span>
         </div>
-      );
-    }
-
-    function App(){
-      const [tarotMap, setTarotMap] = useState({});
-      const [oracleMap, setOracleMap] = useState({});
-      const [auxDeckMap, setAuxDeckMap] = useState({});
-      const [iching64, setIching64] = useState([]);
-      const [yukyoCards, setYukyoCards] = useState([]);
-      const [loaded, setLoaded] = useState(false);
-      const [loadError, setLoadError] = useState("");
-      const [loadWarning, setLoadWarning] = useState("");
-
-      const [questionInput, setQuestionInput] = useState("");
-      const [recommendStatus, setRecommendStatus] = useState("");
-
-      const [tarotDeck, setTarotDeck] = useState("");
-      const [allowReversal, setAllowReversal] = useState(true);
-      const [reverseRatio, setReverseRatio] = useState(45);
-      const [cardCount, setCardCount] = useState(3);
-      const [numMap, setNumMap] = useState([]);
-      const [selectedNums, setSelectedNums] = useState([]);
-
-      const [useRunes, setUseRunes] = useState(false);
-      const [runeCount, setRuneCount] = useState(2);
-      const [useLenormand, setUseLenormand] = useState(false);
-      const [lenormandCount, setLenormandCount] = useState(3);
-      const [useIching, setUseIching] = useState(false);
-      const [ichingCount, setIchingCount] = useState(1);
-      const [useYukyo, setUseYukyo] = useState(false);
-      const [yukyoCount, setYukyoCount] = useState(1);
-      const [useOracle, setUseOracle] = useState(false);
-      const [oracleDeck, setOracleDeck] = useState("");
-      const [oracleCount, setOracleCount] = useState(1);
-      const [useOgangi, setUseOgangi] = useState(false);
-      const [useObanggi, setUseObanggi] = useState(false);
-      const [useAuxDeck, setUseAuxDeck] = useState(false);
-      const [selectedAuxDecks, setSelectedAuxDecks] = useState([]);
-      const [auxDeckCounts, setAuxDeckCounts] = useState({});
-      const [result, setResult] = useState(null);
-
-      const copyAreaRef = useRef(null);
-
-      const allTarotDecks = useMemo(() => Object.keys(tarotMap), [tarotMap]);
-      const allOracleDecks = useMemo(() => Object.keys(oracleMap), [oracleMap]);
-      const allAuxDecks = useMemo(() => Object.keys(auxDeckMap), [auxDeckMap]);
-
-      useEffect(() => {
-        (async () => {
-          try{
-            const manifest = await loadJson(MANIFEST_URL);
-
-            const tarotEntries = await Promise.all(Object.entries(manifest.tarot || {}).map(async ([name, path]) => {
-              const raw = await loadJson(`/data/${path}`);
-              const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw).flat().filter(Boolean) : []);
-              return [name, list];
-            }));
-            const tarotObj = Object.fromEntries(tarotEntries);
-
-            const oracleEntries = await Promise.all(Object.entries(manifest.oracle || {}).map(async ([name, path]) => {
-              const raw = await loadJson(`/data/${path}`);
-              const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw).flat().filter(Boolean) : []);
-              return [name, list];
-            }));
-            const oracleObj = Object.fromEntries(oracleEntries);
-
-            const auxEntries = await Promise.all(Object.entries(manifest.aux || {}).map(async ([name, path]) => {
-              const raw = await loadJson(`/data/${path}`);
-              let list = [];
-              if(Array.isArray(raw)) list = raw.map(cleanAuxValue).filter(Boolean);
-              else if(raw && typeof raw === "object") list = Object.values(raw).flat().map(cleanAuxValue).filter(Boolean);
-              return [name, list];
-            }));
-            const auxObj = Object.fromEntries(auxEntries);
-
-            if(manifest.iching){
-              const iching = await loadJson(`/data/${manifest.iching}`);
-              setIching64(Array.isArray(iching) ? iching : []);
-            }
-            if(manifest.yukyo){
-              const yukyo = await loadJson(`/data/${manifest.yukyo}`);
-              setYukyoCards(Array.isArray(yukyo) ? yukyo : (yukyo.cards || []));
-            }
-
-            try{
-              const decks = await loadJson(DECKS_URL);
-              let universal78 = null;
-              try{
-                universal78 = await loadJson(UNIVERSAL_URL);
-              }catch(_){
-                setLoadWarning("/data/universal.json 을 못 불러와도 78장 기준 fallback 으로 열리게 했어요.");
-              }
-
-              if(decks.tarot_decks){
-                for(const [name, cfg] of Object.entries(decks.tarot_decks)){
-                  if(cfg?.alias_of === "UNIVERSAL_78"){
-                    if(Array.isArray(universal78) && universal78.length === 78){
-                      tarotObj[name] = [...universal78];
-                    } else if (Array.isArray(tarotObj["유니버셜 타로"]) && tarotObj["유니버셜 타로"].length) {
-                      tarotObj[name] = expandTo78(tarotObj["유니버셜 타로"]);
-                    } else if (Array.isArray(tarotObj[name]) && tarotObj[name].length) {
-                      tarotObj[name] = expandTo78(tarotObj[name]);
-                    }
-                  }
-                }
-              }
-
-              if(decks.oracle_decks){
-                for(const [name, cfg] of Object.entries(decks.oracle_decks)){
-                  if(Array.isArray(cfg?.cards) && cfg.cards.length){
-                    oracleObj[name] = cfg.cards;
-                  }else if(!oracleObj[name]){
-                    oracleObj[name] = [];
-                  }
-                }
-              }
-            }catch(_){
-              setLoadWarning("decks.json 병합이 실패해도 fallback 기준으로 열리게 했어요.");
-            }
-
-            setTarotMap(tarotObj);
-            setOracleMap(oracleObj);
-            setAuxDeckMap(auxObj);
-            setTarotDeck(Object.keys(tarotObj)[0] || "");
-            setOracleDeck(Object.keys(oracleObj)[0] || "");
-            setLoaded(true);
-          }catch(err){
-            setLoadError(String(err?.message || err));
-          }
-        })();
-      }, []);
-
-      useEffect(() => {
-        const deck = tarotMap[tarotDeck] || [];
-        if(deck.length){
-          const basis = expandTo78(deck);
-          if(numMap.length !== basis.length || !numMap.every(card => basis.includes(card))){
-            setNumMap(shuffle(basis));
-            setSelectedNums([]);
-          }
-        }
-      }, [tarotDeck, tarotMap]);
-
-      useEffect(() => {
-        const onKey = (e) => {
-          const tag = e.target?.tagName?.toUpperCase?.() || "";
-          if(tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
-          if(e.key >= "1" && e.key <= "9") setCardCount(Number(e.key));
-          else if(e.key === "0") setCardCount(10);
-          else if(e.key === "-") setCardCount(11);
-          else if(e.key === "=") setCardCount(12);
-          else if((e.key || "").toLowerCase() === "q") setCardCount(13);
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-      }, []);
-
-      function applyRecommendation(config={}){
-        if(config.deck && tarotMap[config.deck]) setTarotDeck(config.deck);
-        if(config.count != null) setCardCount(clamp(config.count, 1, 13, 3));
-        if(typeof config.reversal === "boolean") setAllowReversal(config.reversal);
-        if(config.reverseRatio != null) setReverseRatio(clamp(config.reverseRatio, 0, 100, 45));
-
-        if(typeof config.runes === "boolean") setUseRunes(config.runes);
-        if(config.runeCount != null) setRuneCount(clamp(config.runeCount, 1, 6, 2));
-
-        if(typeof config.lenormand === "boolean") setUseLenormand(config.lenormand);
-        if(config.lenormandCount != null) setLenormandCount(clamp(config.lenormandCount, 1, 5, 3));
-
-        if(typeof config.iching === "boolean") setUseIching(config.iching);
-        if(config.ichingCount != null) setIchingCount(clamp(config.ichingCount, 1, 3, 1));
-
-        if(typeof config.yukyo === "boolean") setUseYukyo(config.yukyo);
-        if(config.yukyoCount != null) setYukyoCount(clamp(config.yukyoCount, 1, 13, 1));
-
-        if(typeof config.oracle === "boolean") setUseOracle(config.oracle);
-        if(config.oracleDeck && oracleMap[config.oracleDeck] !== undefined) setOracleDeck(config.oracleDeck);
-        if(config.oracleCount != null) setOracleCount(clamp(config.oracleCount, 1, 13, 1));
-
-        if(typeof config.ogangi === "boolean") setUseOgangi(config.ogangi);
-        if(typeof config.obanggi === "boolean") setUseObanggi(config.obanggi);
-
-        const auxList = Array.isArray(config.aux) ? config.aux.filter(name => auxDeckMap[name] !== undefined) : [];
-        if(typeof config.useAuxDeck === "boolean"){
-          setUseAuxDeck(config.useAuxDeck);
-        } else if(auxList.length){
-          setUseAuxDeck(true);
-        }
-        if(auxList.length) setSelectedAuxDecks(auxList);
-
-        if(config.auxCounts && typeof config.auxCounts === "object"){
-          const next = {};
-          Object.entries(config.auxCounts).forEach(([name, raw]) => {
-            if(auxDeckMap[name] !== undefined) next[name] = clamp(raw, 1, 13, 1);
-          });
-          setAuxDeckCounts(next);
-        }
-
-        setSelectedNums([]);
-      }
-
-      function toggleNum(n){
-        setSelectedNums(prev => {
-          if(prev.includes(n)) return prev.filter(v => v !== n);
-          if(prev.length >= cardCount) return prev;
-          return [...prev, n];
-        });
-      }
-
-      function toggleAuxDeck(name){
-        setSelectedAuxDecks(prev => prev.includes(name) ? prev.filter(v => v !== name) : [...prev, name]);
-        setAuxDeckCounts(prev => ({ ...prev, [name]: prev[name] || 1 }));
-      }
-
-      function drawTarot(){
-        const deck = tarotMap[tarotDeck] || [];
-        if(!deck.length){ alert("선택된 타로 덱 데이터가 비어 있어요."); return null; }
-        const basis = expandTo78(deck);
-        if(selectedNums.length !== cardCount){
-          alert(`숫자 뽑기는 ${cardCount}개 번호를 골라야 해요. 현재 ${selectedNums.length}개예요.`);
-          return null;
-        }
-        const chosen = selectedNums.map(n => ({
-          name: numMap[n - 1] || basis[n - 1] || "",
-          reversed: allowReversal && Math.random() * 100 < reverseRatio
-        }));
-        return chosen.map((item, idx) => ({ position:`카드 ${idx + 1}`, card:`${item.name}${item.reversed ? " (역방향)" : ""}` }));
-      }
-
-      function drawYukyo(){
-        if(!yukyoCards.length) return [];
-        const picks = shuffle(yukyoCards).slice(0, yukyoCount).map(card => {
-          if(!card) return "";
-          const name = card.괘명 || card.name || "";
-          const kor = card.한글 ? `(${card.한글})` : "";
-          const meaning = card.의미 ? ` — ${card.의미}` : "";
-          const up = card.상괘 ? ` — 상:${card.상괘}` : "";
-          const low = card.하괘 ? ` 하:${card.하괘}` : "";
-          return `${name}${kor}${meaning}${up}${low}`.trim();
-        }).filter(Boolean);
-
-        if(yukyoCount === 13 && picks.length === 13){
-          const months = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
-          return [`주역육효괘(총운): ${picks[0]}`, ...months.map((month, idx) => `주역육효괘(${month}): ${picks[idx + 1]}`)];
-        }
-        if(picks.length === 1) return [`주역육효괘: ${picks[0]}`];
-        const labels = ["본괘","조언","결과"];
-        return picks.map((v, idx) => `주역육효괘(${labels[idx] || idx + 1}): ${v}`);
-      }
-
-      function drawAuxDecks(){
-        const out = [];
-        for(const name of selectedAuxDecks){
-          const source = auxDeckMap[name] || [];
-          const count = clamp(auxDeckCounts[name] || 1, 1, 13, 1);
-          const picks = shuffle(source).slice(0, Math.min(count, source.length || count));
-          for(const item of picks){
-            if(String(name).includes("귀문방")) out.push(`${name}: ${item} (${Math.random() < 0.5 ? "정방향" : "역방향"})`);
-            else out.push(`${name}: ${item}`);
-          }
-        }
-        return out;
-      }
-
-      function handleDraw(){
-        const tarot = drawTarot();
-        if(!tarot) return;
-        const next = {
-          tarotDeck,
-          cardCount,
-          tarot,
-          runes: useRunes ? shuffle(RUNES_24).slice(0, runeCount) : [],
-          lenormand: useLenormand ? shuffle(LENORMAND_36).slice(0, lenormandCount) : [],
-          iching: useIching ? shuffle(iching64).slice(0, ichingCount) : [],
-          oracles: useOracle ? shuffle((oracleMap[oracleDeck]?.length ? oracleMap[oracleDeck] : ORACLE_KEYWORD_FALLBACK)).slice(0, oracleCount).map(v => `${oracleDeck}: ${v}`) : [],
-          aux: [
-            ...(useOgangi ? [`오간기: ${shuffle(OGANGI_5)[0]}`] : []),
-            ...(useObanggi ? [`오방기: ${shuffle(OBANGGI_5)[0]}`] : []),
-            ...(useAuxDeck ? drawAuxDecks() : []),
-            ...(useYukyo ? drawYukyo() : [])
-          ]
-        };
-        setResult(next);
-        setTimeout(() => document.getElementById("result-area")?.scrollIntoView({ behavior:"smooth", block:"start" }), 60);
-      }
-
-      async function handleCopyPlain(){
-        const text = makeTextResult(result);
-        if(!text){ alert("먼저 카드를 뽑아주세요."); return; }
-        try{
-          await navigator.clipboard.writeText(text);
-          alert("복사 완료!");
-        }catch(_){
-          copyAreaRef.current?.focus();
-          copyAreaRef.current?.select();
-          document.execCommand("copy");
-          alert("복사 완료!");
-        }
-      }
-
-      function handleSelectAll(){
-        copyAreaRef.current?.focus();
-        copyAreaRef.current?.select();
-      }
-
-      async function handleRecommendApply(){
-        const question = String(questionInput || "").trim();
-        if(!question){ setRecommendStatus("질문을 먼저 넣어주세요."); return; }
-        try{
-          setRecommendStatus("추천 세팅을 불러오는 중이에요…");
-          const res = await fetch("/api/admin/recommend", {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            credentials:"include",
-            body: JSON.stringify({ question })
-          });
-
-          const text = await res.text();
-          let data;
-          try{
-            data = JSON.parse(text);
-          }catch(_){
-            throw new Error("추천 API가 JSON 대신 HTML을 반환했어요. /api/admin/recommend 라우트를 확인해주세요.");
-          }
-
-          if(!res.ok || !data.ok) throw new Error(data.error || "추천 생성 실패");
-          applyRecommendation(data.recommendation || {});
-          setRecommendStatus("추천 세팅을 적용했어요. 숫자 78장에서 바로 골라 뽑으시면 돼요.");
-        }catch(err){
-          setRecommendStatus(String(err?.message || err));
-        }
-      }
-
-      function handleReset(){
-        setAllowReversal(true); setReverseRatio(45); setCardCount(3); setSelectedNums([]);
-        setUseRunes(false); setRuneCount(2); setUseLenormand(false); setLenormandCount(3); setUseIching(false); setIchingCount(1);
-        setUseYukyo(false); setYukyoCount(1); setUseOracle(false); setOracleCount(1); setUseOgangi(false); setUseObanggi(false);
-        setUseAuxDeck(false); setSelectedAuxDecks([]); setAuxDeckCounts({}); setResult(null); setRecommendStatus("");
-      }
-
-      const currentDeckCards = expandTo78(tarotMap[tarotDeck] || []);
-      const numberDeckCount = 78;
-      const resultText = useMemo(() => makeTextResult(result), [result]);
-
-      return (
-        <div className="wrap">
-          <div className="hero">
-            <section className="panel">
-              <div className="panel-inner">
-                <div className="chips" style={{marginBottom:10}}>
-                  <span className="chip on">레지나 리딩 보조앱 관리자 허브</span>
-                  <span className="chip">프리셋 제거</span>
-                  <span className="chip">숫자뽑기 78장 고정</span>
-                  <span className="chip">복붙 편의 강화</span>
-                </div>
-                <h1 className="title">숫자뽑기 중심으로 다시 정리한 전체 코드</h1>
-                <div className="subtitle">
-                  어떤 타로 덱을 골라도 숫자판은 78장 기준으로 돌고, 결과는 아래 복붙 박스에서 한 번에 전체 선택·복사되게 구성했습니다.
-                </div>
-                <div className="row" style={{marginTop:14}}>
-                  <button className="btn primary" type="button" onClick={handleRecommendApply}>질문 기반 추천 세팅 적용</button>
-                  <button className="btn" type="button" onClick={handleReset}>전체 초기화</button>
-                </div>
-              </div>
-            </section>
-
-            <section className="panel">
-              <div className="panel-inner stack">
-                <div className="field">
-                  <label className="label">질문 기반 추천 허브</label>
-                  <textarea
-                    className="textarea"
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    placeholder="예: 상대 속마음과 연락 흐름을 같이 보고 싶어요. 레노먼드나 보조도구도 붙여주세요."
-                  />
-                </div>
-                <div className="kpi">
-                  <div className="kpi-item"><div className="kpi-label">타로 덱</div><div className="kpi-value">{loaded ? allTarotDecks.length : "-"}</div></div>
-                  <div className="kpi-item"><div className="kpi-label">오라클</div><div className="kpi-value">{loaded ? allOracleDecks.length : "-"}</div></div>
-                  <div className="kpi-item"><div className="kpi-label">보조덱</div><div className="kpi-value">{loaded ? allAuxDecks.length : "-"}</div></div>
-                  <div className="kpi-item"><div className="kpi-label">숫자판</div><div className="kpi-value">78</div></div>
-                </div>
-                {recommendStatus && <div className={`status ${recommendStatus.includes("적용") ? "good" : "error"}`}>{recommendStatus}</div>}
-                {loadWarning && <div className="status">{loadWarning}</div>}
-                {loadError && <div className="status error">{loadError}</div>}
-              </div>
-            </section>
-          </div>
-
-          <div className="layout">
-            <aside className="grid">
-              <section className="panel">
-                <div className="panel-inner stack">
-                  <h2 className="section-title">핵심 설정</h2>
-                  <div className="field">
-                    <label className="label">메인 타로 덱</label>
-                    <select className="select" value={tarotDeck} onChange={(e) => setTarotDeck(e.target.value)}>
-                      {allTarotDecks.map(name => <option key={name} value={name}>{name}</option>)}
-                    </select>
-                  </div>
-                  <div className="deck-summary">
-                    <div className="mini-card"><div className="tiny">현재 덱 원본 카드 수</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{currentDeckCards.length || "-"}</div></div>
-                    <div className="mini-card"><div className="tiny">숫자 뽑기 기준</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{numberDeckCount}장</div></div>
-                  </div>
-                  <div className="field">
-                    <label className="label">장수</label>
-                    <Stepper value={cardCount} min={1} max={13} onChange={setCardCount} />
-                    <div className="help">키보드 1~9, 0=10, -=11, =(+)=12, Q=13</div>
-                  </div>
-                  <div className="field">
-                    <label className="label">역방향 허용</label>
-                    <div className="range-wrap">
-                      <label className="row"><input className="checkbox" type="checkbox" checked={allowReversal} onChange={(e) => setAllowReversal(e.target.checked)} /> 사용</label>
-                      <input type="range" min="0" max="100" value={reverseRatio} onChange={(e) => setReverseRatio(Number(e.target.value))} />
-                      <strong>{reverseRatio}%</strong>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="panel">
-                <div className="panel-inner stack">
-                  <h2 className="section-title">보조 도구</h2>
-
-                  <div className={`toggle-card ${useRunes ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useRunes} onChange={(e) => setUseRunes(e.target.checked)} />
-                    <div><div className="toggle-card-title">룬스톤</div><div className="toggle-card-desc">감정 포인트와 상징 한 번 더 잡기</div></div>
-                    {useRunes && <Stepper value={runeCount} min={1} max={6} onChange={setRuneCount} />}
-                  </div>
-
-                  <div className={`toggle-card ${useLenormand ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useLenormand} onChange={(e) => setUseLenormand(e.target.checked)} />
-                    <div><div className="toggle-card-title">레노먼드</div><div className="toggle-card-desc">관계 상황, 사건성, 연결 흐름 보강</div></div>
-                    {useLenormand && <Stepper value={lenormandCount} min={1} max={5} onChange={setLenormandCount} />}
-                  </div>
-
-                  <div className={`toggle-card ${useIching ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useIching} onChange={(e) => setUseIching(e.target.checked)} />
-                    <div><div className="toggle-card-title">주역</div><div className="toggle-card-desc">결정 / 방향성 / 흐름 정리</div></div>
-                    {useIching && <Stepper value={ichingCount} min={1} max={3} onChange={setIchingCount} />}
-                  </div>
-
-                  <div className={`toggle-card ${useYukyo ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useYukyo} onChange={(e) => setUseYukyo(e.target.checked)} />
-                    <div><div className="toggle-card-title">주역육효괘</div><div className="toggle-card-desc">1 / 3 / 13장 대응</div></div>
-                    {useYukyo && <Stepper value={yukyoCount} min={1} max={13} onChange={setYukyoCount} />}
-                  </div>
-
-                  <div className={`toggle-card ${useOracle ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useOracle} onChange={(e) => setUseOracle(e.target.checked)} />
-                    <div>
-                      <div className="toggle-card-title">오라클</div>
-                      <div className="toggle-card-desc">질문 분위기에 맞는 보조 메시지</div>
-                      {useOracle && (
-                        <div className="stack" style={{marginTop:8}}>
-                          <select className="select" value={oracleDeck} onChange={(e) => setOracleDeck(e.target.value)}>
-                            {allOracleDecks.map(name => <option key={name} value={name}>{name}</option>)}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                    {useOracle && <Stepper value={oracleCount} min={1} max={13} onChange={setOracleCount} />}
-                  </div>
-
-                  <div className={`toggle-card ${useAuxDeck ? "on" : ""}`}>
-                    <input className="checkbox" type="checkbox" checked={useAuxDeck} onChange={(e) => setUseAuxDeck(e.target.checked)} />
-                    <div><div className="toggle-card-title">보조덱 묶음</div><div className="toggle-card-desc">귀문방 / 갑골영패 / 기타 보조덱 동시 선택</div></div>
-                    <div className="tiny">{selectedAuxDecks.length}개 선택</div>
-                  </div>
-
-                  {useAuxDeck && (
-                    <div className="stack">
-                      {allAuxDecks.map(name => {
-                        const checked = selectedAuxDecks.includes(name);
-                        return (
-                          <div key={name} className={`toggle-card ${checked ? "on" : ""}`}>
-                            <input className="checkbox" type="checkbox" checked={checked} onChange={() => toggleAuxDeck(name)} />
-                            <div><div className="toggle-card-title">{name}</div></div>
-                            {checked ? (
-                              <Stepper value={auxDeckCounts[name] || 1} min={1} max={13} onChange={(v) => setAuxDeckCounts(prev => ({ ...prev, [name]: v }))} />
-                            ) : <div className="tiny">off</div>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <div className="row">
-                    <label className="row"><input className="checkbox" type="checkbox" checked={useOgangi} onChange={(e) => setUseOgangi(e.target.checked)} /> 오간기</label>
-                    <label className="row"><input className="checkbox" type="checkbox" checked={useObanggi} onChange={(e) => setUseObanggi(e.target.checked)} /> 오방기</label>
-                  </div>
-                </div>
-              </section>
-            </aside>
-
-            <main className="grid">
-              <section className="panel">
-                <div className="panel-inner stack">
-                  <div className="between">
-                    <h2 className="section-title" style={{margin:0}}>숫자 뽑기</h2>
-                    <div className="tiny">프리셋 없이 여기서 바로 고르면 됩니다. 어떤 덱이든 78장 기준입니다.</div>
-                  </div>
-                  <div className="number-board-wrap">
-                    <div className="number-toolbar">
-                      <div className="tiny">선택 {selectedNums.length}/{cardCount}</div>
-                      <div className="tiny">숫자에 마우스를 올리면 해당 카드명이 툴팁으로 보여요.</div>
-                    </div>
-                    <div className="number-board">
-                      {Array.from({ length: numberDeckCount }, (_, i) => i + 1).map(n => {
-                        const selected = selectedNums.includes(n);
-                        const locked = !selected && selectedNums.length >= cardCount;
-                        return (
-                          <button
-                            key={n}
-                            type="button"
-                            title={numMap[n - 1] || ""}
-                            disabled={locked}
-                            onClick={() => toggleNum(n)}
-                            className={`num-btn ${selected ? "selected" : ""} ${locked ? "locked" : ""}`}
-                          >
-                            {n}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <button
-                      className="btn"
-                      type="button"
-                      onClick={() => {
-                        const deck = tarotMap[tarotDeck] || [];
-                        const fixedDeck = expandTo78(deck);
-                        setNumMap(shuffle(fixedDeck));
-                        setSelectedNums([]);
-                      }}
-                    >
-                      숫자맵 다시 섞기
-                    </button>
-
-                    <button className="btn primary" type="button" onClick={handleDraw}>
-                      카드 뽑기
-                    </button>
-
-                    <button className="btn good" type="button" onClick={handleCopyPlain}>
-                      즉시 복사
-                    </button>
-
-                    <button className="btn" type="button" onClick={handleSelectAll}>
-                      전체 선택
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <section id="result-area" className="panel">
-                <div className="panel-inner stack">
-                  <div className="between">
-                    <h2 className="section-title" style={{margin:0}}>결과 복붙 박스</h2>
-                    <div className="tiny">아래 박스에서 바로 Ctrl+C 하셔도 됩니다.</div>
-                  </div>
-
-                  {result && (
-                    <div className="draw-list">
-                      {result.tarot.map((item, idx) => (
-                        <div key={idx} className="draw-item">
-                          <div className="draw-pos">{item.position}</div>
-                          <div className="draw-name">{item.card}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="copy-box">
-                    <textarea
-                      ref={copyAreaRef}
-                      className="copy-area"
-                      value={resultText}
-                      readOnly
-                      placeholder="카드를 뽑으면 복붙용 결과가 여기 크게 정리됩니다."
-                    />
-                    <div className="copy-actions">
-                      <button className="btn good" type="button" onClick={handleCopyPlain}>한 번에 복사</button>
-                      <button className="btn" type="button" onClick={handleSelectAll}>박스 전체 선택</button>
-                    </div>
-                  </div>
-
-                  <div className="footer-note">
-                    로딩 상태: {loaded ? "완료" : (loadError ? "오류" : "불러오는 중")} ·
-                    타로 {allTarotDecks.length} · 오라클 {allOracleDecks.length} · 보조덱 {allAuxDecks.length} ·
-                    주역 {iching64.length} · 주역육효 {yukyoCards.length}
-                  </div>
-                </div>
-              </section>
-            </main>
-          </div>
+        <h1 className="title">레지나 리딩 보조앱 관리자용 간소화 버전</h1>
+        <div className="subtitle">추천 덱과 스프레드는 admin2에서 관리하고, 여기서는 실제 카드 뽑기와 결과 복사만 하도록 정리했습니다.</div>
+        <div className="row" style={{marginTop:14}}>
+          <button className={`btn ${mode==="random"?"primary":""}`} type="button" onClick={()=>setMode("random")}>랜덤 뽑기</button>
+          <button className={`btn ${mode==="numbers"?"primary":""}`} type="button" onClick={()=>setMode("numbers")}>숫자 뽑기</button>
+          <button className="btn" type="button" onClick={handleReset}>전체 초기화</button>
         </div>
-      );
-    }
+        {loadWarning && <div className="status" style={{marginTop:12}}>{loadWarning}</div>}
+        {loadError && <div className="status error" style={{marginTop:12}}>{loadError}</div>}
+      </div>
+    </section>
 
-    ReactDOM.render(<App />, document.getElementById("root"));
-  </script>
+    <div className="layout">
+      <aside className="grid">
+        <section className="panel"><div className="panel-inner stack">
+          <h2 className="section-title">핵심 설정</h2>
+          <div className="field"><label className="label">메인 타로 덱</label><select className="select" value={tarotDeck} onChange={e=>{setTarotDeck(e.target.value);setSelectedNums([]);}}>{allTarotDecks.map(name=><option key={name} value={name}>{name}</option>)}</select></div>
+          <div className="deck-summary"><div className="mini-card"><div className="tiny">현재 덱 원본 카드 수</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>{currentDeckCards.length||"-"}</div></div><div className="mini-card"><div className="tiny">숫자 뽑기 기준</div><div style={{fontSize:22,fontWeight:800,marginTop:4}}>78장</div></div></div>
+          <div className="field"><label className="label">장수</label><Stepper value={cardCount} min={1} max={13} onChange={setCardCount}/><div className="tiny">키보드 1~9, 0=10, -=11, =(+)=12, Q=13</div></div>
+          <div className="field"><label className="label">역방향 허용</label><div className="range-wrap"><label className="row"><input className="checkbox" type="checkbox" checked={allowReversal} onChange={e=>setAllowReversal(e.target.checked)}/> 사용</label><input type="range" min="0" max="100" value={reverseRatio} onChange={e=>setReverseRatio(Number(e.target.value))}/><strong>{reverseRatio}%</strong></div></div>
+        </div></section>
+
+        <section className="panel"><div className="panel-inner stack">
+          <h2 className="section-title">보조 도구</h2>
+          <div className={`toggle-card ${useRunes?"on":""}`}><input className="checkbox" type="checkbox" checked={useRunes} onChange={e=>setUseRunes(e.target.checked)}/><div><div className="toggle-card-title">룬스톤</div><div className="toggle-card-desc">감정 포인트와 상징</div></div>{useRunes&&<Stepper value={runeCount} min={1} max={6} onChange={setRuneCount}/>}</div>
+          <div className={`toggle-card ${useLenormand?"on":""}`}><input className="checkbox" type="checkbox" checked={useLenormand} onChange={e=>setUseLenormand(e.target.checked)}/><div><div className="toggle-card-title">레노먼드</div><div className="toggle-card-desc">관계 상황, 사건성, 연결 흐름</div></div>{useLenormand&&<Stepper value={lenormandCount} min={1} max={5} onChange={setLenormandCount}/>}</div>
+          <div className={`toggle-card ${useIching?"on":""}`}><input className="checkbox" type="checkbox" checked={useIching} onChange={e=>setUseIching(e.target.checked)}/><div><div className="toggle-card-title">주역</div><div className="toggle-card-desc">결정 / 방향성 / 흐름 정리</div></div>{useIching&&<Stepper value={ichingCount} min={1} max={3} onChange={setIchingCount}/>}</div>
+          <div className={`toggle-card ${useYukyo?"on":""}`}><input className="checkbox" type="checkbox" checked={useYukyo} onChange={e=>setUseYukyo(e.target.checked)}/><div><div className="toggle-card-title">주역육효괘</div><div className="toggle-card-desc">1 / 3 / 13장 대응</div></div>{useYukyo&&<Stepper value={yukyoCount} min={1} max={13} onChange={setYukyoCount}/>}</div>
+          <div className={`toggle-card ${useOracle?"on":""}`}><input className="checkbox" type="checkbox" checked={useOracle} onChange={e=>setUseOracle(e.target.checked)}/><div><div className="toggle-card-title">오라클</div><div className="toggle-card-desc">질문 분위기에 맞는 보조 메시지</div>{useOracle&&<div className="stack" style={{marginTop:8}}><select className="select" value={oracleDeck} onChange={e=>setOracleDeck(e.target.value)}>{allOracleDecks.map(name=><option key={name} value={name}>{name}</option>)}</select></div>}</div>{useOracle&&<Stepper value={oracleCount} min={1} max={13} onChange={setOracleCount}/>}</div>
+          <div className={`toggle-card ${useAuxDeck?"on":""}`}><input className="checkbox" type="checkbox" checked={useAuxDeck} onChange={e=>setUseAuxDeck(e.target.checked)}/><div><div className="toggle-card-title">보조덱 묶음</div><div className="toggle-card-desc">귀문방 / 갑골영패 / 기타 보조덱</div></div><div className="tiny">{selectedAuxDecks.length}개 선택</div></div>
+          {useAuxDeck&&<div className="stack">{allAuxDecks.map(name=>{ const checked=selectedAuxDecks.includes(name); return <div key={name} className={`toggle-card ${checked?"on":""}`}><input className="checkbox" type="checkbox" checked={checked} onChange={()=>toggleAuxDeck(name)}/><div><div className="toggle-card-title">{name}</div></div>{checked?<Stepper value={auxDeckCounts[name]||1} min={1} max={13} onChange={v=>setAuxDeckCounts(prev=>({...prev,[name]:v}))}/>:<div className="tiny">off</div>}</div>; })}</div>}
+          <div className="row"><label className="row"><input className="checkbox" type="checkbox" checked={useOgangi} onChange={e=>setUseOgangi(e.target.checked)}/> 오간기</label><label className="row"><input className="checkbox" type="checkbox" checked={useObanggi} onChange={e=>setUseObanggi(e.target.checked)}/> 오방기</label></div>
+        </div></section>
+      </aside>
+
+      <main className="grid">
+        <section className="panel"><div className="panel-inner stack">
+          <div className="between"><h2 className="section-title" style={{margin:0}}>{mode==="random"?"랜덤 뽑기":"숫자 뽑기"}</h2><div className="tiny">{mode==="random"?"버튼 누를 때마다 랜덤으로 뽑습니다.":"숫자에 마우스를 올리면 해당 카드명이 툴팁으로 보여요."}</div></div>
+          {mode==="numbers"&&<div className="number-board-wrap"><div className="number-toolbar"><div className="tiny">선택 {selectedNums.length}/{cardCount}</div><div className="tiny">숫자판은 78장 기준입니다.</div></div><div className="number-board">{Array.from({length:78},(_,i)=>i+1).map(n=>{ const selected=selectedNums.includes(n), locked=!selected&&selectedNums.length>=cardCount; return <button key={n} type="button" title={numMap[n-1]||""} disabled={locked} onClick={()=>toggleNum(n)} className={`num-btn ${selected?"selected":""} ${locked?"locked":""}`}>{n}</button>; })}</div></div>}
+          <div className="row">{mode==="numbers"&&<button className="btn" type="button" onClick={()=>{ const deck=expandTo78(tarotMap[tarotDeck]||[]); setNumMap(shuffle(deck)); setSelectedNums([]); }}>숫자맵 다시 섞기</button>}<button className="btn primary" type="button" onClick={handleDraw}>{mode==="random"?"랜덤 뽑기 실행":"선택 번호로 뽑기"}</button></div>
+        </div></section>
+
+        <section className="panel"><div className="panel-inner stack">
+          <div className="between"><h2 className="section-title" style={{margin:0}}>결과</h2><button className="btn good" type="button" onClick={handleCopy}>결과 복사</button></div>
+          {result ? <><div className="draw-list">{result.tarot.map((item,idx)=><div key={idx} className="draw-item"><div className="draw-pos">{item.position}</div><div className="draw-name">{item.card}</div></div>)}</div><div className="result-box">{makeTextResult(result)}</div></> : <div className="result-box">아직 결과가 없어요. 왼쪽에서 설정을 잡고 카드를 뽑으면 여기 정리됩니다.</div>}
+          <div className="footer-note">로딩 상태: {loaded ? "완료" : (loadError ? "오류" : "불러오는 중")} · 타로 {allTarotDecks.length} · 오라클 {allOracleDecks.length} · 보조덱 {allAuxDecks.length} · 주역 {iching64.length} · 주역육효 {yukyoCards.length}</div>
+        </div></section>
+      </main>
+    </div>
+  </div>;
+}
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
 </body>
 </html>
