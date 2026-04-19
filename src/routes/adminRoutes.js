@@ -89,6 +89,27 @@ router.post('/logout', (req, res) => {
 
 router.use(adminAuth);
 
+router.get('/consultations', async (_, res, next) => {
+  try {
+    const consultations = await listConsultations();
+    return res.json({ ok: true, consultations });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch('/consultations/:id', async (req, res, next) => {
+  try {
+    const updated = await updateConsultationById(req.params.id, req.body || {});
+    if (!updated) {
+      return res.status(404).json({ ok: false, error: 'Consultation not found' });
+    }
+    return res.json({ ok: true, consultation: updated });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post('/upload', upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
