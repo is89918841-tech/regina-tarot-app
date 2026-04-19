@@ -85,7 +85,6 @@ const { useEffect, useMemo, useState } = React;
 const MANIFEST_URL = '/data/manifest.json';
 const DECKS_URL = '/data/decks.json';
 const UNIVERSAL_URL = '/data/universal.json';
-const YUKYO_FALLBACK_URL = '/data/주역육효_simple.json';
 
 const RUNES_24 = ["Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz","Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera","Eihwaz","Perthro","Algiz","Sowilo","Tiwaz","Berkano","Ehwaz","Mannaz","Laguz","Ingwaz","Othala","Dagaz"];
 const LENORMAND_36 = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","7 뱀","8 관","9 꽃다발","10 낫","11 채찍","12 새","13 아이","14 여우","15 곰","16 별","17 황새","18 개","19 탑","20 정원","21 산","22 갈림길","23 쥐","24 하트","25 반지","26 책","27 편지","28 남자","29 여자","30 백합","31 태양","32 달","33 열쇠","34 물고기","35 닻","36 십자가"];
@@ -126,19 +125,6 @@ function expandTo78(deck){
   while(out.length < 78) out.push(...deck);
   return out.slice(0, 78);
 }
-function normalizeYukyoCard(card){
-  if(!card) return "";
-  if(typeof card === "string") return card.trim();
-  const name = card.괘명 || card.name || card.title || "";
-  const kor = card.한글 ? `(${card.한글})` : "";
-  const meaning = card.의미 || card.meaning || "";
-  const extra = [];
-  if(meaning) extra.push(meaning);
-  if(card.상괘) extra.push(`상:${card.상괘}`);
-  if(card.하괘) extra.push(`하:${card.하괘}`);
-  const tail = extra.length ? ` — ${extra.join(" / ")}` : "";
-  return `${name}${kor}${tail}`.trim();
-}
 function makeTextResult(result){
   if(!result) return "";
   const lines = [
@@ -155,6 +141,7 @@ function makeTextResult(result){
   if(result.aux?.length) lines.push(`**보조**: ${result.aux.join(", ")}`);
   return lines.join("\n");
 }
+
 function Stepper({ value, min, max, onChange }){
   return (
     <div className="stepper">
@@ -236,17 +223,10 @@ function App(){
           })
         ));
 
-        if(manifest.iching){
-          const ich = await loadJson(`/data/${manifest.iching}`);
-          setIching64(Array.isArray(ich) ? ich : []);
-        }
-
-        try{
-          const yukyoSource = manifest.yukyo ? `/data/${manifest.yukyo}` : YUKYO_FALLBACK_URL;
-          const y = await loadJson(yukyoSource);
+        if(manifest.iching) setIching64(await loadJson(`/data/${manifest.iching}`));
+        if(manifest.yukyo){
+          const y = await loadJson(`/data/${manifest.yukyo}`);
           setYukyoCards(Array.isArray(y) ? y : (y.cards || []));
-        }catch(_){
-          setYukyoCards([]);
         }
 
         try{
@@ -362,7 +342,15 @@ function App(){
 
   function drawYukyo(){
     if(!yukyoCards.length) return [];
-    const picks = shuffle(yukyoCards).slice(0, yukyoCount).map(normalizeYukyoCard).filter(Boolean);
+    const picks = shuffle(yukyoCards).slice(0, yukyoCount).map(card => {
+      if(!card) return "";
+      const name = card.괘명 || card.name || "";
+      const kor = card.한글 ? `(${card.한글})` : "";
+      const meaning = card.의미 ? ` — ${card.의미}` : "";
+      const up = card.상괘 ? ` — 상:${card.상괘}` : "";
+      const low = card.하괘 ? ` 하:${card.하괘}` : "";
+      return `${name}${kor}${meaning}${up}${low}`.trim();
+    }).filter(Boolean);
 
     if(yukyoCount === 13 && picks.length === 13){
       const months = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
@@ -555,7 +543,7 @@ function App(){
                 <input className="checkbox" type="checkbox" checked={useYukyo} onChange={(e) => setUseYukyo(e.target.checked)} />
                 <div>
                   <div className="toggle-card-title">주역육효괘</div>
-                  <div className="toggle-card-desc">64괘 / 1·3·13장 대응</div>
+                  <div className="toggle-card-desc">1 / 3 / 13장 대응</div>
                 </div>
                 {useYukyo && <Stepper value={yukyoCount} min={1} max={13} onChange={setYukyoCount} />}
               </div>
