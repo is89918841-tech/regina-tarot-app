@@ -12,6 +12,7 @@ const {
   parseCookies,
   verifyAdminSessionToken,
 } = require('./utils/adminSession');
+const requireAdminPage = require('./middleware/requireAdminPage');
 
 const app = express();
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -58,23 +59,20 @@ app.get('/consultation.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
-app.get('/admin', adminAuth, (_, res) => {
+app.get('/admin', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-app.get(['/admin/helper', '/admin/helper.html'], requireAdminPage, (_, res) => {
+app.get(['/admin/helper', '/admin/helper.html'], adminAuth({ mode: 'redirect' }), (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
-app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], requireAdminPage, (_, res) => {
+app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth({ mode: 'redirect' }), (_, res) => {
   res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
 app.get(['/private/admin-helper.html', '/private/admin-grand-tableau.html'], (_req, res) => {
-  res.status(403).json({
-    ok: false,
-    error: 'Direct access is forbidden. Use protected /admin routes.',
-  });
+  res.redirect('/admin?auth=required');
 });
 
 app.use((error, _req, res, _next) => {
