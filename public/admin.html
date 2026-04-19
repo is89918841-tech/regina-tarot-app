@@ -294,12 +294,18 @@
         }, [selectedConsultation]);
 
         async function login() {
+          const normalizedToken = token.trim();
+          if (!normalizedToken) {
+            setError('ADMIN_TOKEN을 입력해주세요.');
+            return;
+          }
+
           try {
             const res = await fetch('/api/admin/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
-              body: JSON.stringify({ token }),
+              body: JSON.stringify({ token: normalizedToken }),
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || '인증 실패');
@@ -578,16 +584,24 @@
             React.createElement('div', { className: 'card login-card' },
               React.createElement('h1', { style: { marginTop: 0 } }, 'Regina Admin Login'),
               React.createElement('p', { className: 'muted' }, '관리자 토큰으로 로그인 후 대시보드 기능을 사용할 수 있습니다.'),
-              React.createElement('div', { className: 'field' },
-                React.createElement('label', null, 'Admin Token'),
-                React.createElement('input', {
-                  value: token,
-                  onChange: (e) => setToken(e.target.value),
-                  placeholder: 'ADMIN_TOKEN 입력',
-                })
-              ),
-              React.createElement('div', { className: 'row' },
-                React.createElement('button', { className: 'primary', onClick: login }, '로그인')
+              React.createElement('form', {
+                onSubmit: (e) => {
+                  e.preventDefault();
+                  login();
+                },
+              },
+                React.createElement('div', { className: 'field' },
+                  React.createElement('label', null, 'Admin Token'),
+                  React.createElement('input', {
+                    value: token,
+                    onChange: (e) => setToken(e.target.value),
+                    placeholder: 'ADMIN_TOKEN 입력',
+                    autoFocus: true,
+                  })
+                ),
+                React.createElement('div', { className: 'row' },
+                  React.createElement('button', { className: 'primary', type: 'submit' }, '로그인')
+                )
               ),
               status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
             )
