@@ -40,6 +40,8 @@
       .chip.sent { background:#0f766e; }
       .chip.payment { background:#7c3aed; }
       .layout-2col { display: grid; grid-template-columns: minmax(420px, 1fr) minmax(520px, 1.2fr); gap: 16px; }
+      .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+      .login-card { width: 100%; max-width: 460px; }
       .section-title { margin: 0 0 8px; font-size: 16px; }
       .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 10px; }
       .field { display: flex; flex-direction: column; gap: 6px; }
@@ -562,16 +564,34 @@
           );
         }
 
+        if (!authenticated) {
+          return React.createElement('div', { className: 'login-shell' },
+            React.createElement('div', { className: 'card login-card' },
+              React.createElement('h1', { style: { marginTop: 0 } }, 'Regina Admin Login'),
+              React.createElement('p', { className: 'muted' }, '관리자 토큰으로 로그인 후 대시보드 기능을 사용할 수 있습니다.'),
+              React.createElement('div', { className: 'field' },
+                React.createElement('label', null, 'Admin Token'),
+                React.createElement('input', {
+                  value: token,
+                  onChange: (e) => setToken(e.target.value),
+                  placeholder: 'ADMIN_TOKEN 입력',
+                })
+              ),
+              React.createElement('div', { className: 'row' },
+                React.createElement('button', { className: 'primary', onClick: login }, '로그인')
+              ),
+              status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
+            )
+          );
+        }
+
         return React.createElement('div', { className: 'wrap' },
           React.createElement('h1', null, 'Regina Admin Dashboard'),
           React.createElement('div', { className: 'card' },
-            React.createElement('label', null, 'Admin Token'),
-            React.createElement('input', { value: token, onChange: (e) => setToken(e.target.value), placeholder: 'ADMIN_TOKEN 입력' }),
             React.createElement('div', { className: 'row' },
-              React.createElement('button', { className: 'primary', onClick: login }, '세션 로그인'),
               React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
-              React.createElement('button', { className: 'primary', onClick: fetchFiles, disabled: !authenticated }, '파일 목록 새로고침'),
-              React.createElement('button', { className: 'primary', onClick: fetchConsultations, disabled: !authenticated }, '접수 목록 새로고침')
+              React.createElement('button', { className: 'primary', onClick: fetchFiles }, '파일 목록 새로고침'),
+              React.createElement('button', { className: 'primary', onClick: fetchConsultations }, '접수 목록 새로고침')
             ),
             status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
           ),
