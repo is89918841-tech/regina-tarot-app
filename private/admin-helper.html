@@ -671,9 +671,18 @@
                   </div>
                   <button className="btn" type="button" onClick={() => {
   const deck = tarotMap[tarotDeck] || [];
-  const fixedDeck = (deck.length >= 78 ? deck : [...deck, ...deck, ...deck]).slice(0, 78);
-  setNumMap(shuffle(fixedDeck)); setSelectedNums([]);
-}}>숫자맵 다시 섞기</button>
+ <button
+  className="btn"
+  type="button"
+  onClick={() => {
+    const deck = tarotMap[tarotDeck] || [];
+    const fixedDeck = (deck.length >= 78 ? deck : [...deck, ...deck, ...deck]).slice(0, 78);
+    setNumMap(shuffle(fixedDeck));
+    setSelectedNums([]);
+  }}
+>
+  숫자맵 다시 섞기
+</button>
                     <button className="btn primary" type="button" onClick={handleDraw}>카드 뽑기</button>
                     <button className="btn good" type="button" onClick={handleCopyPlain}>즉시 복사</button>
                     <button className="btn" type="button" onClick={handleSelectAll}>전체 선택</button>
