@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>레지나 리딩 보조앱 (β) — JSON</title>
     <meta name="description" content="Tarot / Oracle / I Ching helper by Regina. JSON-driven + numbers draw + copy.">
-    <script src="./레지나 리딩 보조앱 asfd (β) — JSON_files/saved_resource.js.다운로드"></script>
-    <script crossorigin="" src="./레지나 리딩 보조앱 asfd (β) — JSON_files/react.production.min.js.다운로드"></script>
-    <script crossorigin="" src="./레지나 리딩 보조앱 asfd (β) — JSON_files/react-dom.production.min.js.다운로드"></script>
-    <script crossorigin="" src="./레지나 리딩 보조앱 asfd (β) — JSON_files/babel.min.js.다운로드"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <style>
       html, body { height: 100%; background: #0f172a; }
       .shadow-soft { box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
@@ -122,8 +120,8 @@ var CountStepper = React.memo(function CountStepper(_ref3) {
 });
 function App() {
   var _tarotMap$tarotDeck, _result$lenormand, _result$runes, _result$iching, _result$oracles, _result$aux;
-  var MANIFEST_URL = "./data/manifest.json";
-  var DECKS_URL = "./data/decks.json"; // optional alias/extra lists
+  var MANIFEST_URL = "/data/manifest.json";
+  var DECKS_URL = "/data/decks.json"; // optional alias/extra lists
 
   // store
   var _useState = useState({}),
@@ -280,7 +278,7 @@ function App() {
                     case 0:
                       _ref7 = _slicedToArray(_ref5, 2), name = _ref7[0], path = _ref7[1];
                       _context2.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context2.v;
                       // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
@@ -308,7 +306,7 @@ function App() {
                     case 0:
                       _ref0 = _slicedToArray(_ref8, 2), name = _ref0[0], path = _ref0[1];
                       _context3.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context3.v;
                       // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
@@ -336,7 +334,7 @@ function App() {
                     case 0:
                       _ref11 = _slicedToArray(_ref1, 2), name = _ref11[0], path = _ref11[1];
                       _context4.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context4.v;
                       // some aux decks may be objects: map to readable strings
@@ -370,7 +368,7 @@ function App() {
             }
             _t = setIching64;
             _context5.n = 5;
-            return json("./data/".concat(m.iching));
+            return json("/data/".concat(m.iching));
           case 5:
             _t(_context5.v);
           case 6:
@@ -379,7 +377,7 @@ function App() {
               break;
             }
             _context5.n = 7;
-            return json("./data/".concat(m.yukyo));
+            return json("/data/".concat(m.yukyo));
           case 7:
             y = _context5.v;
             setYukyoCards(Array.isArray(y) ? y : y.cards || []);
@@ -393,7 +391,7 @@ function App() {
             universal78 = null;
             _context5.p = 10;
             _context5.n = 11;
-            return json("./data/universal.json");
+            return json("/data/universal.json");
           case 11:
             universal78 = _context5.v;
             _context5.n = 13;
@@ -1176,8 +1174,8 @@ var CountStepper = React.memo(function CountStepper(_ref3) {
 });
 function App() {
   var _tarotMap$tarotDeck, _result$lenormand, _result$runes, _result$iching, _result$oracles, _result$aux;
-  var MANIFEST_URL = "./data/manifest.json";
-  var DECKS_URL = "./data/decks.json"; // optional alias/extra lists
+  var MANIFEST_URL = "/data/manifest.json";
+  var DECKS_URL = "/data/decks.json"; // optional alias/extra lists
 
   // store
   var _useState = useState({}),
@@ -1334,7 +1332,7 @@ function App() {
                     case 0:
                       _ref7 = _slicedToArray(_ref5, 2), name = _ref7[0], path = _ref7[1];
                       _context2.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context2.v;
                       // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
@@ -1362,7 +1360,7 @@ function App() {
                     case 0:
                       _ref0 = _slicedToArray(_ref8, 2), name = _ref0[0], path = _ref0[1];
                       _context3.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context3.v;
                       // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
@@ -1390,7 +1388,7 @@ function App() {
                     case 0:
                       _ref11 = _slicedToArray(_ref1, 2), name = _ref11[0], path = _ref11[1];
                       _context4.n = 1;
-                      return json("./data/".concat(path));
+                      return json("/data/".concat(path));
                     case 1:
                       raw = _context4.v;
                       // some aux decks may be objects: map to readable strings
@@ -1424,7 +1422,7 @@ function App() {
             }
             _t = setIching64;
             _context5.n = 5;
-            return json("./data/".concat(m.iching));
+            return json("/data/".concat(m.iching));
           case 5:
             _t(_context5.v);
           case 6:
@@ -1433,7 +1431,7 @@ function App() {
               break;
             }
             _context5.n = 7;
-            return json("./data/".concat(m.yukyo));
+            return json("/data/".concat(m.yukyo));
           case 7:
             y = _context5.v;
             setYukyoCards(Array.isArray(y) ? y : y.cards || []);
@@ -1447,7 +1445,7 @@ function App() {
             universal78 = null;
             _context5.p = 10;
             _context5.n = 11;
-            return json("./data/universal.json");
+            return json("/data/universal.json");
           case 11:
             universal78 = _context5.v;
             _context5.n = 13;
@@ -2159,8 +2157,8 @@ root.render(/*#__PURE__*/React.createElement(App, null));
       });
 
       function App(){
-        const MANIFEST_URL = "./data/manifest.json";
-        const DECKS_URL   = "./data/decks.json"; // optional alias/extra lists
+        const MANIFEST_URL = "/data/manifest.json";
+        const DECKS_URL   = "/data/decks.json"; // optional alias/extra lists
 
         // store
         const [tarotMap, setTarotMap] = useState({});
@@ -2211,7 +2209,7 @@ const [result, setResult] = useState(null);
               const m = await json(MANIFEST_URL);
 
               const tarotEntries = await Promise.all(Object.entries(m.tarot||{}).map(async ([name,path])=>{
-                const raw = await json(`./data/${path}`);
+                const raw = await json(`/data/${path}`);
                 // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
                 let arr = raw;
                 if (!Array.isArray(raw) && raw && typeof raw === 'object') {
@@ -2222,7 +2220,7 @@ const [result, setResult] = useState(null);
               let tarotObj = Object.fromEntries(tarotEntries);
 
               const oracleEntries = await Promise.all(Object.entries(m.oracle||{}).map(async ([name,path])=>{
-                const raw = await json(`./data/${path}`);
+                const raw = await json(`/data/${path}`);
                 // tarot deck json can be array OR object of arrays (e.g., ALICE_MAJOR...)
                 let arr = raw;
                 if (!Array.isArray(raw) && raw && typeof raw === 'object') {
@@ -2234,7 +2232,7 @@ const [result, setResult] = useState(null);
 
               // aux decks from manifest (보조덱)
               const auxEntries = await Promise.all(Object.entries(m.aux||{}).map(async ([name,path])=>{
-                const raw = await json(`./data/${path}`);
+                const raw = await json(`/data/${path}`);
                 // some aux decks may be objects: map to readable strings
                 let arr = raw;
                 if (Array.isArray(raw) && raw.length && typeof raw[0] === 'object') {
@@ -2252,9 +2250,9 @@ const [result, setResult] = useState(null);
               }));
               const auxObj = Object.fromEntries(auxEntries);
 
-              if (m.iching) setIching64(await json(`./data/${m.iching}`));
+              if (m.iching) setIching64(await json(`/data/${m.iching}`));
               if (m.yukyo) {
-                const y = await json(`./data/${m.yukyo}`);
+                const y = await json(`/data/${m.yukyo}`);
                 setYukyoCards(Array.isArray(y) ? y : (y.cards || []));
               }
 
@@ -2263,7 +2261,7 @@ const [result, setResult] = useState(null);
                 const d = await json(DECKS_URL);
                 // alias_of UNIVERSAL_78
                 let universal78 = null;
-                try { universal78 = await json("./data/universal.json"); } catch {}
+                try { universal78 = await json("/data/universal.json"); } catch {}
                 if (d.tarot_decks && universal78){
                   for(const [name, cfg] of Object.entries(d.tarot_decks)){
                     if (cfg && cfg.alias_of === "UNIVERSAL_78" && Array.isArray(universal78) && universal78.length){
