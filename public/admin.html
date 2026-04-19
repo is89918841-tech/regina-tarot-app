@@ -1,734 +1,134 @@
-<!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Regina Admin Dashboard</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 0; background: #020617; color: #e2e8f0; }
-      .wrap { max-width: 1320px; margin: 0 auto; padding: 20px; }
-      .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #334155; }
-      input, select, button, textarea { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
-      textarea { width: 100%; min-height: 80px; resize: vertical; }
-      button { cursor: pointer; }
-      button:disabled { opacity: .55; cursor: not-allowed; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; border-bottom: 1px solid #334155; padding: 8px; font-size: 14px; vertical-align: top; }
-      tr.clickable { cursor: pointer; }
-      tr.clickable:hover { background: rgba(59, 130, 246, 0.12); }
-      tr.selected { background: rgba(59, 130, 246, 0.22); }
-      .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-      .row > * { flex: 1; min-width: 120px; }
-      .danger { background: #b91c1c; border: 0; }
-      .primary { background: #2563eb; border: 0; }
-      .tool-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: #0b3b2e; color: #d1fae5; border: 1px solid #065f46; padding: 10px 14px; border-radius: 10px; font-weight: 600; }
-      .tool-btn:hover { background: #0f513f; }
-      .muted { color: #94a3b8; font-size: 12px; }
-      .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
-      .s-processed { background: #065f46; }
-      .s-processing { background: #92400e; }
-      .s-error { background: #7f1d1d; }
-      .s-uploaded, .s-saved { background: #1e3a8a; }
-      .msg-error { color: #fecaca; }
-      .msg-info { color: #bfdbfe; }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
+function App() {
+  const [token, setToken] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [consultations, setConsultations] = useState([]);
+  const [selectedId, setSelectedId] = useState('');
+  const [status, setStatus] = useState({ type: 'info', text: '' });
+  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({
+    deck: '',
+    topic: '',
+    priority: 'core',
+    type: 'guidebook',
+    files: [],
+  });
+  const [recommendationForm, setRecommendationForm] = useState({
+    deck: '',
+    spreadName: '',
+    cardCount: 3,
+    spreadPositions: '',
+    supportTools: '',
+    reason: '',
+  });
+  const [drawDraft, setDrawDraft] = useState(null);
+  const [finalReadingDraft, setFinalReadingDraft] = useState('');
+  const [kakaoDraftDraft, setKakaoDraftDraft] = useState('');
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script>
-      const { useState, useEffect, useMemo } = React;
-      const MAX_FILE_MB = 100;
-      const STATUS_ORDER = ['submitted', 'paid', 'recommended', 'drawn', 'finalized', 'sent'];
-      const STATUS_LABELS = {
-        submitted: '접수됨',
-        paid: '결제확인',
-        recommended: '추천생성',
-        drawn: '자동드로우',
-        finalized: '최종리딩',
-        sent: '전송완료',
-      };
-      const INTERNAL_TOOLS = [
-        { label: '리딩 보조앱 열기', url: 'https://regina-tarot-app.onrender.com/admin/helper' },
-        { label: '그랑따블로 열기', url: 'https://regina-tarot-app.onrender.com/admin/grand-tableau' },
-      ];
+  const selectedConsultation = useMemo(
+    () => consultations.find((item) => item.id === selectedId) || null,
+    [consultations, selectedId]
+  );
 
-      const MOCK_TAROT_CARDS = [
-        'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
-        'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit',
-        'Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance', 'The Devil',
-        'The Tower', 'The Star', 'The Moon', 'The Sun', 'Judgement', 'The World',
-        'Ace of Cups', 'Ace of Pentacles', 'Queen of Swords', 'King of Wands'
-      ];
+  function setError(text) {
+    setStatus({ type: 'error', text });
+  }
 
-      function formatBytes(bytes) {
-        if (!bytes && bytes !== 0) return '-';
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-      }
+  function setInfo(text) {
+    setStatus({ type: 'info', text });
+  }
 
-      function splitCsv(input) {
-        if (!input) return [];
-        return String(input).split(',').map((v) => v.trim()).filter(Boolean);
-      }
+  async function handleGenerateFinalReading() {
+    if (!selectedConsultation) return;
 
-      function joinCsv(arr) {
-        if (!Array.isArray(arr) || arr.length === 0) return '';
-        return arr.join(', ');
-      }
+    const merged = {
+      ...selectedConsultation,
+      recommendation: {
+        deck: recommendationForm.deck.trim(),
+        spreadName: recommendationForm.spreadName.trim(),
+        cardCount: Number(recommendationForm.cardCount) || 3,
+        spreadPositions: splitCsv(recommendationForm.spreadPositions),
+        supportTools: splitCsv(recommendationForm.supportTools),
+        reason: recommendationForm.reason.trim(),
+      },
+      drawResult: drawDraft,
+    };
 
-      function getChipClass(status) {
-        const safe = STATUS_ORDER.includes(status) ? status : 'submitted';
-        return `chip ${safe}`;
-      }
+    const text = buildFinalReading(merged);
+    setFinalReadingDraft(text);
+    setInfo('최종 리딩 초안을 생성했습니다.');
+  }
 
-      function buildMockRecommendation(question) {
-        const text = String(question || '').toLowerCase();
-        if (text.includes('연애') || text.includes('관계') || text.includes('재회')) {
-          return {
-            deck: '로제딕 타로',
-            spreadName: '핵심 정리 3카드',
-            cardCount: 3,
-            spreadPositions: ['현재 상황', '고민의 핵심', '조언'],
-            supportTools: ['레노먼드'],
-            reason: '관계 흐름과 선택 지점을 간결하게 확인하기 적합한 구성입니다.',
-          };
-        }
-        if (text.includes('이직') || text.includes('직장') || text.includes('사업')) {
-          return {
-            deck: '세피로트 타로',
-            spreadName: '의사결정 3카드',
-            cardCount: 3,
-            spreadPositions: ['현실 조건', '리스크', '실행 조언'],
-            supportTools: ['주역'],
-            reason: '실행 가능성과 리스크 균형을 보기에 적합한 질문 유형입니다.',
-          };
-        }
-        return {
-          deck: '로제딕 타로',
-          spreadName: '기본 3카드',
-          cardCount: 3,
-          spreadPositions: ['현재', '흐름', '조언'],
-          supportTools: ['레노먼드', '귀문방'],
-          reason: '질문의 핵심 흐름을 빠르게 요약하기 위한 기본 추천입니다.',
-        };
-      }
+  async function handleSaveFinalReading() {
+    if (!selectedConsultation) return;
+    try {
+      await patchConsultation(selectedConsultation.id, {
+        finalReading: finalReadingDraft,
+        status: 'finalized',
+      });
+      await fetchConsultations();
+      setInfo('최종 리딩 저장 완료');
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
-      function shuffle(array) {
-        const out = [...array];
-        for (let i = out.length - 1; i > 0; i -= 1) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [out[i], out[j]] = [out[j], out[i]];
-        }
-        return out;
-      }
+  async function handleCopyFinalReading() {
+    const ok = await copyText(finalReadingDraft);
+    if (ok) setInfo('최종 리딩 복사 완료');
+    else setError('복사 실패: 브라우저 권한을 확인해주세요.');
+  }
 
-      function buildMockDrawResult(recommendation) {
-        const rec = recommendation || {};
-        const cardCount = Math.max(1, Number(rec.cardCount) || 3);
-        const positions = Array.isArray(rec.spreadPositions) && rec.spreadPositions.length > 0
-          ? rec.spreadPositions
-          : Array.from({ length: cardCount }, (_, idx) => `포지션 ${idx + 1}`);
+  async function handleMakeKakaoDraft() {
+    if (!selectedConsultation) return;
+    const text = `안녕하세요. 접수해주신 [${selectedConsultation.menuTitle || '상담'}] 리딩 정리본 보내드려요.\n\n${finalReadingDraft || ''}`;
+    setKakaoDraftDraft(text);
+    try {
+      await patchConsultation(selectedConsultation.id, { kakaoDraft: text });
+      await fetchConsultations();
+      setInfo('카톡용 문구 생성 및 저장 완료');
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
-        const picked = shuffle(MOCK_TAROT_CARDS).slice(0, cardCount);
-        const tarot = picked.map((card, idx) => ({
-          position: positions[idx] || `포지션 ${idx + 1}`,
-          card,
-        }));
+  async function handleCopyKakaoDraft() {
+    const ok = await copyText(kakaoDraftDraft);
+    if (ok) setInfo('카톡 문구 복사 완료');
+    else setError('복사 실패: 브라우저 권한을 확인해주세요.');
+  }
 
-        const tools = Array.isArray(rec.supportTools) ? rec.supportTools : [];
-
-        return {
-          tarotDeck: rec.deck || '로제딕 타로',
-          cardCount,
-          tarot,
-          runes: tools.includes('룬') ? ['ᚠ Fehu'] : [],
-          lenormand: tools.includes('레노먼드') ? ['22 갈림길'] : [],
-          iching: tools.includes('주역') ? ['수화기제'] : [],
-          oracles: tools.includes('오라클') ? ['Trust the timing'] : [],
-          aux: tools.includes('귀문방') ? ['귀문방: 무명귀 (역방향)'] : [],
-          locked: false,
-        };
-      }
-
-      function buildFinalReading(consultation) {
-        const rec = consultation.recommendation || {};
-        const draw = consultation.drawResult || {};
-        const tarotLines = Array.isArray(draw.tarot)
-          ? draw.tarot.map((item) => `- ${item.position}: ${item.card}`).join('\n')
-          : '';
-        return [
-          `질문: ${consultation.question || '-'}`,
-          '',
-          `[추천 구성]`,
-          `덱: ${rec.deck || '-'}`,
-          `스프레드: ${rec.spreadName || '-'} (${rec.cardCount || '-' }장)`,
-          `포지션: ${Array.isArray(rec.spreadPositions) ? rec.spreadPositions.join(' / ') : '-'}`,
-          `보조도구: ${Array.isArray(rec.supportTools) ? rec.supportTools.join(', ') : '-'}`,
-          `추천 이유: ${rec.reason || '-'}`,
-          '',
-          `[드로우 결과]`,
-          tarotLines || '- 카드 결과 없음',
-          draw.lenormand && draw.lenormand.length ? `레노먼드: ${draw.lenormand.join(', ')}` : '',
-          draw.aux && draw.aux.length ? `보조: ${draw.aux.join(', ')}` : '',
-          '',
-          `종합: 현재 흐름을 명확히 정리하고, 단기 선택보다 실행 순서를 먼저 확정하는 것이 좋습니다.`,
-        ].filter(Boolean).join('\n');
-      }
-
-      async function copyText(text) {
-        if (!text) return false;
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch (_) {
-          return false;
-        }
-      }
-
-      function App() {
-        const [token, setToken] = useState('');
-        const [authenticated, setAuthenticated] = useState(false);
-        const [files, setFiles] = useState([]);
-        const [consultations, setConsultations] = useState([]);
-        const [selectedId, setSelectedId] = useState('');
-        const [status, setStatus] = useState({ type: 'info', text: '' });
-        const [uploading, setUploading] = useState(false);
-        const [form, setForm] = useState({ deck: '', topic: '', priority: 'core', type: 'guidebook', files: [] });
-        const [recommendationForm, setRecommendationForm] = useState({
-          deck: '', spreadName: '', cardCount: 3, spreadPositions: '', supportTools: '', reason: '',
-        });
-        const [drawDraft, setDrawDraft] = useState(null);
-        const [finalReadingDraft, setFinalReadingDraft] = useState('');
-        const [kakaoDraftDraft, setKakaoDraftDraft] = useState('');
-
-        const selectedConsultation = useMemo(
-          () => consultations.find((item) => item.id === selectedId) || null,
-          [consultations, selectedId]
-        );
-
-        function setError(text) { setStatus({ type: 'error', text }); }
-        function setInfo(text) { setStatus({ type: 'info', text }); }
-
-        useEffect(() => {
-          const params = new URLSearchParams(window.location.search);
-          const authState = params.get('auth');
-          if (authState === 'required') {
-            setStatus({ type: 'info', text: '관리자 도구는 로그인 후 접근할 수 있습니다. 먼저 로그인해주세요.' });
-          }
-        }, []);
-
-        useEffect(() => {
-          (async () => {
-            try {
-              const res = await fetch('/api/admin/session', { credentials: 'include' });
-              if (!res.ok) return setAuthenticated(false);
-              const data = await res.json();
-              if (data.ok && data.authenticated) {
-                setAuthenticated(true);
-                await Promise.all([fetchFiles(), fetchConsultations()]);
-              }
-            } catch (_) {
-              setAuthenticated(false);
-            }
-          })();
-        }, []);
-
-        useEffect(() => {
-          if (!consultations.length) {
-            setSelectedId('');
-            return;
-          }
-          if (!selectedId || !consultations.some((item) => item.id === selectedId)) {
-            setSelectedId(consultations[0].id);
-          }
-        }, [consultations, selectedId]);
-
-        useEffect(() => {
-          if (!selectedConsultation) {
-            setRecommendationForm({ deck: '', spreadName: '', cardCount: 3, spreadPositions: '', supportTools: '', reason: '' });
-            setDrawDraft(null);
-            setFinalReadingDraft('');
-            setKakaoDraftDraft('');
-            return;
-          }
-
-          const rec = selectedConsultation.recommendation || {};
-          setRecommendationForm({
-            deck: rec.deck || '',
-            spreadName: rec.spreadName || '',
-            cardCount: rec.cardCount || 3,
-            spreadPositions: joinCsv(rec.spreadPositions),
-            supportTools: joinCsv(rec.supportTools),
-            reason: rec.reason || '',
-          });
-          setDrawDraft(selectedConsultation.drawResult || null);
-          setFinalReadingDraft(selectedConsultation.finalReading || '');
-          setKakaoDraftDraft(selectedConsultation.kakaoDraft || '');
-        }, [selectedConsultation]);
-
-        async function login() {
-          const normalizedToken = token.trim();
-          if (!normalizedToken) {
-            setError('ADMIN_TOKEN을 입력해주세요.');
-            return;
-          }
-
-          try {
-            const res = await fetch('/api/admin/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ token: normalizedToken }),
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '인증 실패');
-            setAuthenticated(true);
-            await Promise.all([fetchFiles(), fetchConsultations()]);
-            setInfo('로그인되었습니다.');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function logout() {
-          await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
-          setAuthenticated(false);
-          setFiles([]);
-          setConsultations([]);
-          setToken('');
-          setInfo('로그아웃 되었습니다.');
-        }
-
-        async function fetchFiles() {
-          try {
-            const res = await fetch('/api/admin/files', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '조회 실패');
-            setFiles(data.files);
-            setInfo(`총 ${data.files.length}개 파일`);
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function upload() {
-          if (!form.file) return setError('파일을 선택해주세요.');
-          if (!authenticated) return setError('먼저 인증해주세요.');
-
-          const fileMb = form.file.size / (1024 * 1024);
-          if (fileMb > MAX_FILE_MB) {
-            return setError(`파일 크기가 ${MAX_FILE_MB}MB를 초과했어요. 현재 ${fileMb.toFixed(2)}MB`);
-          }
-
-          setUploading(true);
-          setInfo('업로드/벡터 인덱싱 진행 중... 대용량 PDF는 시간이 걸릴 수 있어요.');
-
-          try {
-            const body = new FormData();
-            body.append('file', form.file);
-            body.append('deck', form.deck);
-            body.append('topic', form.topic);
-            body.append('priority', form.priority);
-            body.append('type', form.type);
-
-            const res = await fetch('/api/admin/upload', {
-              method: 'POST',
-              credentials: 'include',
-              body,
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '업로드 실패');
-
-            setInfo(`업로드 완료: 상태=${data.file.status}`);
-            setForm({ deck: '', topic: '', priority: 'core', type: 'guidebook', file: null });
-            await fetchFiles();
-          } catch (e) {
-            setError(e.message);
-          } finally {
-            setUploading(false);
-          }
-        }
-
-        async function updateRow(file) {
-          try {
-            const res = await fetch(`/api/admin/files/${file.id}`, {
-              method: 'PATCH',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(file),
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '수정 실패');
-            setInfo('메타데이터 수정 완료');
-            await fetchFiles();
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function removeRow(id) {
-          if (!confirm('삭제할까요?')) return;
-          try {
-            const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE', credentials: 'include' });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error || '삭제 실패');
-            setInfo('삭제 완료');
-            await fetchFiles();
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        function statusClass(status) {
-          if (status === 'processed') return 'status s-processed';
-          if (status === 'processing') return 'status s-processing';
-          if (status === 'error') return 'status s-error';
-          return 'status s-uploaded';
-        }
-
-        return React.createElement('div', { className: 'wrap' },
-          React.createElement('h1', null, 'Regina Admin Dashboard'),
-          React.createElement('div', { className: 'card' },
-            React.createElement('label', null, 'Admin Token'),
-            React.createElement('input', { value: token, onChange: (e) => setToken(e.target.value), placeholder: 'ADMIN_TOKEN 입력' }),
-            React.createElement('div', { className: 'row' },
-              React.createElement('button', { className: 'primary', onClick: login }, '세션 로그인'),
-              React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
-              React.createElement('button', { className: 'primary', onClick: fetchFiles, disabled: !authenticated }, '파일 목록 새로고침')
-            ),
-            React.createElement('div', { className: 'muted' }, `권장 최대 파일 크기: ${MAX_FILE_MB}MB (PDF/TXT/DOCX)`)
-          ),
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', null, '지식 파일 업로드'),
-            React.createElement('div', { className: 'row' },
-              React.createElement('input', { value: form.deck, placeholder: 'deck (예: 나전의 빛 타로)', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
-              React.createElement('input', { value: form.topic, placeholder: 'topic (예: 연애)', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
-        async function handleGenerateFinalReading() {
-          if (!selectedConsultation) return;
-          const merged = {
-            ...selectedConsultation,
-            recommendation: {
-              deck: recommendationForm.deck.trim(),
-              spreadName: recommendationForm.spreadName.trim(),
-              cardCount: Number(recommendationForm.cardCount) || 3,
-              spreadPositions: splitCsv(recommendationForm.spreadPositions),
-              supportTools: splitCsv(recommendationForm.supportTools),
-              reason: recommendationForm.reason.trim(),
-            },
-            drawResult: drawDraft,
-          };
-          const text = buildFinalReading(merged);
-          setFinalReadingDraft(text);
-          setInfo('최종 리딩 초안을 생성했습니다.');
-        }
-
-        async function handleSaveFinalReading() {
-          if (!selectedConsultation) return;
-          try {
-            await patchConsultation(selectedConsultation.id, {
-              finalReading: finalReadingDraft,
-              status: 'finalized',
-            });
-            await fetchConsultations();
-            setInfo('최종 리딩 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleCopyFinalReading() {
-          const ok = await copyText(finalReadingDraft);
-          if (ok) setInfo('최종 리딩 복사 완료');
-          else setError('복사 실패: 브라우저 권한을 확인해주세요.');
-        }
-
-        async function handleMakeKakaoDraft() {
-          if (!selectedConsultation) return;
-          const text = `안녕하세요. 접수해주신 [${selectedConsultation.menuTitle || '상담'}] 리딩 정리본 보내드려요.\n\n${finalReadingDraft || ''}`;
-          setKakaoDraftDraft(text);
-          try {
-            await patchConsultation(selectedConsultation.id, { kakaoDraft: text });
-            await fetchConsultations();
-            setInfo('카톡용 문구 생성 및 저장 완료');
-          } catch (e) {
-            setError(e.message);
-          }
-        }
-
-        async function handleCopyKakaoDraft() {
-          const ok = await copyText(kakaoDraftDraft);
-          if (ok) setInfo('카톡 문구 복사 완료');
-          else setError('복사 실패: 브라우저 권한을 확인해주세요.');
-        }
-
-        function fileStatusClass(s) {
-          if (s === 'processed') return 'status s-processed';
-          if (s === 'processing') return 'status s-processing';
-          if (s === 'error') return 'status s-error';
-          return 'status s-uploaded';
-        }
-
-        function renderStatusSteps(currentStatus) {
-          const idx = STATUS_ORDER.indexOf(currentStatus);
-          return React.createElement('div', { className: 'status-steps' },
-            ...STATUS_ORDER.map((statusCode, index) => React.createElement('div', {
-              key: statusCode,
-              className: `step ${index < idx ? 'done' : ''} ${index === idx ? 'active' : ''}`,
-            }, `${index + 1}. ${STATUS_LABELS[statusCode] || statusCode}`))
-          );
-        }
-
-        if (!authenticated) {
-          return React.createElement('div', { className: 'login-shell' },
-            React.createElement('div', { className: 'card login-card' },
-              React.createElement('h1', { style: { marginTop: 0 } }, 'Regina Admin Login'),
-              React.createElement('p', { className: 'muted' }, '관리자 토큰으로 로그인 후 대시보드 기능을 사용할 수 있습니다.'),
-              React.createElement('form', {
-                onSubmit: (e) => {
-                  e.preventDefault();
-                  login();
-                },
-              },
-                React.createElement('div', { className: 'field' },
-                  React.createElement('label', null, 'Admin Token'),
-                  React.createElement('input', {
-                    value: token,
-                    onChange: (e) => setToken(e.target.value),
-                    placeholder: 'ADMIN_TOKEN 입력',
-                    autoFocus: true,
-                  })
-                ),
-                React.createElement('div', { className: 'row' },
-                  React.createElement('button', { className: 'primary', type: 'submit' }, '로그인')
-                )
-              ),
-              status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
-            )
-          );
-        }
-
-        return React.createElement('div', { className: 'wrap' },
-          React.createElement('h1', null, 'Regina Admin Dashboard'),
-          React.createElement('div', { className: 'card' },
-            React.createElement('div', { className: 'row' },
-              React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
-              React.createElement('button', { className: 'primary', onClick: fetchFiles }, '파일 목록 새로고침'),
-              React.createElement('button', { className: 'primary', onClick: fetchConsultations }, '접수 목록 새로고침')
-            ),
-            status.text ? React.createElement('div', { className: status.type === 'error' ? 'msg-error' : 'msg-info' }, status.text) : null
-          ),
-(                                   
-authenticated
-  ? React.createElement('div', { className: 'card' },
-      React.createElement('h3', { className: 'section-title' }, '내부 도구 바로가기'),
+  return React.createElement('div', { className: 'wrap' },
+    React.createElement('h1', null, 'Regina Admin Dashboard'),
+    React.createElement('div', { className: 'card' },
+      React.createElement('label', null, 'Admin Token'),
+      React.createElement('input', {
+        value: token,
+        onChange: (e) => setToken(e.target.value),
+        placeholder: 'ADMIN_TOKEN 입력'
+      }),
       React.createElement('div', { className: 'row' },
-        ...INTERNAL_TOOLS.map((tool) => React.createElement('a', {
-          key: tool.url,
-          href: tool.url,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          className: 'tool-btn',
-        }, tool.label))
-      )
-    )
-  : React.createElement('div', { className: 'card muted' }, '내부 도구는 관리자 로그인 후 이용할 수 있습니다.')
-),
-
-React.createElement('div', { className: 'layout-2col' },
-  React.createElement('div', { className: 'card' },
-    React.createElement('h3', { className: 'section-title' }, '상담 접수 목록'),
-    React.createElement('table', null,
-      React.createElement('thead', null,
-        React.createElement('tr', null,
-          React.createElement('th', null, '접수시각'),
-          React.createElement('th', null, '메뉴/이름'),
-          React.createElement('th', null, '가격'),
-          React.createElement('th', null, 'payment/status'),
-          React.createElement('th', null, '작업')
-        )
+        React.createElement('button', { className: 'primary', onClick: login }, '세션 로그인'),
+        React.createElement('button', { className: 'danger', onClick: logout }, '로그아웃'),
+        React.createElement('button', { className: 'primary', onClick: fetchFiles, disabled: !authenticated }, '파일 목록 새로고침')
       ),
-      React.createElement('tbody', null,
-        ...consultations.map((c) => React.createElement('tr', {
-          key: c.id,
-          className: `clickable ${selectedId === c.id ? 'selected' : ''}`,
-          onClick: () => setSelectedId(c.id),
-        },
-          React.createElement('td', null, c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR') : '-'),
-          React.createElement('td', null,
-            React.createElement('div', null, c.menuTitle || '-'),
-            React.createElement('div', { className: 'muted' }, `${c.name || '-'} / ${c.contactChannel || '-'}`)
-          ),
-          React.createElement('td', null, typeof c.price === 'number' ? `${c.price.toLocaleString('ko-KR')}원` : '-'),
-          React.createElement('td', null,
-            React.createElement('div', null, React.createElement('span', { className: 'chip payment' }, c.paymentStatus || (c.paymentConfirmed ? 'paid' : 'unpaid'))),
-            React.createElement('div', { style: { marginTop: '4px' } }, React.createElement('span', { className: getChipClass(c.status) }, c.status || 'submitted'))
-          ),
-          React.createElement('td', null,
-            !c.paymentConfirmed
-              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); confirmPayment(c.id); }, disabled: !authenticated }, '입금 확인')
-              : React.createElement('div', { className: 'muted' }, '입금확인'),
-            c.productType === 'auto' && c.status === 'paid'
-              ? React.createElement('button', { className: 'primary', onClick: (e) => { e.stopPropagation(); runAutoReading(c.id); }, style: { marginTop: '4px' }, disabled: !authenticated }, '자동 리딩 실행')
-              : null
-          )
-        ))
+      React.createElement('div', { className: 'muted' }, `권장 최대 파일 크기: ${MAX_FILE_MB}MB (PDF/TXT/DOCX)`)
+    ),
+
+    React.createElement('div', { className: 'card' },
+      React.createElement('h3', null, '지식 파일 업로드'),
+      React.createElement('div', { className: 'row' },
+        React.createElement('input', {
+          value: form.deck,
+          placeholder: 'deck (예: 나전의 빛 타로)',
+          onChange: (e) => setForm({ ...form, deck: e.target.value })
+        }),
+        React.createElement('input', {
+          value: form.topic,
+          placeholder: 'topic (예: 연애)',
+          onChange: (e) => setForm({ ...form, topic: e.target.value })
+        })
       )
     )
-  ),
-
-            React.createElement('div', { className: 'card' },
-              React.createElement('h3', { className: 'section-title' }, '선택 접수 상세 작업 패널'),
-              !selectedConsultation
-                ? React.createElement('div', { className: 'muted' }, '왼쪽 목록에서 접수건을 선택해주세요.')
-                : React.createElement(React.Fragment, null,
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '접수 정보'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '접수번호'), selectedConsultation.id),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '이름'), selectedConsultation.name || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '연락채널'), selectedConsultation.contactChannel || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '메뉴명'), selectedConsultation.menuTitle || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '가격'), typeof selectedConsultation.price === 'number' ? `${selectedConsultation.price.toLocaleString('ko-KR')}원` : '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '질문'), selectedConsultation.question || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '메모'), selectedConsultation.memo || '-'),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '결제상태'), React.createElement('span', { className: 'chip payment' }, selectedConsultation.paymentStatus || (selectedConsultation.paymentConfirmed ? 'paid' : 'unpaid'))),
-                    React.createElement('p', { className: 'kv' }, React.createElement('strong', null, '처리상태'), React.createElement('span', { className: getChipClass(selectedConsultation.status) }, selectedConsultation.status || 'submitted'))
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '처리 상태'),
-                    renderStatusSteps(selectedConsultation.status || 'submitted')
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, 'AI 추천'),
-                    React.createElement('div', { className: 'detail-grid' },
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'deck'), React.createElement('input', { value: recommendationForm.deck, onChange: (e) => setRecommendationForm({ ...recommendationForm, deck: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'spreadName'), React.createElement('input', { value: recommendationForm.spreadName, onChange: (e) => setRecommendationForm({ ...recommendationForm, spreadName: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'cardCount'), React.createElement('input', { type: 'number', min: 1, value: recommendationForm.cardCount, onChange: (e) => setRecommendationForm({ ...recommendationForm, cardCount: e.target.value }) })),
-                      React.createElement('div', { className: 'field' }, React.createElement('label', null, 'spreadPositions (쉼표 구분)'), React.createElement('input', { value: recommendationForm.spreadPositions, onChange: (e) => setRecommendationForm({ ...recommendationForm, spreadPositions: e.target.value }) })),
-                      React.createElement('div', { className: 'field full' }, React.createElement('label', null, 'supportTools (쉼표 구분)'), React.createElement('input', { value: recommendationForm.supportTools, onChange: (e) => setRecommendationForm({ ...recommendationForm, supportTools: e.target.value }) })),
-                      React.createElement('div', { className: 'field full' }, React.createElement('label', null, 'reason'), React.createElement('textarea', { value: recommendationForm.reason, onChange: (e) => setRecommendationForm({ ...recommendationForm, reason: e.target.value }) }))
-                    ),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleGenerateRecommendation, disabled: !authenticated }, '추천 생성'),
-                      React.createElement('button', { className: 'primary', onClick: handleSaveRecommendation, disabled: !authenticated }, '추천 저장')
-                    )
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '자동 드로우'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleAutoDraw, disabled: !authenticated }, '추천값으로 자동 드로우'),
-                      React.createElement('button', { className: 'primary', onClick: handleRedraw, disabled: !authenticated }, '다시 뽑기'),
-                      React.createElement('button', { className: 'primary', onClick: handleLockDraw, disabled: !authenticated || !drawDraft }, '결과 잠금')
-                    ),
-                    drawDraft
-                      ? React.createElement('pre', { className: 'codebox' }, JSON.stringify(drawDraft, null, 2))
-                      : React.createElement('div', { className: 'muted' }, '드로우 결과가 없습니다.')
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { marginBottom: '12px', background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '최종 리딩'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleGenerateFinalReading, disabled: !authenticated }, '최종 리딩 생성'),
-                      React.createElement('button', { className: 'primary', onClick: handleSaveFinalReading, disabled: !authenticated }, '저장'),
-                      React.createElement('button', { className: 'primary', onClick: handleCopyFinalReading }, '복사')
-                    ),
-                    React.createElement('textarea', { value: finalReadingDraft, onChange: (e) => setFinalReadingDraft(e.target.value), style: { minHeight: '180px' } })
-                  ),
-
-                  React.createElement('div', { className: 'card', style: { background: '#0f172a' } },
-                    React.createElement('h4', { className: 'section-title' }, '카톡용 문구'),
-                    React.createElement('div', { className: 'row' },
-                      React.createElement('button', { className: 'primary', onClick: handleMakeKakaoDraft, disabled: !authenticated }, '카톡용 짧은 버전 만들기'),
-                      React.createElement('button', { className: 'primary', onClick: handleCopyKakaoDraft }, '카톡 문구 복사')
-                    ),
-                    React.createElement('textarea', { value: kakaoDraftDraft, onChange: (e) => setKakaoDraftDraft(e.target.value), style: { minHeight: '120px' } })
-                  )
-                )
-            )
-          ),
-
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', null, '지식 파일 업로드'),
-            React.createElement('div', { className: 'row' },
-              React.createElement('input', { value: form.deck, placeholder: 'deck', onChange: (e) => setForm({ ...form, deck: e.target.value }) }),
-              React.createElement('input', { value: form.topic, placeholder: 'topic', onChange: (e) => setForm({ ...form, topic: e.target.value }) }),
-              React.createElement('select', { value: form.priority, onChange: (e) => setForm({ ...form, priority: e.target.value }) },
-                React.createElement('option', { value: 'core' }, 'core'),
-                React.createElement('option', { value: 'support' }, 'support'),
-                React.createElement('option', { value: 'optional' }, 'optional')
-              ),
-              React.createElement('select', { value: form.type, onChange: (e) => setForm({ ...form, type: e.target.value }) },
-                React.createElement('option', { value: 'guidebook' }, 'guidebook'),
-                React.createElement('option', { value: 'interpretation' }, 'interpretation'),
-                React.createElement('option', { value: 'tone' }, 'tone'),
-                React.createElement('option', { value: 'rule' }, 'rule')
-              )
-            ),
-            React.createElement('input', {
-              type: 'file', multiple: true,
-              onChange: (e) => setForm({ ...form, files: Array.from(e.target.files || []) }),
-            }),
-            React.createElement('button', { className: 'primary', onClick: upload, disabled: uploading || !authenticated }, uploading ? '처리 중...' : '업로드')
-          ),
-
-          React.createElement('div', { className: 'card' },
-            React.createElement('h3', null, '파일 목록'),
-            React.createElement('table', null,
-              React.createElement('thead', null,
-                React.createElement('tr', null,
-                  React.createElement('th', null, '파일명/크기'),
-                  React.createElement('th', null, 'deck/topic'),
-                  React.createElement('th', null, 'priority/type'),
-                  React.createElement('th', null, '상태'),
-                  React.createElement('th', null, '작업')
-                )
-              ),
-              React.createElement('tbody', null,
-                ...files.map((f) => React.createElement('tr', { key: f.id },
-                  React.createElement('td', null,
-                    React.createElement('div', null, f.originalName),
-                    React.createElement('div', { className: 'muted' }, formatBytes(f.size))
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('input', { value: f.deck || '', onChange: (e) => f.deck = e.target.value }),
-                    React.createElement('input', { value: f.topic || '', onChange: (e) => f.topic = e.target.value, style: { marginTop: '4px' } })
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('select', { value: f.priority || 'optional', onChange: (e) => f.priority = e.target.value },
-                      React.createElement('option', { value: 'core' }, 'core'),
-                      React.createElement('option', { value: 'support' }, 'support'),
-                      React.createElement('option', { value: 'optional' }, 'optional')
-                    ),
-                    React.createElement('select', { value: f.type || 'guidebook', onChange: (e) => f.type = e.target.value, style: { marginTop: '4px' } },
-                      React.createElement('option', { value: 'guidebook' }, 'guidebook'),
-                      React.createElement('option', { value: 'interpretation' }, 'interpretation'),
-                      React.createElement('option', { value: 'tone' }, 'tone'),
-                      React.createElement('option', { value: 'rule' }, 'rule')
-                    )
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('span', { className: statusClass(f.status) }, f.status || '-'),
-                    f.error ? React.createElement('div', { className: 'muted msg-error' }, f.error) : null,
-                    f.errorDetail ? React.createElement('div', { className: 'muted msg-error' }, f.errorDetail) : null
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('button', { className: 'primary', onClick: () => updateRow(f), disabled: !authenticated }, '저장'),
-                    React.createElement('button', { className: 'danger', onClick: () => removeRow(f.id), style: { marginTop: '4px' }, disabled: !authenticated }, '삭제')
-                  )
-                ))
-              )
-            )
-          )
-        );
-      }
-
-      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-    </script>
-  </body>
-</html>
+  );
+}
