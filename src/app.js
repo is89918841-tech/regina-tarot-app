@@ -61,16 +61,31 @@ ${question || '-'}
 
 [카드]
 ${cardsText}
+
+[스프레드]
+${spread || '-'}
+
+[추가 정보]
+${extra || '-'}
   `.trim();
 }
 
+/* =========================
+   Health
+========================= */
 app.get('/healthz', (_, res) => {
   res.json({ ok: true });
 });
 
+/* =========================
+   API
+========================= */
 app.use('/api/reading', readingRoutes);
 app.use('/api/admin', adminRoutes);
 
+/* =========================
+   Static
+========================= */
 app.use(express.static(PUBLIC_DIR));
 
 app.get('/', (_, res) => {
@@ -85,16 +100,40 @@ app.get('/admin', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-/**
- * 👉 핵심: 여기 위치!!
- */
 app.get('/admin2.html', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin2.html'));
 });
 
+/* =========================
+   보조앱 / 그랑따블로
+   일단 열리는지 확인용으로 인증 없이 열기
+========================= */
+app.get('/admin/helper', (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
+});
+
+app.get('/admin/grand-tableau', (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
+});
+
+/*
+나중에 로그인 보호 다시 붙일 때는 아래처럼 바꾸면 됨:
+
+app.get('/admin/helper', adminAuth, (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
+});
+
+app.get('/admin/grand-tableau', adminAuth, (_, res) => {
+  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
+});
+*/
+
+/* =========================
+   직접 리딩 API
+========================= */
 app.post('/reading', async (req, res) => {
   try {
-    const { question, mode, cards, spread, extra } = req.body;
+    const { question, mode, cards, spread, extra } = req.body || {};
 
     const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
@@ -103,17 +142,26 @@ app.post('/reading', async (req, res) => {
 
     res.json({
       ok: true,
-      reading: response.output_text,
+      reading: response.output_text || '',
     });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: e.message });
+    console.error('POST /reading error:', e);
+    res.status(500).json({
+      ok: false,
+      error: e.message || 'reading failed',
+    });
   }
 });
 
+/* =========================
+   Error handler
+========================= */
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ ok: false, error: err.message });
+  res.status(err.status || 500).json({
+    ok: false,
+    error: err.message || 'Internal Server Error',
+  });
 });
 
 module.exports = app;
