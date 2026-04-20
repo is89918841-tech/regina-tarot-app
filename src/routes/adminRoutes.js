@@ -332,49 +332,61 @@ router.post('/consultations/:id/reading/generate', async (req, res, next) => {
     const recommendation = req.body?.recommendation || consultation.recommendation || '';
     const drawResult = req.body?.drawResult || consultation.drawResult || '';
 
-    const system = `당신은 레지나 스타일의 한국어 타로 리더다.
-말투 규칙:
-- 반드시 존댓말(~요)
-- 상대를 '내담자님'이라고 부를 수 있음
-- 카드 이름을 그대로 나열하지 말고 흐름 해석 중심으로 쓴다
-- 짧은 2~3문장이 아니라, 밀도 있는 한 문단 이상으로 쓴다
-- 위로만 하지 말고 현실적인 판단과 흐름을 함께 말한다
-- 과장된 단정은 피하고, 가능성과 현실선 사이를 정리해준다
-- 결과는 자연스러운 한국어 문단으로 작성한다
-- 마지막에는 한 줄 정도의 현실적 총평을 붙인다`;
+    const system = `
+당신은 레지나 스타일의 타로 리더입니다.
 
-    const user = `이름: ${consultation.name || '-'}
+[말투 규칙]
+- 반드시 ~요 존댓말 사용
+- “요청주신”, “살펴보니”, “확인해보니” 같은 불필요한 인사 금지
+- 쓸데없이 과하게 정중한 표현 금지
+- 문장은 자연스럽게 끊어서 리듬감 있게 작성
+- “~일 수 있어요” 남용 금지, 가능/불가능을 명확하게 표현
+
+[리딩 스타일]
+- 카드 이름을 그대로 나열하지 말고 흐름 중심으로 해석
+- 감정 해석 + 현실 흐름을 함께 설명
+- 상황을 애매하게 흐리지 말고 방향을 정리해줄 것
+- 위로만 하지 말고 현실적인 판단을 같이 제시할 것
+
+[문장 구조]
+1. 현재 상태를 짧고 명확하게 정리
+2. 흐름이 어떻게 흘러가는지 설명
+3. 결과 가능성 (된다 / 어렵다 / 조건부 가능) 선 긋기
+4. 현실적으로 어떻게 행동하는 게 맞는지 제시
+
+[출력 규칙]
+- 한 문단 이상으로 밀도 있게 작성
+- 읽었을 때 “정리됐다”는 느낌이 들게 작성
+- 마지막에 한 줄로 현실적인 결론을 정리
+
+절대 상담센터 문장처럼 쓰지 말고,
+“결정 내릴 수 있게 정리해주는 리딩”을 작성하세요.
+`;
+
+    const user = `
+이름: ${consultation.name || '-'}
 메뉴: ${consultation.menuTitle || consultation.menu || '-'}
 질문: ${consultation.question || '-'}
 추가 메모: ${consultation.memo || '-'}
-추천: ${recommendation || '-'}
-드로우 결과:
-${drawResult || '-'}`;
 
-    const reading = await callOpenAI({ system, user, temperature: 0.9 });
+추천:
+${recommendation || '-'}
+
+드로우 결과:
+${drawResult || '-'}
+`;
+
+    const reading = await callOpenAI({
+      system,
+      user,
+      temperature: 0.9,
+    });
+
     return res.json({ ok: true, reading });
   } catch (error) {
     return next(error);
   }
 });
-
-router.post('/consultations/:id/reading', async (req, res, next) => {
-  try {
-    const updated = await updateConsultationById(req.params.id, {
-      finalReading: req.body?.finalReading || '',
-      status: 'finalized',
-    });
-
-    if (!updated) {
-      return res.status(404).json({ ok: false, error: 'Consultation not found' });
-    }
-
-    return res.json({ ok: true, consultation: updated });
-  } catch (error) {
-    return next(error);
-  }
-});
-
 router.post('/upload', upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
