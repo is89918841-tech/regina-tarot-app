@@ -1,183 +1,141 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const OpenAI = require('openai');
-
-const { ensureDir } = require('./utils/fileStore');
-const env = require('./config/env');
-const adminRoutes = require('./routes/adminRoutes');
-const readingRoutes = require('./routes/readingRoutes');
-const consultationRoutes = require('./routes/consultationRoutes');
-const adminAuth = require('./middleware/adminAuth');
+const fs = require('fs/promises');
 
 const app = express();
+
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
-const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
-
-ensureDir(env.uploadRoot).catch((error) => {
-  console.error('Failed to ensure upload directory:', error);
-});
+const DATA_DIR = path.join(ROOT_DIR, 'data');
+const CONSULTATION_FILE = path.join(DATA_DIR, 'consultations.json');
 
 app.use(cors());
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || env.openaiApiKey,
-});
-
-const MODE_GUIDE = {
-  short: '한 문단으로 짧고 핵심적으로 작성',
-  standard: '여러 문단으로 상황, 감정, 현실 흐름을 균형 있게 작성',
-  deep: '질문을 세부 포인트로 나눠 깊이 있게 여러 문단으로 답하고 마지막에 총평 작성',
-};
-
-function buildReadingPrompt({ question, mode = 'standard', cards = [], spread = '', extra = '' }) {
-  const guide = MODE_GUIDE[mode] || MODE_GUIDE.standard;
-
-  const cardsText = Array.isArray(cards) && cards.length
-    ? cards
-        .map((card, index) => {
-          if (typeof card === 'string') {
-            return `- 카드 ${index + 1}: ${card}`;
-          }
-          return `- 카드 ${index + 1}: ${card.name || card.card || '-'}${
-            card.position ? ` / 포지션: ${card.position}` : ''
-          }`;
-        })
-        .join('\n')
-    : '- 카드 정보 없음';
-
-  return `
-당신은 "레지나타로썰" 스타일의 타로 리더입니다.
-
-[말투 규칙]
-- 내담자님이라고 불러주세요.
-- 한국어 존댓말 "~요" 체
-- 위로보다 정리 중심
-
-[출력 규칙]
-- ${guide}
-- 마지막에 🔮 질문 2~3개 제안
-
-[질문]
-${question || '-'}
-
-[카드]
-${cardsText}
-
-[스프레드]
-${spread || '-'}
-
-[추가 정보]
-${extra || '-'}
-  `.trim();
+async function ensureDataFile() {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  try {
+    await fs.access(CONSULTATION_FILE);
+  } catch {
+    await fs.writeFile(CONSULTATION_FILE, '[]', 'utf8');
+  }
 }
 
-/* =========================
-   Health
-========================= */
-app.get('/healthz', (_, res) => {
-  res.json({ ok: true });
-});
-
-/* =========================
-   Static files
-   public 안의 /data, css, js, html 모두 여기서 열림
-========================= */
-app.use(express.static(PUBLIC_DIR));
-
-/* =========================
-   API
-========================= */
-app.use('/api/reading', readingRoutes);
-app.use('/api/consultations', consultationRoutes);
-app.use('/api/admin', adminRoutes);
-
-/* =========================
-   Public pages
-========================= */
-app.get('/', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
-});
-
-app.get('/consultation.html', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
-});
-
-app.get('/admin', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
-});
-
-app.get('/admin2.html', (_, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'admin2.html'));
-});
-
-/* =========================
-   Internal helper pages
-========================= */
-app.get(['/admin/helper', '/admin/helper.html'], (_, res) => {
-  res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
-});
-
-app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], (_, res) => {
-  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
-});
-
-/*
-나중에 로그인 보호 다시 붙일 때는 아래처럼 바꾸면 됨:
-
-app.get(['/admin/helper', '/admin/helper.html'], adminAuth, (_, res) => {
-  res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
-});
-
-app.get(['/admin/grand-tableau', '/admin/grand-tableau.html'], adminAuth, (_, res) => {
-  res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
-});
-*/
-
-/* =========================
-   Direct reading endpoint
-========================= */
-app.post('/reading', async (req, res) => {
+async function readConsultations() {
+  await ensureDataFile();
+  const raw = await fs.readFile(CONSULTATION_FILE, 'utf8');
   try {
-    const { question, mode, cards, spread, extra } = req.body || {};
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
-    if (!question || !String(question).trim()) {
-      return res.status(400).json({
-        ok: false,
-        error: 'question is required',
-      });
+async function writeConsultations(items) {
+  await ensureDataFile();
+  await fs.writeFile(CONSULTATION_FILE, JSON.stringify(items, null, 2), 'utf8');
+}
+
+function makeConsultationId() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const t = Date.now().toString().slice(-6);
+  return `CONS-${y}${m}${d}-${t}`;
+}
+
+app.get('/healthz', (_, res) => {
+  res.status(200).json({ ok: true, status: 'healthy' });
+});
+
+app.post('/api/consultations', async (req, res) => {
+  try {
+    const {
+      name = '',
+      contact = '',
+      question = '',
+      product_name = '',
+      product_price = 0,
+      product_kind = '',
+      payment_status = 'pending_manual_check'
+    } = req.body || {};
+
+    if (!name.trim()) {
+      return res.status(400).json({ ok: false, error: '성함 / 닉네임이 비어 있어요.' });
+    }
+    if (!contact.trim()) {
+      return res.status(400).json({ ok: false, error: '연락처가 비어 있어요.' });
+    }
+    if (!/^010-\d{4}-\d{4}$/.test(contact.trim())) {
+      return res.status(400).json({ ok: false, error: '연락처 형식이 올바르지 않아요.' });
+    }
+    if (!question.trim()) {
+      return res.status(400).json({ ok: false, error: '질문 내용이 비어 있어요.' });
+    }
+    if (!product_name.trim()) {
+      return res.status(400).json({ ok: false, error: '상품명이 비어 있어요.' });
     }
 
-    const response = await openai.responses.create({
-      model: process.env.OPENAI_MODEL || env.model || 'gpt-4.1-mini',
-      input: buildReadingPrompt({ question, mode, cards, spread, extra }),
-    });
+    const items = await readConsultations();
 
-    res.json({
+    const consultation = {
+      id: makeConsultationId(),
+      name: name.trim(),
+      contact: contact.trim(),
+      question: question.trim(),
+      product_name: product_name.trim(),
+      product_price: Number(product_price || 0),
+      product_kind: product_kind || '',
+      payment_status,
+      status: product_kind === 'booking' ? 'waiting_booking' : 'waiting_payment_check',
+      created_at: new Date().toISOString()
+    };
+
+    items.unshift(consultation);
+    await writeConsultations(items);
+
+    return res.status(201).json({
       ok: true,
-      reading: response.output_text || '',
+      consultation
     });
-  } catch (e) {
-    console.error('POST /reading error:', e);
-    res.status(500).json({
+  } catch (error) {
+    console.error('POST /api/consultations error:', error);
+    return res.status(500).json({
       ok: false,
-      error: e.message || 'reading failed',
+      error: '서버에서 접수를 저장하는 중 문제가 생겼어요.'
     });
   }
 });
 
-/* =========================
-   Error handler
-========================= */
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    ok: false,
-    error: err.message || 'Internal Server Error',
-  });
+app.get('/api/consultations', async (_, res) => {
+  try {
+    const items = await readConsultations();
+    return res.status(200).json({ ok: true, items });
+  } catch (error) {
+    console.error('GET /api/consultations error:', error);
+    return res.status(500).json({ ok: false, error: '접수 목록을 불러오지 못했어요.' });
+  }
 });
 
-module.exports = app;
+app.use(express.static(PUBLIC_DIR));
+
+app.get('/', (_, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+
+ensureDataFile()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Regina server listening on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Failed to initialize data file:', error);
+    process.exit(1);
+  });
