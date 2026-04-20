@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs/promises');
+const OpenAI = require('openai');
 
 const app = express();
 
@@ -10,11 +11,14 @@ const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const CONSULTATION_FILE = path.join(DATA_DIR, 'consultations.json');
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// 데이터 파일 생성
 async function ensureDataFile() {
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
@@ -24,40 +28,53 @@ async function ensureDataFile() {
   }
 }
 
-// 데이터 읽기
 async function readConsultations() {
   await ensureDataFile();
   const raw = await fs.readFile(CONSULTATION_FILE, 'utf8');
   try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return JSON.parse(raw);
   } catch {
     return [];
   }
 }
 
-// 데이터 저장
 async function writeConsultations(items) {
   await ensureDataFile();
-  await fs.writeFile(CONSULTATION_FILE, JSON.stringify(items, null, 2), 'utf8');
+  await fs.writeFile(CONSULTATION_FILE, JSON.stringify(items, null, 2));
 }
 
-// 접수번호 생성
 function makeConsultationId() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
   const t = Date.now().toString().slice(-6);
-  return `CONS-${y}${m}${d}-${t}`;
+  return `CONS-${t}`;
 }
 
-// 상태 확인
-app.get('/healthz', (_, res) => {
-  res.status(200).json({ ok: true, status: 'healthy' });
-});
+// 🔥 리딩 생성 함수
+async function generateReading(question, mode) {
+  const prompt = `
+내담자님의 질문:
+"${question}"
 
-// 🔥 핵심: 상담 접수
+레지나 스타일로 타로 리딩을 작성하세요.
+
+조건:
+- 존댓말 (~요)
+- 감정 + 현실 흐름 같이 설명
+- 불필요한 위로 금지
+- 판단과 방향 제시 중심
+
+${mode === 'simple'
+  ? '한 문단으로 핵심만 정리'
+  : '여러 문단으로 흐름과 조언 상세히 작성'}
+`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4.1-mini',
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  return completion.choices[0].message.content;
+}
+
 app.post('/api/consultations', async (req, res) => {
   try {
     const {
@@ -66,98 +83,57 @@ app.post('/api/consultations', async (req, res) => {
       question = '',
       product_name = '',
       product_price = 0,
-      product_kind = '',
-      payment_status = 'pending_manual_check'
+      product_kind = ''
     } = req.body || {};
 
-    // 유효성 체크
-    if (!name.trim()) {
-      return res.status(400).json({ ok: false, error: '성함을 입력해주세요.' });
-    }
+    if (!name.trim()) return res.status(400).json({ ok: false, error: '성함 입력' });
+    if (!contact.trim()) return res.status(400).json({ ok: false, error: '연락처 입력' });
+    if (!question.trim()) return res.status(400).json({ ok: false, error: '질문 입력' });
 
-    if (!contact.trim()) {
-      return res.status(400).json({ ok: false, error: '연락처를 입력해주세요.' });
-    }
-
-    if (!/^010-\d{4}-\d{4}$/.test(contact.trim())) {
-      return res.status(400).json({ ok: false, error: '연락처 형식이 올바르지 않아요.' });
-    }
-
-    if (!question.trim()) {
-      return res.status(400).json({ ok: false, error: '질문을 입력해주세요.' });
-    }
-
-    if (!product_name.trim()) {
-      return res.status(400).json({ ok: false, error: '상품 선택이 필요해요.' });
-    }
-
-    const items = await readConsultations();
-
-    // 접수 데이터 생성
     const consultation = {
       id: makeConsultationId(),
-      name: name.trim(),
-      contact: contact.trim(),
-      question: question.trim(),
-      product_name: product_name.trim(),
-      product_price: Number(product_price || 0),
-      product_kind: product_kind || '',
-      payment_status,
-      status: product_kind === 'booking'
-        ? 'waiting_booking'
-        : 'waiting_payment_check',
+      name,
+      contact,
+      question,
+      product_name,
+      product_price,
+      product_kind,
       created_at: new Date().toISOString()
     };
 
-    // 🔥 자동 리딩 분기
-    let autoReading = null;
-
-    if (product_kind === 'simple' || product_kind === 'standard') {
-      autoReading = '리딩이 생성중입니다. 잠시 후 결과가 전달됩니다.';
-    }
-
+    const items = await readConsultations();
     items.unshift(consultation);
     await writeConsultations(items);
 
-    // 응답
-    return res.status(201).json({
+    let autoReading = null;
+
+    // 🔥 핵심: 자동 리딩
+    if (product_kind === 'simple' || product_kind === 'standard') {
+      autoReading = await generateReading(question, product_kind);
+    }
+
+    return res.json({
       ok: true,
       consultation,
       autoReading
     });
 
-  } catch (error) {
-    console.error('ERROR:', error);
-    return res.status(500).json({
-      ok: false,
-      error: '서버 오류가 발생했습니다.'
-    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: '리딩 생성 실패' });
   }
 });
 
-// 목록 조회 (관리자용)
-app.get('/api/consultations', async (_, res) => {
-  try {
-    const items = await readConsultations();
-    return res.json({ ok: true, items });
-  } catch (error) {
-    return res.status(500).json({ ok: false });
-  }
-});
-
-// 정적 파일
 app.use(express.static(PUBLIC_DIR));
 
-// 메인 페이지
 app.get('/', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
-// 서버 실행
 const PORT = process.env.PORT || 3000;
 
 ensureDataFile().then(() => {
   app.listen(PORT, () => {
-    console.log('Regina server running on port ' + PORT);
+    console.log('Server running:', PORT);
   });
 });
