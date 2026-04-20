@@ -1,198 +1,431 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>레지나타로썰 | 상담 접수</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>레지나타로썰 | 상담 접수</title>
 
-<style>
-body {
-  margin:0;
-  font-family: 'Noto Sans KR', sans-serif;
-  background:#0f1117;
-  color:#fff;
-}
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --panel:#151922;
+      --panel-2:#10141c;
+      --line:#2b3242;
+      --text:#f3f4f6;
+      --muted:#aeb6c7;
+      --accent:#d2b06b;
+      --accent-deep:#b99347;
+      --danger:#ffb4b4;
+    }
 
-.wrap {
-  max-width:700px;
-  margin:0 auto;
-  padding:30px 16px;
-}
+    *{ box-sizing:border-box; }
 
-h1 {
-  font-size:26px;
-  margin-bottom:10px;
-}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(35,38,64,.45) 0%, rgba(11,13,18,0) 35%),
+        linear-gradient(180deg, #090b11 0%, #0b0d12 100%);
+      color:var(--text);
+    }
 
-.sub {
-  color:#aaa;
-  margin-bottom:20px;
-}
+    .wrap{
+      max-width:760px;
+      margin:0 auto;
+      padding:36px 18px 60px;
+    }
 
-.card {
-  background:#181b22;
-  padding:20px;
-  border-radius:16px;
-  border:1px solid #2a2d36;
-}
+    .hero{
+      margin-bottom:18px;
+    }
 
-label {
-  display:block;
-  margin:12px 0 6px;
-  font-size:14px;
-}
+    h1{
+      margin:0 0 10px;
+      font-size:26px;
+      line-height:1.3;
+      letter-spacing:-0.03em;
+      font-weight:800;
+    }
 
-input, textarea, select {
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#111;
-  color:#fff;
-}
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
 
-textarea { min-height:120px; }
+    .card{
+      margin-top:18px;
+      background:rgba(21,25,34,.96);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 14px 60px rgba(0,0,0,.28);
+    }
 
-.choice {
-  border:1px solid #333;
-  padding:14px;
-  border-radius:12px;
-  margin-bottom:10px;
-  cursor:pointer;
-}
+    .field{
+      margin-bottom:14px;
+    }
 
-.choice:hover {
-  border-color:#c8a96b;
-}
+    label{
+      display:block;
+      margin-bottom:7px;
+      font-size:13px;
+      font-weight:700;
+      color:#f8f7f3;
+    }
 
-.btn {
-  width:100%;
-  padding:14px;
-  margin-top:18px;
-  background:#c8a96b;
-  border:none;
-  border-radius:12px;
-  font-weight:bold;
-  cursor:pointer;
-}
+    input,
+    textarea,
+    select{
+      width:100%;
+      border:1px solid #333b4d;
+      background:#0d1017;
+      color:var(--text);
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:14px;
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
 
-.payment-box {
-  margin-top:16px;
-  padding:16px;
-  border-radius:12px;
-  background:#111;
-  border:1px solid #333;
-}
+    input:focus,
+    textarea:focus,
+    select:focus{
+      border-color:rgba(210,176,107,.9);
+      box-shadow:0 0 0 4px rgba(210,176,107,.12);
+      background:#0f131c;
+    }
 
-.hidden { display:none; }
-</style>
+    textarea{
+      min-height:130px;
+      resize:vertical;
+      line-height:1.6;
+    }
+
+    .menu-group{
+      display:grid;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    .choice{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:16px 14px;
+      border:1px solid #31384a;
+      background:linear-gradient(180deg, rgba(19,24,34,.98) 0%, rgba(15,19,27,.98) 100%);
+      border-radius:14px;
+      cursor:pointer;
+      transition:border-color .18s ease, transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .choice:hover{
+      border-color:rgba(210,176,107,.55);
+      transform:translateY(-1px);
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+    }
+
+    .choice.active{
+      border-color:rgba(210,176,107,.95);
+      box-shadow:0 0 0 1px rgba(210,176,107,.28) inset;
+      background:linear-gradient(180deg, rgba(26,31,43,.98) 0%, rgba(16,20,29,.98) 100%);
+    }
+
+    .choice input[type="radio"]{
+      margin-top:3px;
+      width:18px;
+      height:18px;
+      accent-color:#d2b06b;
+      flex:0 0 auto;
+      cursor:pointer;
+    }
+
+    .choice-title{
+      font-size:15px;
+      font-weight:800;
+      color:#fff8e8;
+      margin-bottom:4px;
+    }
+
+    .choice-desc{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color:#8f98aa;
+      line-height:1.55;
+    }
+
+    .btn{
+      width:100%;
+      border:0;
+      border-radius:13px;
+      background:linear-gradient(180deg, #dbbe7e 0%, #c8a45c 100%);
+      color:#16120a;
+      padding:15px 16px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      transition:filter .18s ease, transform .18s ease;
+    }
+
+    .btn:hover{
+      filter:brightness(1.03);
+      transform:translateY(-1px);
+    }
+
+    .payment-box{
+      margin-top:16px;
+      padding:16px;
+      border-radius:14px;
+      border:1px solid #333b4d;
+      background:#0f131b;
+    }
+
+    .payment-box strong{
+      display:block;
+      margin-bottom:10px;
+      font-size:15px;
+      color:#fff3d2;
+    }
+
+    .payment-box p{
+      margin:0 0 8px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.65;
+    }
+
+    .payment-acct{
+      margin-top:10px;
+      font-size:16px !important;
+      color:#fff4d7 !important;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+
+    .important{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--danger);
+      line-height:1.55;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .foot{
+      margin-top:16px;
+      text-align:center;
+      font-size:12px;
+      color:#7e8798;
+    }
+  </style>
 </head>
-
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <div class="hero">
+      <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
+      <p class="sub">
+        선택한 메뉴에 따라 진행 방식이 달라져요.
+        간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
+      </p>
+    </div>
 
-<h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
-<p class="sub">
-선택한 메뉴에 따라 진행 방식이 달라져요.
-간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
-</p>
+    <div class="card">
+      <form id="questionForm" action="#" method="post" novalidate>
+        <input type="hidden" id="product_name" name="product_name" />
+        <input type="hidden" id="product_price" name="product_price" />
 
-<div class="card">
+        <div class="field">
+          <label for="name">성함 / 닉네임</label>
+          <input id="name" name="name" type="text" placeholder="예: 강율리 / 파국" />
+        </div>
 
-<form id="form">
+        <div class="field">
+          <label for="contact">연락처</label>
+          <input id="contact" name="contact" type="text" placeholder="예: 카카오ID / 오픈채팅 링크 / 휴대폰 번호" />
+        </div>
 
-<input type="hidden" id="product_name">
-<input type="hidden" id="product_price">
+        <div class="field">
+          <label>상담 메뉴 선택</label>
+          <div class="menu-group">
+            <div class="choice" data-target="menu1">
+              <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" />
+              <div>
+                <div class="choice-title">3천원 리딩</div>
+                <div class="choice-desc">짧고 빠르게 핵심 방향만 확인하는 리딩</div>
+              </div>
+            </div>
 
-<label>성함 / 닉네임</label>
-<input id="name" required>
+            <div class="choice" data-target="menu2">
+              <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" />
+              <div>
+                <div class="choice-title">7천원 리딩</div>
+                <div class="choice-desc">조금 더 자세하게 흐름을 정리하는 리딩</div>
+              </div>
+            </div>
 
-<label>연락처</label>
-<input id="contact" required>
+            <div class="choice" data-target="menu3">
+              <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" />
+              <div>
+                <div class="choice-title">18,000원 리딩</div>
+                <div class="choice-desc">선택지 비교와 방향 정리를 포함한 리딩</div>
+              </div>
+            </div>
 
-<label>상담 메뉴 선택</label>
+            <div class="choice" data-target="menu4">
+              <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" />
+              <div>
+                <div class="choice-title">30,000원 리딩</div>
+                <div class="choice-desc">상황 전체 흐름을 깊게 분석하는 심층 리딩</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<div class="choice">
-<input type="radio" name="menu" value="3천원 리딩" data-price="3000" required>
-<strong>3천원 리딩</strong><br>
-<span>짧고 빠르게 핵심 방향만 확인하는 리딩</span>
-</div>
+        <div class="field">
+          <label for="question">질문 내용</label>
+          <textarea
+            id="question"
+            name="question"
+            placeholder="예: 오늘 내로 프로그램을 마무리할 수 있을까요? 지금 흐름과 방해 요소, 조언이 궁금해요."
+          ></textarea>
+        </div>
 
-<div class="choice">
-<input type="radio" name="menu" value="7천원 리딩" data-price="7000">
-<strong>7천원 리딩</strong><br>
-<span>조금 더 자세하게 흐름을 정리하는 리딩</span>
-</div>
+        <button type="button" class="btn" id="step1">질문 접수하기</button>
 
-<div class="choice">
-<input type="radio" name="menu" value="18,000원 리딩" data-price="18000">
-<strong>18,000원 리딩</strong><br>
-<span>선택지 비교와 방향 정리를 포함한 리딩</span>
-</div>
+        <div class="payment-box hidden" id="paymentBox">
+          <strong>결제 안내</strong>
+          <p id="menuText">선택한 메뉴</p>
+          <p id="priceText">0원</p>
 
-<div class="choice">
-<input type="radio" name="menu" value="30,000원 리딩" data-price="30000">
-<strong>30,000원 리딩</strong><br>
-<span>상황 전체 흐름을 깊게 분석하는 심층 리딩</span>
-</div>
+          <p>
+            이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.
+          </p>
+          <p>
+            이후 질문 내용을 바탕으로
+            <strong>덱 / 스프레드 / 보조도구 추천</strong>이 먼저 진행되고,
+            그 다음 <strong>셔플 후 리딩 → 전달</strong> 순서로 이어지게 됩니다.
+          </p>
 
-<label>질문 내용</label>
-<textarea id="question" required></textarea>
+          <p class="payment-acct">카카오뱅크 3333-1653-29692 강율리</p>
 
-<button type="button" class="btn" id="step1">
-질문 접수하기
-</button>
+          <button type="submit" class="btn" style="margin-top:14px;">입금 완료 후 최종 접수하기</button>
+        </div>
 
-<div class="payment-box hidden" id="paymentBox">
+        <p class="important">
+          질문 접수 후 바로 결과가 표시되는 구조는 아니며, 다음 단계 안내에 따라 진행돼요.
+        </p>
+      </form>
 
-<p id="menuText"></p>
-<p id="priceText"></p>
+      <div class="foot">레지나타로썰 · 상담 접수 전용</div>
+    </div>
+  </div>
 
-<p>
-이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.<br><br>
+  <script>
+    const form = document.getElementById("questionForm");
+    const step1 = document.getElementById("step1");
+    const paymentBox = document.getElementById("paymentBox");
+    const menuText = document.getElementById("menuText");
+    const priceText = document.getElementById("priceText");
+    const productNameInput = document.getElementById("product_name");
+    const productPriceInput = document.getElementById("product_price");
 
-이후 질문 내용을 바탕으로<br>
-덱 / 스프레드 / 보조도구 추천이 먼저 진행되고,<br>
-그 다음 셔플 후 리딩 → 전달 순서로 이어지게 됩니다.
-</p>
+    const nameInput = document.getElementById("name");
+    const contactInput = document.getElementById("contact");
+    const questionInput = document.getElementById("question");
 
-<p style="margin-top:10px; font-weight:bold;">
-카카오뱅크 3333-1653-29692 강율리
-</p>
+    const choices = document.querySelectorAll(".choice");
+    const radios = document.querySelectorAll('input[name="menu"]');
 
-<button type="submit" class="btn">
-입금 완료 후 최종 접수하기
-</button>
+    function updateActiveChoice() {
+      choices.forEach(choice => {
+        const targetId = choice.dataset.target;
+        const radio = document.getElementById(targetId);
+        if (radio && radio.checked) {
+          choice.classList.add("active");
+        } else {
+          choice.classList.remove("active");
+        }
+      });
+    }
 
-</div>
+    choices.forEach(choice => {
+      choice.addEventListener("click", () => {
+        const targetId = choice.dataset.target;
+        const radio = document.getElementById(targetId);
+        if (radio) {
+          radio.checked = true;
+          updateActiveChoice();
+        }
+      });
+    });
 
-</form>
-</div>
-</div>
+    radios.forEach(radio => {
+      radio.addEventListener("change", updateActiveChoice);
+    });
 
-<script>
+    step1.addEventListener("click", () => {
+      const menu = document.querySelector('input[name="menu"]:checked');
 
-const step1 = document.getElementById("step1");
-const paymentBox = document.getElementById("paymentBox");
+      if (!menu) {
+        alert("상담 메뉴를 선택해주세요.");
+        return;
+      }
 
-step1.onclick = () => {
+      if (!nameInput.value.trim()) {
+        alert("성함 / 닉네임을 입력해주세요.");
+        nameInput.focus();
+        return;
+      }
 
-  const menu = document.querySelector("input[name='menu']:checked");
+      if (!contactInput.value.trim()) {
+        alert("연락처를 입력해주세요.");
+        contactInput.focus();
+        return;
+      }
 
-  if (!menu) return alert("메뉴 선택해주세요");
+      if (!questionInput.value.trim()) {
+        alert("질문 내용을 입력해주세요.");
+        questionInput.focus();
+        return;
+      }
 
-  if (!name.value || !contact.value || !question.value)
-    return alert("필수 입력 먼저 해주세요");
+      productNameInput.value = menu.value;
+      productPriceInput.value = menu.dataset.price || "";
 
-  document.getElementById("menuText").innerText = menu.value;
-  document.getElementById("priceText").innerText =
-    Number(menu.dataset.price).toLocaleString() + "원";
+      menuText.textContent = menu.value;
+      priceText.textContent = Number(menu.dataset.price || 0).toLocaleString() + "원";
 
-  paymentBox.classList.remove("hidden");
-  paymentBox.scrollIntoView({behavior:"smooth"});
-};
+      paymentBox.classList.remove("hidden");
+      paymentBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
-</script>
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
 
+      const menu = document.querySelector('input[name="menu"]:checked');
+
+      if (!menu) {
+        alert("상담 메뉴를 선택해주세요.");
+        return;
+      }
+
+      if (!nameInput.value.trim() || !contactInput.value.trim() || !questionInput.value.trim()) {
+        alert("필수 입력 항목을 먼저 작성해주세요.");
+        return;
+      }
+
+      alert("최종 접수 단계는 다음 연결 작업에서 붙이면 됩니다.");
+    });
+  </script>
 </body>
 </html>
