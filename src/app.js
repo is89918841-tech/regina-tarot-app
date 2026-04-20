@@ -11,6 +11,7 @@ const app = express();
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
+const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 
@@ -380,6 +381,33 @@ app.post('/api/draw', async (req, res) => {
   }
 });
 
+// 외부 연결용 최종 리딩 API
+app.post('/api/reading', async (req, res) => {
+  try {
+    const { question = '', cards = '' } = req.body || {};
+
+    if (!String(question).trim()) {
+      return res.status(400).json({ ok: false, error: '질문이 필요해요.' });
+    }
+
+    const fakeItem = {
+      question,
+      product_kind: 'standard',
+    };
+
+    const reading = await generateFinalReadingText(fakeItem, '', typeof cards === 'string' ? cards : JSON.stringify(cards, null, 2));
+
+    return res.status(200).json({
+      ok: true,
+      reading,
+      finalReading: reading,
+    });
+  } catch (error) {
+    console.error('POST /api/reading error:', error);
+    return res.status(500).json({ ok: false, error: '최종 리딩 생성에 실패했어요.' });
+  }
+});
+
 app.post('/api/consultations', async (req, res) => {
   try {
     const {
@@ -507,6 +535,27 @@ app.get('/api/admin/me', async (req, res) => {
     return res.status(401).json({ ok: false, error: '로그인이 필요해요.' });
   }
   return res.status(200).json({ ok: true, admin: true });
+});
+
+// 관리자 보조앱 추천 API
+app.post('/api/admin/recommend', requireAdmin, async (req, res) => {
+  try {
+    const { question = '', productKind = 'standard' } = req.body || {};
+    const setup = recommendReadingSetup(question, productKind);
+
+    return res.status(200).json({
+      ok: true,
+      recommendation: {
+        deck: setup.deck,
+        count: setup.positions.length,
+        aux: setup.auxTools,
+      },
+      setup,
+    });
+  } catch (error) {
+    console.error('POST /api/admin/recommend error:', error);
+    return res.status(500).json({ ok: false, error: '관리자 추천 생성에 실패했어요.' });
+  }
 });
 
 // admin consultations
@@ -723,13 +772,13 @@ app.post('/api/admin/upload', requireAdmin, upload.single('file'), async (req, r
   }
 });
 
-// optional links used by admin.html
+// private tool pages
 app.get('/admin/helper', requireAdmin, async (_, res) => {
-  return res.status(200).send('<h1 style="font-family:sans-serif">보조앱 페이지는 아직 별도 연결 전이에요.</h1>');
+  return res.sendFile(path.join(PRIVATE_DIR, 'admin-helper.html'));
 });
 
 app.get('/admin/grand-tableau', requireAdmin, async (_, res) => {
-  return res.status(200).send('<h1 style="font-family:sans-serif">그랑따블로 페이지는 아직 별도 연결 전이에요.</h1>');
+  return res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
 // static pages
