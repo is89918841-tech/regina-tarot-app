@@ -1,6 +1,7 @@
 const path = require('path');
 
 const UPLOAD_ROOT = process.env.UPLOAD_PATH || '/data/uploads';
+const uploadRoot = path.resolve(UPLOAD_ROOT);
 
 module.exports = {
   port: Number(process.env.PORT || 3000),
@@ -9,9 +10,14 @@ module.exports = {
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_TOKEN || '',
   adminSessionMaxAgeSec: Number(process.env.ADMIN_SESSION_MAX_AGE_SEC || 60 * 60 * 12),
   secureCookie: process.env.SECURE_COOKIE === 'true',
-  uploadRoot: path.resolve(UPLOAD_ROOT),
+
+  uploadRoot,
   metadataStorePath:
-    process.env.METADATA_STORE_PATH || path.join(UPLOAD_ROOT, 'metadata.json'),
+    process.env.METADATA_STORE_PATH || path.join(uploadRoot, 'metadata.json'),
+
+  consultationStorePath:
+    process.env.CONSULTATION_STORE_PATH || path.join(uploadRoot, 'consultations.json'),
+
   vectorStoreId: process.env.OPENAI_VECTOR_STORE_ID || '',
   model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
   maxUploadSizeMb: Number(process.env.MAX_UPLOAD_SIZE_MB || 100),
