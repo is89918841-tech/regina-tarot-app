@@ -28,7 +28,7 @@
     }
 
     .wrap {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       padding: 24px 16px 80px;
     }
@@ -232,16 +232,6 @@
       font-size: 15px;
     }
 
-    .preview {
-      min-height: 140px;
-      white-space: pre-wrap;
-    }
-
-    .out {
-      min-height: 220px;
-      white-space: pre-wrap;
-    }
-
     .chip-row {
       display: flex;
       flex-wrap: wrap;
@@ -261,22 +251,6 @@
       padding: 6px 10px;
     }
 
-    .muted {
-      color: var(--muted);
-    }
-
-    .footer-note {
-      margin-top: 14px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .split {
-      display: grid;
-      gap: 14px;
-    }
-
     .readonly-box {
       background: #11151d;
       border: 1px solid var(--line);
@@ -292,6 +266,43 @@
     .readonly-box.small {
       min-height: 90px;
     }
+
+    .preview {
+      min-height: 140px;
+    }
+
+    .out {
+      min-height: 220px;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .meta-box {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #121722;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 13px;
+    }
+
+    .meta-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .meta-line strong {
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -299,7 +310,7 @@
     <div class="topbar">
       <div class="title-box">
         <h1>레지나 관리자 보조앱</h1>
-        <p>질문 입력 → 추천 → 드로우 → 최종 리딩을 한 화면에서 바로 돌리는 관리자용 툴</p>
+        <p>상담건 자동 불러오기 → 추천 → 드로우 → 최종 리딩 → 저장까지 한 화면에서 처리</p>
       </div>
 
       <div class="top-actions">
@@ -312,9 +323,21 @@
       <section class="panel">
         <h2>입력</h2>
 
+        <div class="section row">
+          <div>
+            <label class="label" for="consultationId">상담 ID</label>
+            <input id="consultationId" type="text" placeholder="예: CONS-20260421-123456" />
+          </div>
+
+          <div>
+            <label class="label" for="customerName">이름 메모</label>
+            <input id="customerName" type="text" placeholder="예: 김OO" />
+          </div>
+        </div>
+
         <div class="section">
           <label class="label" for="question">질문</label>
-          <textarea id="question" placeholder="예: 그 사람이 아직 저를 마음에 두고 있을까요? 연락이 다시 올 가능성도 궁금해요."></textarea>
+          <textarea id="question" placeholder="질문이 자동으로 들어오거나 직접 입력할 수 있어요."></textarea>
         </div>
 
         <div class="section row">
@@ -328,28 +351,30 @@
           </div>
 
           <div>
-            <label class="label" for="customerName">이름 메모 (선택)</label>
-            <input id="customerName" type="text" placeholder="예: 김OO" />
+            <label class="label" for="productName">상품명 메모</label>
+            <input id="productName" type="text" placeholder="예: 7천원 핵심 리딩" />
           </div>
         </div>
 
         <div class="btn-row">
-          <button class="btn-primary" id="runAllBtn" type="button">전체 자동 실행</button>
-          <button class="btn-secondary" id="recommendBtn" type="button">추천만</button>
-          <button class="btn-secondary" id="drawBtn" type="button">드로우만</button>
-          <button class="btn-secondary" id="readingBtn" type="button">최종 리딩만</button>
+          <button class="btn-primary" id="loadConsultationBtn" type="button">상담건 불러오기</button>
+          <button class="btn-primary" id="runAllBtn" type="button">전체 자동 실행 + 저장</button>
+          <button class="btn-secondary" id="recommendBtn" type="button">추천 생성 + 저장</button>
+          <button class="btn-secondary" id="drawBtn" type="button">드로우 생성 + 저장</button>
+          <button class="btn-secondary" id="readingBtn" type="button">최종 리딩 생성 + 저장</button>
           <button class="btn-ghost" id="clearBtn" type="button">초기화</button>
         </div>
 
         <div class="hint">
-          전체 자동 실행은 현재 질문을 기준으로<br>
-          1) 추천 API → 2) 드로우 API → 3) 최종 리딩 API 순서로 호출합니다.
+          상담 ID가 있으면 해당 상담건을 자동 조회하고,<br>
+          추천 / 드로우 / 최종 리딩 결과를 해당 상담건에 다시 저장합니다.
         </div>
 
+        <div id="consultationMeta" class="meta-box" style="display:none;"></div>
         <div id="statusBox" class="status">대기 중</div>
       </section>
 
-      <section class="panel split">
+      <section class="panel">
         <div>
           <div class="block-title">
             <strong>추천 결과</strong>
@@ -361,7 +386,7 @@
           <div id="recommendChips" class="chip-row"></div>
         </div>
 
-        <div>
+        <div class="section">
           <div class="block-title">
             <strong>드로우 결과</strong>
             <div class="mini-actions">
@@ -371,7 +396,7 @@
           <div id="drawPreview" class="readonly-box preview">아직 없음</div>
         </div>
 
-        <div>
+        <div class="section">
           <div class="block-title">
             <strong>최종 리딩</strong>
             <div class="mini-actions">
@@ -384,8 +409,8 @@
     </div>
 
     <div class="footer-note">
+      사용 예시: <code>/admin/helper?id=CONS-20260421-123456</code><br>
       이 화면은 관리자 로그인 쿠키가 살아 있어야 정상 작동합니다.
-      `/api/recommend`, `/api/draw`, `/api/reading` 또는 `/api/admin/me` 응답이 비정상이면 먼저 관리자 로그인 상태를 확인하세요.
     </div>
   </div>
 
@@ -393,9 +418,13 @@
     const $ = (id) => document.getElementById(id);
 
     const els = {
+      consultationId: $('consultationId'),
+      customerName: $('customerName'),
       question: $('question'),
       productKind: $('productKind'),
-      customerName: $('customerName'),
+      productName: $('productName'),
+
+      consultationMeta: $('consultationMeta'),
       statusBox: $('statusBox'),
 
       recommendPreview: $('recommendPreview'),
@@ -403,6 +432,7 @@
       drawPreview: $('drawPreview'),
       readingPreview: $('readingPreview'),
 
+      loadConsultationBtn: $('loadConsultationBtn'),
       runAllBtn: $('runAllBtn'),
       recommendBtn: $('recommendBtn'),
       drawBtn: $('drawBtn'),
@@ -418,6 +448,8 @@
     };
 
     let state = {
+      consultation: null,
+      recommendText: '',
       recommendConfig: null,
       drawResult: '',
       finalReading: '',
@@ -428,6 +460,10 @@
       els.statusBox.textContent = text;
     }
 
+    function getConsultationId() {
+      return (els.consultationId.value || '').trim();
+    }
+
     function getQuestion() {
       return (els.question.value || '').trim();
     }
@@ -436,22 +472,28 @@
       return els.productKind.value || 'standard';
     }
 
-    function renderRecommend(config) {
-      if (!config) {
-        els.recommendPreview.textContent = '아직 없음';
-        els.recommendChips.innerHTML = '';
+    function renderMeta(item) {
+      if (!item) {
+        els.consultationMeta.style.display = 'none';
+        els.consultationMeta.innerHTML = '';
         return;
       }
 
-      const lines = [
-        `추천 덱: ${config.deck || '-'}`,
-        `추천 스프레드: ${config.spread || '-'}`,
-        `포지션 수: ${config.count || '-'}`,
-        `포지션: ${(config.positions || []).join(', ') || '-'}`,
-        `보조도구: ${(config.extras || []).join(', ') || '없음'}`
-      ];
+      els.consultationMeta.style.display = 'grid';
+      els.consultationMeta.innerHTML = `
+        <div class="meta-line"><strong>ID</strong> ${escapeHtml(item.id || '-')}</div>
+        <div class="meta-line"><strong>이름</strong> ${escapeHtml(item.name || '-')}</div>
+        <div class="meta-line"><strong>연락처</strong> ${escapeHtml(item.contact || '-')}</div>
+        <div class="meta-line"><strong>상품</strong> ${escapeHtml(item.product_name || '-')} / ${escapeHtml(String(item.product_price || '-'))}</div>
+        <div class="meta-line"><strong>상태</strong> ${escapeHtml(item.status || '-')}</div>
+      `;
+    }
 
-      els.recommendPreview.textContent = lines.join('\n');
+    function renderRecommend(text, config) {
+      els.recommendPreview.textContent = text || '아직 없음';
+      els.recommendChips.innerHTML = '';
+
+      if (!config) return;
 
       const chips = [];
       if (config.deck) chips.push(`<span class="chip">덱: ${escapeHtml(config.deck)}</span>`);
@@ -506,31 +548,94 @@
       return data;
     }
 
-    async function runRecommend() {
+    async function getJson(url) {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        const msg = data?.error || `${url} 조회 실패 (${res.status})`;
+        throw new Error(msg);
+      }
+
+      return data;
+    }
+
+    function extractRecommendTextFromConfig(config) {
+      if (!config) return '';
+      return [
+        `추천 덱: ${config.deck || '-'}`,
+        `추천 스프레드: ${config.spread || '-'}`,
+        `포지션: ${(config.positions || []).join(', ') || '-'}`,
+        `보조도구: ${(config.extras || []).join(', ') || '없음'}`
+      ].join('\n');
+    }
+
+    async function loadConsultation() {
+      const id = getConsultationId();
+      if (!id) throw new Error('상담 ID가 필요해요.');
+
+      setStatus('상담건 불러오는 중...');
+      const data = await getJson(`/api/admin/consultations/${encodeURIComponent(id)}`);
+      const item = data.consultation;
+
+      state.consultation = item;
+      els.question.value = item.question || '';
+      els.customerName.value = item.name || '';
+      els.productKind.value = item.product_kind || 'standard';
+      els.productName.value = item.product_name || '';
+
+      state.recommendText = item.recommendation || '';
+      state.drawResult = item.drawResult || item.draw_result || '';
+      state.finalReading = item.finalReading || item.final_reading || '';
+
+      renderMeta(item);
+      renderRecommend(state.recommendText, null);
+      renderDraw(state.drawResult);
+      renderReading(state.finalReading);
+
+      setStatus('상담건 불러오기 완료', 'ok');
+      return item;
+    }
+
+    async function runRecommendAndSave() {
       const question = getQuestion();
       const productKind = getProductKind();
+      const id = getConsultationId();
 
-      if (!question) {
-        throw new Error('질문을 먼저 입력해주세요.');
-      }
+      if (!question) throw new Error('질문을 먼저 입력해주세요.');
 
       setStatus('추천 생성 중...');
       const data = await postJson('/api/recommend', { question, productKind });
 
       state.recommendConfig = data.config || null;
-      renderRecommend(state.recommendConfig);
-      setStatus('추천 생성 완료', 'ok');
+      state.recommendText = extractRecommendTextFromConfig(state.recommendConfig);
+      renderRecommend(state.recommendText, state.recommendConfig);
 
-      return state.recommendConfig;
+      if (id) {
+        await postJson(`/api/admin/consultations/${encodeURIComponent(id)}/recommendation`, {
+          recommendation: state.recommendText
+        });
+      }
+
+      setStatus(id ? '추천 생성 및 저장 완료' : '추천 생성 완료', 'ok');
+      return state.recommendText;
     }
 
-    async function runDraw() {
+    async function runDrawAndSave() {
       const question = getQuestion();
       const productKind = getProductKind();
+      const id = getConsultationId();
 
-      if (!question) {
-        throw new Error('질문을 먼저 입력해주세요.');
-      }
+      if (!question) throw new Error('질문을 먼저 입력해주세요.');
 
       setStatus('드로우 생성 중...');
       const data = await postJson('/api/draw', { question, productKind });
@@ -546,54 +651,67 @@
           positions: data.setup.positions || [],
           extras: data.setup.auxTools || []
         };
-        renderRecommend(state.recommendConfig);
+        if (!state.recommendText) {
+          state.recommendText = extractRecommendTextFromConfig(state.recommendConfig);
+        }
+        renderRecommend(state.recommendText, state.recommendConfig);
       }
 
-      setStatus('드로우 생성 완료', 'ok');
+      if (id) {
+        await postJson(`/api/admin/consultations/${encodeURIComponent(id)}/draw`, {
+          drawResult: state.drawResult
+        });
+      }
+
+      setStatus(id ? '드로우 생성 및 저장 완료' : '드로우 생성 완료', 'ok');
       return state.drawResult;
     }
 
-    async function runReading() {
+    async function runReadingAndSave() {
       const question = getQuestion();
+      const id = getConsultationId();
 
-      if (!question) {
-        throw new Error('질문을 먼저 입력해주세요.');
-      }
-
-      if (!state.drawResult) {
-        throw new Error('먼저 드로우를 생성해주세요.');
-      }
+      if (!question) throw new Error('질문을 먼저 입력해주세요.');
+      if (!state.drawResult) throw new Error('먼저 드로우를 생성해주세요.');
 
       setStatus('최종 리딩 생성 중...');
 
-      const cardsPayload = state.drawResult;
-
       const data = await postJson('/api/reading', {
         question,
-        cards: cardsPayload
+        cards: state.drawResult
       });
 
-      state.finalReading = data.reading || '';
+      state.finalReading = data.reading || data.finalReading || '';
       renderReading(state.finalReading);
-      setStatus('최종 리딩 생성 완료', 'ok');
 
+      if (id) {
+        await postJson(`/api/admin/consultations/${encodeURIComponent(id)}/reading`, {
+          finalReading: state.finalReading
+        });
+      }
+
+      setStatus(id ? '최종 리딩 생성 및 저장 완료' : '최종 리딩 생성 완료', 'ok');
       return state.finalReading;
     }
 
     async function runAll() {
       const question = getQuestion();
-      if (!question) {
-        throw new Error('질문을 먼저 입력해주세요.');
-      }
+      if (!question) throw new Error('질문을 먼저 입력해주세요.');
 
+      const id = getConsultationId();
       const customer = (els.customerName.value || '').trim();
+
       setStatus(customer ? `${customer} 건 전체 자동 실행 중...` : '전체 자동 실행 중...');
 
-      await runRecommend();
-      await runDraw();
-      await runReading();
+      await runRecommendAndSave();
+      await runDrawAndSave();
+      await runReadingAndSave();
 
-      setStatus(customer ? `${customer} 건 전체 자동 실행 완료` : '전체 자동 실행 완료', 'ok');
+      if (id) {
+        await loadConsultation();
+      }
+
+      setStatus(customer ? `${customer} 건 전체 자동 실행 + 저장 완료` : '전체 자동 실행 + 저장 완료', 'ok');
     }
 
     async function checkAdminAuth() {
@@ -636,20 +754,39 @@
 
     function clearAll() {
       state = {
+        consultation: null,
+        recommendText: '',
         recommendConfig: null,
         drawResult: '',
         finalReading: '',
       };
 
-      els.question.value = '';
+      els.consultationId.value = '';
       els.customerName.value = '';
+      els.question.value = '';
       els.productKind.value = 'standard';
+      els.productName.value = '';
 
-      renderRecommend(null);
+      renderMeta(null);
+      renderRecommend('', null);
       renderDraw('');
       renderReading('');
       setStatus('초기화 완료');
     }
+
+    function getIdFromQuery() {
+      const url = new URL(window.location.href);
+      return url.searchParams.get('id') || '';
+    }
+
+    els.loadConsultationBtn.addEventListener('click', async () => {
+      try {
+        await loadConsultation();
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || '상담건 불러오기 실패', 'error');
+      }
+    });
 
     els.runAllBtn.addEventListener('click', async () => {
       try {
@@ -662,7 +799,7 @@
 
     els.recommendBtn.addEventListener('click', async () => {
       try {
-        await runRecommend();
+        await runRecommendAndSave();
       } catch (error) {
         console.error(error);
         setStatus(error.message || '추천 생성 실패', 'error');
@@ -671,7 +808,7 @@
 
     els.drawBtn.addEventListener('click', async () => {
       try {
-        await runDraw();
+        await runDrawAndSave();
       } catch (error) {
         console.error(error);
         setStatus(error.message || '드로우 생성 실패', 'error');
@@ -680,7 +817,7 @@
 
     els.readingBtn.addEventListener('click', async () => {
       try {
-        await runReading();
+        await runReadingAndSave();
       } catch (error) {
         console.error(error);
         setStatus(error.message || '최종 리딩 생성 실패', 'error');
@@ -737,9 +874,15 @@
     window.addEventListener('load', async () => {
       try {
         await checkAdminAuth();
+
+        const id = getIdFromQuery();
+        if (id) {
+          els.consultationId.value = id;
+          await loadConsultation();
+        }
       } catch (error) {
         console.error(error);
-        setStatus(error.message || '관리자 인증 확인 실패', 'error');
+        setStatus(error.message || '초기 로딩 실패', 'error');
       }
     });
   </script>
