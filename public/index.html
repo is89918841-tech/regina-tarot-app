@@ -1,8 +1,8 @@
-<!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<!-- saved from url=(0038)https://regina-tarot-app.onrender.com/ -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>레지나타로썰 상담 접수</title>
     <style>
       body{margin:0;background:radial-gradient(circle at top,#1b2645 0%,#0b1020 60%);color:#e2e8f0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif}
@@ -24,95 +24,136 @@
       @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       .status-text, .payment-desc, .selected-summary { margin-top: 12px; color: #cbd5e1; }
       .account { font-size: 18px; font-weight: 700; color: #f8d184; margin-top: 12px; }
+      @media(max-width:760px){.wrap{padding:20px 14px 48px}}
     </style>
   </head>
   <body>
-    <div id="root"></div>
-
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
+    <div id="root"><div class="wrap"><section class="hero"><h1>레지나타로썰 상담 접수</h1><p class="desc">선택에 따라 아래 단계가 자연스럽게 열리는 상담 접수 흐름입니다.</p></section><form><section class="card fade"><div class="step-title">1) 서비스 선택</div><div class="option-grid"><div class="option ">상담 질문</div><div class="option ">오늘의 운세</div></div></section></form></div></div>
+    <script crossorigin="" src="./레지나타로썰 상담 접수 _ 1_files/react.production.min.js.다운로드"></script>
+    <script crossorigin="" src="./레지나타로썰 상담 접수 _ 1_files/react-dom.production.min.js.다운로드"></script>
     <script>
       const { useEffect, useState } = React;
-
-      const API_BASE = 'https://regina-tarot-app.onrender.com';
-
+      const MENU_CONFIG_URL = '/data/consultation-products.json';
       const fallbackMenus = [
-        { id: 'line-direction', title: '한 줄 방향 리딩', price: 3000, desc: '입금 확인 후 자동 전달' },
-        { id: 'core-summary', title: '핵심 정리 리딩', price: 7000, desc: '핵심 요약' },
-        { id: 'decision-flow', title: '결정 흐름 리딩', price: 18000, desc: '결정 흐름 분석' },
-        { id: 'deep-decision', title: '심층 결정 리딩', price: 30000, desc: '심층 리딩' },
+        { id: 'line-direction', title: '한 줄 방향 리딩', price: 3000, desc: '입금 확인 후 자동으로 결과가 전달됩니다.' },
+        { id: 'core-summary', title: '핵심 정리 리딩', price: 7000, desc: '핵심 포인트를 간결하게 정리해 드립니다.' },
+        { id: 'decision-flow', title: '결정 흐름 리딩', price: 18000, desc: '결정 흐름과 리스크를 구조적으로 안내합니다.' },
+        { id: 'deep-decision', title: '심층 결정 리딩', price: 30000, desc: '핵심 질문을 중심으로 심층 리딩을 진행합니다.' },
       ];
 
       function App(){
         const [serviceType, setServiceType] = useState('');
         const [form, setForm] = useState({ name:'', contact:'', question:'', memo:'' });
+        const [menus, setMenus] = useState(fallbackMenus);
         const [selectedMenu, setSelectedMenu] = useState(null);
         const [submitted, setSubmitted] = useState(false);
         const [statusText, setStatusText] = useState('');
+        const [submitting, setSubmitting] = useState(false);
+        const contactDone = form.name.trim() && form.contact.trim();
+        const menuSelected = !!selectedMenu;
+
+        useEffect(() => {
+          (async () => {
+            try {
+              const res = await fetch(MENU_CONFIG_URL);
+              const data = await res.json();
+              if (Array.isArray(data.products) && data.products.length) setMenus(data.products);
+            } catch (_) {}
+          })();
+        }, []);
 
         async function onSubmit(e){
           e.preventDefault();
-
+          if (!serviceType || !contactDone || !selectedMenu || !form.question.trim()) return;
+          setSubmitting(true);
+          setStatusText('');
           try {
-            const res = await fetch(`${API_BASE}/api/consultations`, {
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({
-                serviceType,
-                menuId: selectedMenu?.id,
-                menuTitle: selectedMenu?.title,
-                price: Number(selectedMenu?.price),
-                name: form.name,
-                contactChannel: form.contact,
-                question: form.question,
-                memo: form.memo,
-              })
-            });
+  const API_BASE = 'https://regina-tarot-app.onrender.com';
 
-            const data = await res.json();
+const res = await fetch(`${API_BASE}/api/consultations`, {
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body: JSON.stringify({
+    serviceType,
+    menuId: selectedMenu.id,
+    menuTitle: selectedMenu.title,
+    price: Number(selectedMenu.price),
+    name: form.name,
+    contactChannel: form.contact,
+    question: form.question,
+    memo: form.memo,
+  })
+});
 
-            if(!data.ok) throw new Error(data.error);
+const data = await res.json();
+if(!data.ok) throw new Error(data.error || '접수 실패');
 
-            setSubmitted(true);
-            setStatusText(`접수 완료 (번호: ${data.consultation.id})`);
-
+setSubmitted(true);
+setStatusText(`접수가 완료되었습니다. (접수번호: ${data.consultation.id})`);
           } catch (err) {
             setStatusText(err.message);
+          } finally {
+            setSubmitting(false);
           }
         }
 
-        return React.createElement('div',{className:'wrap'},
-          React.createElement('h1',null,'레지나타로썰 상담 접수'),
+        return React.createElement('div', { className:'wrap' },
+          React.createElement('section', { className:'hero' },
+            React.createElement('h1', null, '레지나타로썰 상담 접수'),
+            React.createElement('p', { className:'desc' }, '선택에 따라 아래 단계가 자연스럽게 열리는 상담 접수 흐름입니다.')
+          ),
+          React.createElement('form', { onSubmit },
+            React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '1) 서비스 선택'),
+              React.createElement('div', { className:'option-grid' },
+                React.createElement('div', { className:`option ${serviceType === 'question' ? 'active' : ''}`, onClick: () => setServiceType('question') }, '상담 질문'),
+                React.createElement('div', { className:`option ${serviceType === 'fortune' ? 'active' : ''}`, onClick: () => setServiceType('fortune') }, '오늘의 운세')
+              )
+            ),
 
-          React.createElement('form',{onSubmit},
+            serviceType && React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '2) 기본 정보'),
+              React.createElement('input', { placeholder:'이름 또는 닉네임', value:form.name, onChange:(e)=>setForm({...form,name:e.target.value}) }),
+              React.createElement('input', { placeholder:'카카오톡 ID 또는 연락 가능한 전화번호', value:form.contact, onChange:(e)=>setForm({...form,contact:e.target.value}) })
+            ),
 
-            React.createElement('input',{
-              placeholder:'이름',
-              value:form.name,
-              onChange:e=>setForm({...form,name:e.target.value})
-            }),
+            serviceType && contactDone && React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '3) 상담 메뉴'),
+              React.createElement('div', { className:'menu-grid' }, ...menus.map((m)=>React.createElement('div', {
+                key:m.id, className:`menu-card ${selectedMenu && selectedMenu.id === m.id ? 'active':''}`, onClick:()=>setSelectedMenu(m)
+              },
+                React.createElement('div', { className:'menu-title' }, m.title),
+                React.createElement('div', { className:'menu-price' }, `${Number(m.price).toLocaleString('ko-KR')}원`),
+                React.createElement('div', { className:'menu-desc' }, m.desc)
+              )))
+            ),
 
-            React.createElement('input',{
-              placeholder:'연락처',
-              value:form.contact,
-              onChange:e=>setForm({...form,contact:e.target.value})
-            }),
+            menuSelected && React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '4) 질문 내용'),
+              React.createElement('textarea', { placeholder:'핵심 질문 (필수)', value:form.question, onChange:(e)=>setForm({...form,question:e.target.value}) }),
+              React.createElement('textarea', { placeholder:'추가 메모 (선택)', value:form.memo, onChange:(e)=>setForm({...form,memo:e.target.value}) })
+            ),
 
-            React.createElement('textarea',{
-              placeholder:'질문',
-              value:form.question,
-              onChange:e=>setForm({...form,question:e.target.value})
-            }),
+            menuSelected && form.question.trim() && React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '5) 접수하기'),
+              React.createElement('button', { className:'submit-btn', type:'submit', disabled:submitting }, submitting ? '접수 중...' : '상담 접수 제출'),
+              statusText ? React.createElement('div', { className:'status-text' }, statusText) : null
+            ),
 
-            React.createElement('button',{className:'submit-btn'},'상담 접수'),
-
-            statusText && React.createElement('div',null,statusText)
+            submitted && React.createElement('section', { className:'card fade' },
+              React.createElement('div', { className:'step-title' }, '6) 결제 안내'),
+              React.createElement('div', { className:'account' }, '카카오뱅크 3333-1653-29692 강율리'),
+              React.createElement('p', { className:'payment-desc' }, '입금 확인 후 순차적으로 상담이 진행됩니다.'),
+              selectedMenu
+                ? React.createElement('div', { className:'selected-summary' }, `선택 메뉴: ${selectedMenu.title} / ${Number(selectedMenu.price).toLocaleString('ko-KR')}원`)
+                : null
+            )
           )
         )
       }
 
       ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     </script>
-  </body>
-</html>
+  
+
+</body></html>
