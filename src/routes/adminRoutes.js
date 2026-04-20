@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs/promises');
+const path = require('path');
 const multer = require('multer');
 const env = require('../config/env');
 const adminAuth = require('../middleware/adminAuth');
@@ -21,6 +22,11 @@ const {
   normalizeUploadedFilename,
   isSupportedUploadType,
 } = require('../utils/uploadFilename');
+const {
+  readJson,
+  writeJson,
+  ensureDir,
+} = require('../utils/fileStore');
 
 const router = express.Router();
 
@@ -64,45 +70,30 @@ const upload = multer({
   },
 });
 
-/**
- * 임시 메모리 저장소
- * 나중에 실제 접수 저장소 연결 전까지 관리자 화면 동작용
- */
-const consultationStore = [
-  {
-    id: 'sample-1',
-    name: '테스트 내담자',
-    nickname: '테스트',
-    contact: 'kakao:test',
-    contactChannel: 'kakao:test',
-    menu: '핵심 리딩',
-    menuTitle: '핵심 리딩',
-    question: '이 사람의 현재 흐름이 궁금해요.',
-    memo: '관리자 테스트용 샘플 데이터입니다.',
-    createdAt: new Date().toISOString(),
-    recommendation: '',
-    drawResult: '',
-    finalReading: '',
-    kakaoText: '',
-    status: 'submitted',
-  },
-];
-
 async function listConsultations() {
-  return consultationStore;
+  const items = await readJson(env.consultationStorePath, []);
+  return Array.isArray(items) ? items : [];
+}
+
+async function getConsultationById(id) {
+  const items = await listConsultations();
+  return items.find((item) => item.id === id) || null;
 }
 
 async function updateConsultationById(id, patch) {
-  const idx = consultationStore.findIndex((item) => item.id === id);
+  const items = await listConsultations();
+  const idx = items.findIndex((item) => item.id === id);
   if (idx === -1) return null;
 
-  consultationStore[idx] = {
-    ...consultationStore[idx],
+  items[idx] = {
+    ...items[idx],
     ...patch,
     updatedAt: new Date().toISOString(),
   };
 
-  return consultationStore[idx];
+  await ensureDir(path.dirname(env.consultationStorePath));
+  await writeJson(env.consultationStorePath, items);
+  return items[idx];
 }
 
 router.post('/session', (req, res) => {
@@ -156,8 +147,7 @@ router.get('/consultations', async (_req, res, next) => {
 
 router.get('/consultations/:id', async (req, res, next) => {
   try {
-    const consultations = await listConsultations();
-    const consultation = consultations.find((item) => item.id === req.params.id);
+    const consultation = await getConsultationById(req.params.id);
 
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
@@ -183,8 +173,7 @@ router.patch('/consultations/:id', async (req, res, next) => {
 
 router.post('/consultations/:id/recommendation/generate', async (req, res, next) => {
   try {
-    const consultations = await listConsultations();
-    const consultation = consultations.find((item) => item.id === req.params.id);
+    const consultation = await getConsultationById(req.params.id);
 
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
@@ -221,8 +210,7 @@ router.post('/consultations/:id/recommendation', async (req, res, next) => {
 
 router.post('/consultations/:id/draw/generate', async (req, res, next) => {
   try {
-    const consultations = await listConsultations();
-    const consultation = consultations.find((item) => item.id === req.params.id);
+    const consultation = await getConsultationById(req.params.id);
 
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
@@ -254,8 +242,7 @@ router.post('/consultations/:id/draw', async (req, res, next) => {
 
 router.post('/consultations/:id/reading/generate', async (req, res, next) => {
   try {
-    const consultations = await listConsultations();
-    const consultation = consultations.find((item) => item.id === req.params.id);
+    const consultation = await getConsultationById(req.params.id);
 
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
