@@ -1,545 +1,198 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>레지나타로썰 | 상담 접수</title>
-  <style>
-    :root {
-      --bg: #111114;
-      --card: #1a1b21;
-      --line: #2b2d36;
-      --text: #f3f4f6;
-      --muted: #b9bcc7;
-      --accent: #c8a96b;
-      --accent-2: #8b6a2b;
-      --danger: #ffb4b4;
-      --ok: #d9f99d;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>레지나타로썰 | 상담 접수</title>
 
-    * { box-sizing: border-box; }
+<style>
+body {
+  margin:0;
+  font-family: 'Noto Sans KR', sans-serif;
+  background:#0f1117;
+  color:#fff;
+}
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background: radial-gradient(circle at top, #1d1b24 0%, var(--bg) 45%);
-      color: var(--text);
-      line-height: 1.55;
-    }
+.wrap {
+  max-width:700px;
+  margin:0 auto;
+  padding:30px 16px;
+}
 
-    .wrap {
-      width: min(100%, 760px);
-      margin: 0 auto;
-      padding: 28px 16px 56px;
-    }
+h1 {
+  font-size:26px;
+  margin-bottom:10px;
+}
 
-    .hero {
-      padding: 20px 4px 24px;
-    }
+.sub {
+  color:#aaa;
+  margin-bottom:20px;
+}
 
-    .eyebrow {
-      display: inline-block;
-      padding: 6px 10px;
-      border: 1px solid rgba(200,169,107,.35);
-      border-radius: 999px;
-      color: #ead7af;
-      font-size: 12px;
-      letter-spacing: .02em;
-      background: rgba(200,169,107,.08);
-    }
+.card {
+  background:#181b22;
+  padding:20px;
+  border-radius:16px;
+  border:1px solid #2a2d36;
+}
 
-    h1 {
-      margin: 14px 0 10px;
-      font-size: 31px;
-      line-height: 1.2;
-      letter-spacing: -0.03em;
-    }
+label {
+  display:block;
+  margin:12px 0 6px;
+  font-size:14px;
+}
 
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
-    }
+input, textarea, select {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#111;
+  color:#fff;
+}
 
-    .card {
-      background: rgba(26,27,33,.94);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 22px 18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(8px);
-    }
+textarea { min-height:120px; }
 
-    .notice {
-      margin: 0 0 18px;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(200,169,107,.08);
-      border: 1px solid rgba(200,169,107,.22);
-      color: #f2e5c5;
-      font-size: 14px;
-    }
+.choice {
+  border:1px solid #333;
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  cursor:pointer;
+}
 
-    .section-title {
-      margin: 24px 0 12px;
-      font-size: 15px;
-      color: #f5e7c5;
-      font-weight: 700;
-    }
+.choice:hover {
+  border-color:#c8a96b;
+}
 
-    .grid {
-      display: grid;
-      gap: 14px;
-    }
+.btn {
+  width:100%;
+  padding:14px;
+  margin-top:18px;
+  background:#c8a96b;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    @media (min-width: 680px) {
-      .grid.two {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
+.payment-box {
+  margin-top:16px;
+  padding:16px;
+  border-radius:12px;
+  background:#111;
+  border:1px solid #333;
+}
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .hint {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      border: 1px solid #363947;
-      background: #13141a;
-      color: var(--text);
-      border-radius: 14px;
-      padding: 14px 14px;
-      font-size: 15px;
-      outline: none;
-      transition: border-color .18s ease, box-shadow .18s ease;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(200,169,107,.12);
-    }
-
-    textarea {
-      min-height: 150px;
-      resize: vertical;
-    }
-
-    .choice-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .choice {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      padding: 14px;
-      background: #12131a;
-      border: 1px solid #313441;
-      border-radius: 16px;
-      transition: border-color .18s ease, background .18s ease, transform .18s ease;
-      cursor: pointer;
-    }
-
-    .choice:hover {
-      border-color: rgba(200,169,107,.45);
-      background: #151720;
-      transform: translateY(-1px);
-    }
-
-    .choice input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      margin-top: 2px;
-      accent-color: var(--accent);
-      flex: 0 0 auto;
-    }
-
-    .choice strong {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 3px;
-      color: #fff7e6;
-    }
-
-    .choice span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .choice small {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .01em;
-    }
-
-    .badge-auto {
-      background: rgba(163, 230, 53, .12);
-      color: #d9f99d;
-      border: 1px solid rgba(163, 230, 53, .2);
-    }
-
-    .badge-reserve {
-      background: rgba(251, 191, 36, .12);
-      color: #fde68a;
-      border: 1px solid rgba(251, 191, 36, .2);
-    }
-
-    .check {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .check input {
-      width: 18px;
-      height: 18px;
-      margin-top: 2px;
-      accent-color: var(--accent);
-      flex: 0 0 auto;
-    }
-
-    .divider {
-      height: 1px;
-      background: var(--line);
-      margin: 22px 0;
-    }
-
-    .payment-box {
-      padding: 16px;
-      border-radius: 18px;
-      background: #12131a;
-      border: 1px solid #323442;
-    }
-
-    .payment-box p {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .payment-box strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 16px;
-      color: #fff5dc;
-    }
-
-    .flow-box {
-      margin-top: 14px;
-      padding: 16px;
-      border-radius: 18px;
-      background: #12131a;
-      border: 1px solid #323442;
-    }
-
-    .flow-box strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 15px;
-      color: #fff5dc;
-    }
-
-    .flow-box p {
-      margin: 0 0 8px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .flow-box .accent {
-      color: #f8e8bf;
-    }
-
-    .btn {
-      width: 100%;
-      border: 0;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #d8ba7b 0%, #b88f4c 100%);
-      color: #1b150a;
-      font-size: 16px;
-      font-weight: 800;
-      padding: 16px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    .btn:hover {
-      filter: brightness(1.03);
-    }
-
-    .foot {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .important {
-      color: var(--danger);
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+.hidden { display:none; }
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <span class="eyebrow">레지나타로썰 상담 접수</span>
-      <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
-      <p class="sub">
-        자동화형 상품은 접수 후 결제 확인이 되면 자동 흐름으로 이어지고,
-        예약형 상품은 접수 후 일정 조율 안내가 따로 진행돼요.
-      </p>
-    </section>
+<div class="wrap">
 
-    <section class="card">
-      <p class="notice">
-        현재 페이지는 <strong>접수페이지 먼저</strong> 만드는 구조에 맞춰 정리된 버전이에요.
-        여기서 상품이 자동화형인지 예약형인지 먼저 나누고, 이후에 자동 추천 / 보조앱 / 관리자 페이지 연결로 이어지게 됩니다.
-      </p>
+<h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
+<p class="sub">
+선택한 메뉴에 따라 진행 방식이 달라져요.
+간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
+</p>
 
-      <form
-        name="regina-question-form"
-        method="POST"
-        data-netlify="true"
-        netlify-honeypot="bot-field"
-        action="/thank-you.html"
-        id="questionForm"
-      >
-        <input type="hidden" name="form-name" value="regina-question-form" />
-        <input type="hidden" name="product_name" id="product_name" value="" />
-        <input type="hidden" name="product_price" id="product_price" value="" />
-        <input type="hidden" name="product_type" id="product_type" value="" />
+<div class="card">
 
-        <p class="hidden">
-          <label>이 필드는 비워두세요: <input name="bot-field" /></label>
-        </p>
+<form id="form">
 
-        <div class="grid two">
-          <div>
-            <label for="name">성함 또는 닉네임</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="예: 김별 / 별빛님"
-              required
-            />
-          </div>
-          <div>
-            <label for="contact">연락처</label>
-            <input
-              id="contact"
-              name="contact"
-              type="text"
-              placeholder="예: 카카오 ID / 오픈채팅 링크 / 휴대폰 뒤 4자리"
-              required
-            />
-          </div>
-        </div>
+<input type="hidden" id="product_name">
+<input type="hidden" id="product_price">
 
-        <div class="section-title">상담 메뉴 선택</div>
-        <div class="choice-list">
-          <label class="choice">
-            <input
-              type="radio"
-              name="menu"
-              value="3천원 자동화 리딩"
-              data-price="3000"
-              data-type="자동화형"
-              required
-            />
-            <div>
-              <strong>3천원 자동화 리딩</strong>
-              <span>질문 1개, 짧고 빠르게 핵심 방향만 확인하는 자동화형 리딩</span>
-              <small class="badge-auto">자동화형</small>
-            </div>
-          </label>
+<label>성함 / 닉네임</label>
+<input id="name" required>
 
-          <label class="choice">
-            <input
-              type="radio"
-              name="menu"
-              value="7천원 자동화 리딩"
-              data-price="7000"
-              data-type="자동화형"
-            />
-            <div>
-              <strong>7천원 자동화 리딩</strong>
-              <span>질문 1개, 흐름과 포인트를 조금 더 자세히 정리하는 자동화형 리딩</span>
-              <small class="badge-auto">자동화형</small>
-            </div>
-          </label>
+<label>연락처</label>
+<input id="contact" required>
 
-          <label class="choice">
-            <input
-              type="radio"
-              name="menu"
-              value="18,000원 결정 리딩"
-              data-price="18000"
-              data-type="예약형"
-            />
-            <div>
-              <strong>18,000원 결정 리딩</strong>
-              <span>선택지 비교, 연결 질문 포함, 일정 조율 후 진행하는 예약형 리딩</span>
-              <small class="badge-reserve">예약형</small>
-            </div>
-          </label>
+<label>상담 메뉴 선택</label>
 
-          <label class="choice">
-            <input
-              type="radio"
-              name="menu"
-              value="30,000원 심층 리딩"
-              data-price="30000"
-              data-type="예약형"
-            />
-            <div>
-              <strong>30,000원 심층 리딩</strong>
-              <span>질문 여러 개, 상황 전체 정리와 깊은 흐름 분석 중심의 예약형 리딩</span>
-              <small class="badge-reserve">예약형</small>
-            </div>
-          </label>
-        </div>
+<div class="choice">
+<input type="radio" name="menu" value="3천원 리딩" data-price="3000" required>
+<strong>3천원 리딩</strong><br>
+<span>짧고 빠르게 핵심 방향만 확인하는 리딩</span>
+</div>
 
-        <div class="section-title">질문 내용</div>
-        <div>
-          <label for="question">상담 질문</label>
-          <textarea
-            id="question"
-            name="question"
-            placeholder="상황 설명과 궁금한 점을 적어주세요.
+<div class="choice">
+<input type="radio" name="menu" value="7천원 리딩" data-price="7000">
+<strong>7천원 리딩</strong><br>
+<span>조금 더 자세하게 흐름을 정리하는 리딩</span>
+</div>
 
-예: 지금 만나는 분과 앞으로 흐름이 궁금해요.
-제가 먼저 연락하는 게 맞는지,
-상대가 저를 어떻게 보고 있는지도 알고 싶어요."
-            required
-          ></textarea>
-          <p class="hint">
-            자동화형은 질문을 바탕으로 내부에서 덱 / 스프레드 / 보조도구 추천에 활용되고,
-            예약형은 상담 방향을 미리 파악하는 용도로 사용돼요.
-          </p>
-        </div>
+<div class="choice">
+<input type="radio" name="menu" value="18,000원 리딩" data-price="18000">
+<strong>18,000원 리딩</strong><br>
+<span>선택지 비교와 방향 정리를 포함한 리딩</span>
+</div>
 
-        <div class="grid two" style="margin-top: 14px;">
-          <div>
-            <label for="birth">생년월일 / 기본정보</label>
-            <input
-              id="birth"
-              name="birth"
-              type="text"
-              placeholder="예: 1993.01.25 / 35세 여자"
-            />
-            <p class="hint">선택 입력이에요. 필요할 때만 적어주세요.</p>
-          </div>
-          <div>
-            <label for="timing">희망 답변 방식</label>
-            <select id="timing" name="timing">
-              <option value="기본">기본</option>
-              <option value="짧고 빠르게">짧고 빠르게</option>
-              <option value="조금 더 자세하게">조금 더 자세하게</option>
-              <option value="심층적으로">심층적으로</option>
-            </select>
-          </div>
-        </div>
+<div class="choice">
+<input type="radio" name="menu" value="30,000원 리딩" data-price="30000">
+<strong>30,000원 리딩</strong><br>
+<span>상황 전체 흐름을 깊게 분석하는 심층 리딩</span>
+</div>
 
-        <div style="margin-top: 14px;">
-          <label for="memo">추가 메모</label>
-          <textarea
-            id="memo"
-            name="memo"
-            placeholder="특정 상대와의 관계, 직업 상황, 이미 본 리딩이 있다면 참고용으로 적어주세요."
-          ></textarea>
-        </div>
+<label>질문 내용</label>
+<textarea id="question" required></textarea>
 
-        <div class="divider"></div>
+<button type="button" class="btn" id="step1">
+질문 접수하기
+</button>
 
-        <div class="payment-box">
-          <strong>접수 후 진행 방식</strong>
-          <p>먼저 질문을 접수한 뒤, 선택한 메뉴에 따라 자동화형 / 예약형으로 분기돼요.</p>
-          <p>자동화형은 결제 확인 후 자동 흐름으로 이어지고, 예약형은 접수 후 일정 조율 안내가 들어가요.</p>
-        </div>
+<div class="payment-box hidden" id="paymentBox">
 
-        <div class="flow-box" id="flowBox">
-          <strong>선택한 메뉴 안내</strong>
-          <p class="accent">아직 메뉴가 선택되지 않았어요.</p>
-          <p>메뉴를 고르면 아래에 진행 방식이 자동으로 표시돼요.</p>
-        </div>
+<p id="menuText"></p>
+<p id="priceText"></p>
 
-        <div style="margin-top: 16px;" class="check">
-          <input id="agree" name="agree" type="checkbox" value="동의" required />
-          <label for="agree">
-            질문 접수 후 선택한 메뉴에 따라 자동화형 또는 예약형 방식으로 진행된다는 점을 확인했어요.
-          </label>
-        </div>
+<p>
+이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.<br><br>
 
-        <button class="btn" type="submit">질문 접수하기</button>
-        <p class="important">
-          자동화형도 이 페이지에서 바로 결과가 뜨는 구조는 아니에요.
-          지금 단계는 어디까지나 접수페이지 먼저 만드는 단계예요.
-        </p>
-      </form>
+이후 질문 내용을 바탕으로<br>
+덱 / 스프레드 / 보조도구 추천이 먼저 진행되고,<br>
+그 다음 셔플 후 리딩 → 전달 순서로 이어지게 됩니다.
+</p>
 
-      <p class="foot">레지나타로썰 · 상담 접수 전용 폼</p>
-    </section>
-  </div>
+<p style="margin-top:10px; font-weight:bold;">
+카카오뱅크 3333-1653-29692 강율리
+</p>
 
-  <script>
-    const flowBox = document.getElementById('flowBox');
-    const productNameInput = document.getElementById('product_name');
-    const productPriceInput = document.getElementById('product_price');
-    const productTypeInput = document.getElementById('product_type');
-    const menuInputs = document.querySelectorAll('input[name="menu"]');
+<button type="submit" class="btn">
+입금 완료 후 최종 접수하기
+</button>
 
-    function updateFlowBox(input) {
-      const name = input.value;
-      const price = input.dataset.price || '';
-      const type = input.dataset.type || '';
+</div>
 
-      productNameInput.value = name;
-      productPriceInput.value = price;
-      productTypeInput.value = type;
+</form>
+</div>
+</div>
 
-      if (type === '자동화형') {
-        flowBox.innerHTML = `
-          <strong>선택한 메뉴 안내</strong>
-          <p class="accent"><strong>${name}</strong> / ${price}원 / ${type}</p>
-          <p>이 메뉴는 접수 후 결제 확인이 되면 자동 흐름으로 연결되는 상품이에요.</p>
-          <p>이후 내부에서는 질문 내용을 바탕으로 <strong>덱 / 스프레드 / 보조도구 추천</strong>이 먼저 진행되고, 그다음 <strong>리딩 보조앱 → 관리자 페이지</strong> 순서로 이어지게 돼요.</p>
-        `;
-      } else if (type === '예약형') {
-        flowBox.innerHTML = `
-          <strong>선택한 메뉴 안내</strong>
-          <p class="accent"><strong>${name}</strong> / ${price}원 / ${type}</p>
-          <p>이 메뉴는 접수 후 바로 자동 리딩으로 가지 않고, 별도로 일정 조율 후 진행되는 예약형 상품이에요.</p>
-          <p>즉, 이 페이지에서는 질문과 기본 정보를 먼저 받고, 이후 상담 방향을 정리해서 예약 안내로 넘기는 구조예요.</p>
-        `;
-      }
-    }
+<script>
 
-    menuInputs.forEach((input) => {
-      input.addEventListener('change', () => updateFlowBox(input));
-    });
-  </script>
+const step1 = document.getElementById("step1");
+const paymentBox = document.getElementById("paymentBox");
+
+step1.onclick = () => {
+
+  const menu = document.querySelector("input[name='menu']:checked");
+
+  if (!menu) return alert("메뉴 선택해주세요");
+
+  if (!name.value || !contact.value || !question.value)
+    return alert("필수 입력 먼저 해주세요");
+
+  document.getElementById("menuText").innerText = menu.value;
+  document.getElementById("priceText").innerText =
+    Number(menu.dataset.price).toLocaleString() + "원";
+
+  paymentBox.classList.remove("hidden");
+  paymentBox.scrollIntoView({behavior:"smooth"});
+};
+
+</script>
+
 </body>
 </html>
