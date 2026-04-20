@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs/promises');
 const path = require('path');
 const multer = require('multer');
+const OpenAI = require('openai');
 const env = require('../config/env');
 const adminAuth = require('../middleware/adminAuth');
 const {
@@ -29,6 +30,59 @@ const {
 } = require('../utils/fileStore');
 
 const router = express.Router();
+const openai = env.openaiApiKey ? new OpenAI({ apiKey: env.openaiApiKey }) : null;
+
+const UNIVERSAL_78 = [
+  '0 The Fool','I The Magician','II The High Priestess','III The Empress','IV The Emperor','V The Hierophant','VI The Lovers','VII The Chariot','VIII Strength','IX The Hermit','X Wheel of Fortune','XI Justice','XII The Hanged Man','XIII Death','XIV Temperance','XV The Devil','XVI The Tower','XVII The Star','XVIII The Moon','XIX The Sun','XX Judgement','XXI The World',
+  'Ace of Cups','Two of Cups','Three of Cups','Four of Cups','Five of Cups','Six of Cups','Seven of Cups','Eight of Cups','Nine of Cups','Ten of Cups','Page of Cups','Knight of Cups','Queen of Cups','King of Cups',
+  'Ace of Pentacles','Two of Pentacles','Three of Pentacles','Four of Pentacles','Five of Pentacles','Six of Pentacles','Seven of Pentacles','Eight of Pentacles','Nine of Pentacles','Ten of Pentacles','Page of Pentacles','Knight of Pentacles','Queen of Pentacles','King of Pentacles',
+  'Ace of Swords','Two of Swords','Three of Swords','Four of Swords','Five of Swords','Six of Swords','Seven of Swords','Eight of Swords','Nine of Swords','Ten of Swords','Page of Swords','Knight of Swords','Queen of Swords','King of Swords',
+  'Ace of Wands','Two of Wands','Three of Wands','Four of Wands','Five of Wands','Six of Wands','Seven of Wands','Eight of Wands','Nine of Wands','Ten of Wands','Page of Wands','Knight of Wands','Queen of Wands','King of Wands',
+];
+
+function shuffle(arr) {
+  const next = [...arr];
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
+function maybeReversed(card) {
+  return Math.random() < 0.38 ? `${card} (역방향)` : card;
+}
+
+async function callOpenAI({ system, user, temperature = 0.9 }) {
+  if (!openai) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+
+  const response = await openai.responses.create({
+    model: env.model || 'gpt-4.1-mini',
+    temperature,
+    input: [
+      { role: 'system', content: [{ type: 'input_text', text: system }] },
+      { role: 'user', content: [{ type: 'input_text', text: user }] },
+    ],
+  });
+
+  return (response.output_text || '').trim();
+}
+
+async function callOpenAIJson({ system, user, temperature = 0.7 }) {
+  const raw = await callOpenAI({
+    system: `${system}\n반드시 JSON만 출력하세요. 설명 금지. 코드펜스 금지.`,
+    user,
+    temperature,
+  });
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`AI JSON parse failed: ${raw}`);
+  }
+}
 
 const storage = multer.diskStorage({
   destination: async (_, __, cb) => {
@@ -174,18 +228,39 @@ router.patch('/consultations/:id', async (req, res, next) => {
 router.post('/consultations/:id/recommendation/generate', async (req, res, next) => {
   try {
     const consultation = await getConsultationById(req.params.id);
-
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
 
-    const recommendation =
-      `질문 요약: ${consultation.question || '-'}\n` +
-      `추천 덱: 로제딕 타로\n` +
-      `스프레드: 3카드 (현재/흐름/조언)\n` +
-      `보조도구: 레노먼드`;
+    const system = `당신은 한국어로 답하는 타로 상담 운영 보조 시스템이다.
+질문을 보고 추천 덱, 장수, 스프레드, 보조도구를 정한다.
+레지나 스타일은 결정 중심, 흐름 해석 중심, 감정선은 정제되지만 현실적이다.
+연애/관계면 로제딕 타로, 감정선은 로맨틱 타로/너에게 다이브, 현실/결정은 세피로트/화이트 세이지/하모니 등을 우선 고려한다.
+출력 JSON 형식:
+{
+  "summary": "짧은 질문 요약",
+  "deck": "추천 덱명",
+  "spread": "스프레드 설명",
+  "support": ["보조도구1", "보조도구2"],
+  "cardCount": 숫자,
+  "note": "짧은 추천 이유"
+}`;
 
-    return res.json({ ok: true, recommendation });
+    const user = `이름: ${consultation.name || '-'}
+메뉴: ${consultation.menuTitle || consultation.menu || '-'}
+질문: ${consultation.question || '-'}
+추가 메모: ${consultation.memo || '-'}`;
+
+    const ai = await callOpenAIJson({ system, user, temperature: 0.6 });
+
+    const recommendation =
+      `질문 요약: ${ai.summary || consultation.question || '-'}\n` +
+      `추천 덱: ${ai.deck || '로제딕 타로'}\n` +
+      `스프레드: ${ai.spread || `${Number(ai.cardCount || 3)}카드 스프레드`}\n` +
+      `보조도구: ${Array.isArray(ai.support) && ai.support.length ? ai.support.join(', ') : '없음'}\n` +
+      `추천 이유: ${ai.note || '질문 성격에 맞춰 흐름과 조언이 함께 보이는 구성입니다.'}`;
+
+    return res.json({ ok: true, recommendation, meta: ai });
   } catch (error) {
     return next(error);
   }
@@ -211,12 +286,19 @@ router.post('/consultations/:id/recommendation', async (req, res, next) => {
 router.post('/consultations/:id/draw/generate', async (req, res, next) => {
   try {
     const consultation = await getConsultationById(req.params.id);
-
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
 
-    const drawResult = `현재: The Magician\n흐름: The Lovers\n조언: Strength`;
+    const recommendationText = req.body?.recommendation || consultation.recommendation || '';
+    const countMatch = recommendationText.match(/(\d+)카드/);
+    const cardCount = Math.min(10, Math.max(3, Number(countMatch?.[1] || 3)));
+    const spreadLabels = ['현재', '흐름', '조언', '숨은 변수', '상대 측', '결과', '행동 포인트', '주의점', '반전 포인트', '최종 정리'];
+
+    const picks = shuffle(UNIVERSAL_78).slice(0, cardCount).map(maybeReversed);
+    const lines = picks.map((card, index) => `${spreadLabels[index] || `카드 ${index + 1}`}: ${card}`);
+    const drawResult = lines.join('\n');
+
     return res.json({ ok: true, drawResult });
   } catch (error) {
     return next(error);
@@ -243,16 +325,33 @@ router.post('/consultations/:id/draw', async (req, res, next) => {
 router.post('/consultations/:id/reading/generate', async (req, res, next) => {
   try {
     const consultation = await getConsultationById(req.params.id);
-
     if (!consultation) {
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
 
-    const reading =
-      `${consultation.name || '내담자님'} 안녕하세요.\n` +
-      `현재 흐름은 정리와 선택이 동시에 필요한 시기예요.\n` +
-      `조급함보다 우선순위를 세우고 한 단계씩 실행해보세요.`;
+    const recommendation = req.body?.recommendation || consultation.recommendation || '';
+    const drawResult = req.body?.drawResult || consultation.drawResult || '';
 
+    const system = `당신은 레지나 스타일의 한국어 타로 리더다.
+말투 규칙:
+- 반드시 존댓말(~요)
+- 상대를 '내담자님'이라고 부를 수 있음
+- 카드 이름을 그대로 나열하지 말고 흐름 해석 중심으로 쓴다
+- 짧은 2~3문장이 아니라, 밀도 있는 한 문단 이상으로 쓴다
+- 위로만 하지 말고 현실적인 판단과 흐름을 함께 말한다
+- 과장된 단정은 피하고, 가능성과 현실선 사이를 정리해준다
+- 결과는 자연스러운 한국어 문단으로 작성한다
+- 마지막에는 한 줄 정도의 현실적 총평을 붙인다`;
+
+    const user = `이름: ${consultation.name || '-'}
+메뉴: ${consultation.menuTitle || consultation.menu || '-'}
+질문: ${consultation.question || '-'}
+추가 메모: ${consultation.memo || '-'}
+추천: ${recommendation || '-'}
+드로우 결과:
+${drawResult || '-'}`;
+
+    const reading = await callOpenAI({ system, user, temperature: 0.9 });
     return res.json({ ok: true, reading });
   } catch (error) {
     return next(error);
