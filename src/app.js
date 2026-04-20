@@ -340,6 +340,46 @@ app.get('/healthz', (_, res) => {
   res.status(200).json({ ok: true, status: 'healthy' });
 });
 
+// 외부 연결용 추천 API
+app.post('/api/recommend', async (req, res) => {
+  try {
+    const { question = '', productKind = 'standard' } = req.body || {};
+    const setup = recommendReadingSetup(question, productKind);
+
+    return res.status(200).json({
+      ok: true,
+      config: {
+        deck: setup.deck,
+        spread: setup.spread,
+        count: setup.positions.length,
+        extras: setup.auxTools,
+        positions: setup.positions,
+      },
+    });
+  } catch (error) {
+    console.error('POST /api/recommend error:', error);
+    return res.status(500).json({ ok: false, error: '추천 생성에 실패했어요.' });
+  }
+});
+
+// 외부 연결용 드로우 API
+app.post('/api/draw', async (req, res) => {
+  try {
+    const { question = '', productKind = 'standard' } = req.body || {};
+    const setup = recommendReadingSetup(question, productKind);
+    const drawResult = buildDrawResultFromSetup(setup);
+
+    return res.status(200).json({
+      ok: true,
+      setup,
+      drawResult,
+    });
+  } catch (error) {
+    console.error('POST /api/draw error:', error);
+    return res.status(500).json({ ok: false, error: '자동 드로우에 실패했어요.' });
+  }
+});
+
 app.post('/api/consultations', async (req, res) => {
   try {
     const {
