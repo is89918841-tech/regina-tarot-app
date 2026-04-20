@@ -4,69 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>레지나타로썰 | 상담 접수</title>
-
   <style>
     :root{
       --bg:#0b0d12;
       --panel:#151922;
-      --panel-2:#10141c;
       --line:#2b3242;
       --text:#f3f4f6;
       --muted:#aeb6c7;
       --accent:#d2b06b;
-      --accent-deep:#b99347;
       --danger:#ffb4b4;
+      --ok:#86efac;
     }
-
-    *{ box-sizing:border-box; }
-
+    *{box-sizing:border-box}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(35,38,64,.45) 0%, rgba(11,13,18,0) 35%),
-        linear-gradient(180deg, #090b11 0%, #0b0d12 100%);
       color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(34,41,68,.45) 0%, rgba(11,13,18,0) 35%),
+        linear-gradient(180deg,#090b10 0%,#0b0d12 100%);
     }
-
     .wrap{
-      max-width:760px;
+      width:min(100%,760px);
       margin:0 auto;
-      padding:36px 18px 60px;
+      padding:32px 16px 56px;
     }
-
-    .hero{
-      margin-bottom:18px;
-    }
-
     h1{
       margin:0 0 10px;
-      font-size:26px;
-      line-height:1.3;
+      font-size:30px;
+      line-height:1.25;
       letter-spacing:-0.03em;
-      font-weight:800;
     }
-
     .sub{
-      margin:0;
+      margin:0 0 18px;
       color:var(--muted);
       font-size:14px;
       line-height:1.7;
     }
-
     .card{
-      margin-top:18px;
       background:rgba(21,25,34,.96);
       border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:20px;
       padding:18px;
-      box-shadow:0 14px 60px rgba(0,0,0,.28);
+      box-shadow:0 18px 60px rgba(0,0,0,.28);
     }
-
-    .field{
-      margin-bottom:14px;
-    }
-
+    .field{margin-bottom:14px}
     label{
       display:block;
       margin-bottom:7px;
@@ -74,10 +56,7 @@
       font-weight:700;
       color:#f8f7f3;
     }
-
-    input,
-    textarea,
-    select{
+    input, textarea{
       width:100%;
       border:1px solid #333b4d;
       background:#0d1017;
@@ -88,27 +67,27 @@
       outline:none;
       transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
     }
-
-    input:focus,
-    textarea:focus,
-    select:focus{
+    input:focus, textarea:focus{
       border-color:rgba(210,176,107,.9);
       box-shadow:0 0 0 4px rgba(210,176,107,.12);
       background:#0f131c;
     }
-
     textarea{
       min-height:130px;
       resize:vertical;
       line-height:1.6;
     }
-
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color:#8f98aa;
+      line-height:1.55;
+    }
     .menu-group{
       display:grid;
       gap:10px;
       margin-top:6px;
     }
-
     .choice{
       display:flex;
       gap:12px;
@@ -120,19 +99,16 @@
       cursor:pointer;
       transition:border-color .18s ease, transform .18s ease, background .18s ease, box-shadow .18s ease;
     }
-
     .choice:hover{
       border-color:rgba(210,176,107,.55);
       transform:translateY(-1px);
       box-shadow:0 8px 20px rgba(0,0,0,.18);
     }
-
     .choice.active{
       border-color:rgba(210,176,107,.95);
       box-shadow:0 0 0 1px rgba(210,176,107,.28) inset;
       background:linear-gradient(180deg, rgba(26,31,43,.98) 0%, rgba(16,20,29,.98) 100%);
     }
-
     .choice input[type="radio"]{
       margin-top:3px;
       width:18px;
@@ -141,32 +117,22 @@
       flex:0 0 auto;
       cursor:pointer;
     }
-
     .choice-title{
       font-size:15px;
       font-weight:800;
       color:#fff8e8;
       margin-bottom:4px;
     }
-
     .choice-desc{
       font-size:13px;
       color:var(--muted);
       line-height:1.55;
     }
-
-    .hint{
-      margin-top:6px;
-      font-size:12px;
-      color:#8f98aa;
-      line-height:1.55;
-    }
-
     .btn{
       width:100%;
       border:0;
       border-radius:13px;
-      background:linear-gradient(180deg, #dbbe7e 0%, #c8a45c 100%);
+      background:linear-gradient(180deg,#dbbe7e 0%,#c8a45c 100%);
       color:#16120a;
       padding:15px 16px;
       font-size:15px;
@@ -174,12 +140,15 @@
       cursor:pointer;
       transition:filter .18s ease, transform .18s ease;
     }
-
     .btn:hover{
       filter:brightness(1.03);
       transform:translateY(-1px);
     }
-
+    .btn:disabled{
+      opacity:.65;
+      cursor:default;
+      transform:none;
+    }
     .payment-box{
       margin-top:16px;
       padding:16px;
@@ -187,21 +156,18 @@
       border:1px solid #333b4d;
       background:#0f131b;
     }
-
     .payment-box strong{
       display:block;
       margin-bottom:10px;
       font-size:15px;
       color:#fff3d2;
     }
-
     .payment-box p{
       margin:0 0 8px;
       color:var(--muted);
       font-size:14px;
       line-height:1.65;
     }
-
     .payment-acct{
       margin-top:10px;
       font-size:16px !important;
@@ -209,18 +175,33 @@
       font-weight:800;
       letter-spacing:.01em;
     }
-
+    .hidden{display:none!important}
+    .status{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:13px;
+      line-height:1.6;
+      display:none;
+      white-space:pre-line;
+    }
+    .status.show{display:block}
+    .status.ok{
+      background:rgba(134,239,172,.08);
+      border:1px solid rgba(134,239,172,.25);
+      color:#dcfce7;
+    }
+    .status.error{
+      background:rgba(255,180,180,.08);
+      border:1px solid rgba(255,180,180,.22);
+      color:#ffe0e0;
+    }
     .important{
       margin-top:10px;
       font-size:12px;
       color:var(--danger);
       line-height:1.55;
     }
-
-    .hidden{
-      display:none !important;
-    }
-
     .foot{
       margin-top:16px;
       text-align:center;
@@ -231,18 +212,17 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="hero">
-      <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
-      <p class="sub">
-        선택한 메뉴에 따라 진행 방식이 달라져요.
-        간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
-      </p>
-    </div>
+    <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
+    <p class="sub">
+      선택한 메뉴에 따라 진행 방식이 달라져요.
+      간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
+    </p>
 
     <div class="card">
-      <form id="questionForm" action="#" method="post" novalidate>
+      <form id="questionForm" novalidate>
         <input type="hidden" id="product_name" name="product_name" />
         <input type="hidden" id="product_price" name="product_price" />
+        <input type="hidden" id="product_kind" name="product_kind" />
 
         <div class="field">
           <label for="name">성함 / 닉네임</label>
@@ -251,14 +231,15 @@
 
         <div class="field">
           <label for="contact">연락처</label>
-          <input id="contact" name="contact" type="text" placeholder="예: 카카오ID / 오픈채팅 링크 / 휴대폰 번호" />
+          <input id="contact" name="contact" type="text" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" />
+          <p class="hint">※ 010-0000-0000 형식으로 입력해주세요 (- 포함)</p>
         </div>
 
         <div class="field">
           <label>상담 메뉴 선택</label>
           <div class="menu-group">
             <div class="choice" data-target="menu1">
-              <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" />
+              <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" data-kind="simple" />
               <div>
                 <div class="choice-title">3천원 리딩</div>
                 <div class="choice-desc">짧고 빠르게 핵심 방향만 확인하는 리딩</div>
@@ -266,7 +247,7 @@
             </div>
 
             <div class="choice" data-target="menu2">
-              <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" />
+              <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" data-kind="standard" />
               <div>
                 <div class="choice-title">7천원 리딩</div>
                 <div class="choice-desc">조금 더 자세하게 흐름을 정리하는 리딩</div>
@@ -274,7 +255,7 @@
             </div>
 
             <div class="choice" data-target="menu3">
-              <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" />
+              <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" data-kind="booking" />
               <div>
                 <div class="choice-title">18,000원 리딩</div>
                 <div class="choice-desc">선택지 비교와 방향 정리를 포함한 리딩</div>
@@ -282,7 +263,7 @@
             </div>
 
             <div class="choice" data-target="menu4">
-              <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" />
+              <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" data-kind="booking" />
               <div>
                 <div class="choice-title">30,000원 리딩</div>
                 <div class="choice-desc">상황 전체 흐름을 깊게 분석하는 심층 리딩</div>
@@ -293,11 +274,7 @@
 
         <div class="field">
           <label for="question">질문 내용</label>
-          <textarea
-            id="question"
-            name="question"
-            placeholder="예: 오늘 내로 프로그램을 마무리할 수 있을까요? 지금 흐름과 방해 요소, 조언이 궁금해요."
-          ></textarea>
+          <textarea id="question" name="question" placeholder="예: 오늘 내로 프로그램을 완료할 수 있을까요? 빠르게 하려면 어떻게 해야 할까요?"></textarea>
         </div>
 
         <button type="button" class="btn" id="step1">질문 접수하기</button>
@@ -306,24 +283,15 @@
           <strong>결제 안내</strong>
           <p id="menuText">선택한 메뉴</p>
           <p id="priceText">0원</p>
-
-          <p>
-            이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.
-          </p>
-          <p>
-            이후 질문 내용을 바탕으로
-            <strong>덱 / 스프레드 / 보조도구 추천</strong>이 먼저 진행되고,
-            그 다음 <strong>셔플 후 리딩 → 전달</strong> 순서로 이어지게 됩니다.
-          </p>
-
+          <p>이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.</p>
+          <p>이후 질문 내용을 바탕으로 <strong>덱 / 스프레드 / 보조도구 추천</strong>이 먼저 진행되고, 그 다음 <strong>셔플 후 리딩 → 전달</strong> 순서로 이어지게 됩니다.</p>
           <p class="payment-acct">카카오뱅크 3333-1653-29692 강율리</p>
-
-          <button type="submit" class="btn" style="margin-top:14px;">입금 완료 후 최종 접수하기</button>
+          <button type="submit" class="btn" id="finalSubmitBtn" style="margin-top:14px;">입금 완료 후 최종 접수하기</button>
         </div>
 
-        <p class="important">
-          질문 접수 후 바로 결과가 표시되는 구조는 아니며, 다음 단계 안내에 따라 진행돼요.
-        </p>
+        <div id="statusBox" class="status"></div>
+
+        <p class="important">질문 접수 후 바로 결과가 표시되는 구조는 아니며, 다음 단계 안내에 따라 진행돼요.</p>
       </form>
 
       <div class="foot">레지나타로썰 · 상담 접수 전용</div>
@@ -336,8 +304,12 @@
     const paymentBox = document.getElementById("paymentBox");
     const menuText = document.getElementById("menuText");
     const priceText = document.getElementById("priceText");
+    const statusBox = document.getElementById("statusBox");
+    const finalSubmitBtn = document.getElementById("finalSubmitBtn");
+
     const productNameInput = document.getElementById("product_name");
     const productPriceInput = document.getElementById("product_price");
+    const productKindInput = document.getElementById("product_kind");
 
     const nameInput = document.getElementById("name");
     const contactInput = document.getElementById("contact");
@@ -346,15 +318,21 @@
     const choices = document.querySelectorAll(".choice");
     const radios = document.querySelectorAll('input[name="menu"]');
 
+    function showStatus(message, type = "ok") {
+      statusBox.className = "status show " + type;
+      statusBox.textContent = message;
+    }
+
+    function clearStatus() {
+      statusBox.className = "status";
+      statusBox.textContent = "";
+    }
+
     function updateActiveChoice() {
       choices.forEach(choice => {
         const targetId = choice.dataset.target;
         const radio = document.getElementById(targetId);
-        if (radio && radio.checked) {
-          choice.classList.add("active");
-        } else {
-          choice.classList.remove("active");
-        }
+        choice.classList.toggle("active", !!radio?.checked);
       });
     }
 
@@ -365,6 +343,7 @@
         if (radio) {
           radio.checked = true;
           updateActiveChoice();
+          clearStatus();
         }
       });
     });
@@ -373,34 +352,63 @@
       radio.addEventListener("change", updateActiveChoice);
     });
 
-    step1.addEventListener("click", () => {
+    contactInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/[^0-9]/g, "");
+      if (value.length > 11) value = value.slice(0, 11);
+
+      if (value.length < 4) {
+        e.target.value = value;
+      } else if (value.length < 8) {
+        e.target.value = value.slice(0, 3) + "-" + value.slice(3);
+      } else {
+        e.target.value = value.slice(0, 3) + "-" + value.slice(3, 7) + "-" + value.slice(7, 11);
+      }
+    });
+
+    function validateBaseFields() {
       const menu = document.querySelector('input[name="menu"]:checked');
+      const phonePattern = /^010-\d{4}-\d{4}$/;
 
       if (!menu) {
-        alert("상담 메뉴를 선택해주세요.");
-        return;
+        showStatus("상담 메뉴를 선택해주세요.", "error");
+        return null;
       }
 
       if (!nameInput.value.trim()) {
-        alert("성함 / 닉네임을 입력해주세요.");
         nameInput.focus();
-        return;
+        showStatus("성함 / 닉네임을 입력해주세요.", "error");
+        return null;
       }
 
       if (!contactInput.value.trim()) {
-        alert("연락처를 입력해주세요.");
         contactInput.focus();
-        return;
+        showStatus("연락처를 입력해주세요.", "error");
+        return null;
+      }
+
+      if (!phonePattern.test(contactInput.value.trim())) {
+        contactInput.focus();
+        showStatus("연락처를 010-0000-0000 형식으로 입력해주세요.", "error");
+        return null;
       }
 
       if (!questionInput.value.trim()) {
-        alert("질문 내용을 입력해주세요.");
         questionInput.focus();
-        return;
+        showStatus("질문 내용을 입력해주세요.", "error");
+        return null;
       }
+
+      return menu;
+    }
+
+    step1.addEventListener("click", () => {
+      clearStatus();
+      const menu = validateBaseFields();
+      if (!menu) return;
 
       productNameInput.value = menu.value;
       productPriceInput.value = menu.dataset.price || "";
+      productKindInput.value = menu.dataset.kind || "";
 
       menuText.textContent = menu.value;
       priceText.textContent = Number(menu.dataset.price || 0).toLocaleString() + "원";
@@ -409,22 +417,53 @@
       paymentBox.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      clearStatus();
 
-      const menu = document.querySelector('input[name="menu"]:checked');
+      const menu = validateBaseFields();
+      if (!menu) return;
 
-      if (!menu) {
-        alert("상담 메뉴를 선택해주세요.");
-        return;
+      finalSubmitBtn.disabled = true;
+      finalSubmitBtn.textContent = "접수 저장 중...";
+
+      try {
+        const payload = {
+          name: nameInput.value.trim(),
+          contact: contactInput.value.trim(),
+          question: questionInput.value.trim(),
+          product_name: menu.value,
+          product_price: Number(menu.dataset.price || 0),
+          product_kind: menu.dataset.kind || "",
+          payment_status: "pending_manual_check"
+        };
+
+        const res = await fetch("/api/consultations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "접수 저장에 실패했어요.");
+        }
+
+        showStatus(
+          "접수가 저장되었어요.\n입금 확인 후 다음 단계로 안내드릴게요.\n접수번호: " + data.consultation.id,
+          "ok"
+        );
+
+        form.reset();
+        paymentBox.classList.add("hidden");
+        updateActiveChoice();
+      } catch (error) {
+        showStatus(error.message || "서버 연결 중 오류가 발생했어요.", "error");
+      } finally {
+        finalSubmitBtn.disabled = false;
+        finalSubmitBtn.textContent = "입금 완료 후 최종 접수하기";
       }
-
-      if (!nameInput.value.trim() || !contactInput.value.trim() || !questionInput.value.trim()) {
-        alert("필수 입력 항목을 먼저 작성해주세요.");
-        return;
-      }
-
-      alert("최종 접수 단계는 다음 연결 작업에서 붙이면 됩니다.");
     });
   </script>
 </body>
