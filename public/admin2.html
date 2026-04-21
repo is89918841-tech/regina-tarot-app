@@ -548,6 +548,9 @@
       state.consultations.forEach((item) => {
         const div = document.createElement('div');
         div.className = 'item' + (state.selectedConsultationId === item.id ? ' active' : '');
+
+        const helperUrl = `/admin/helper?id=${encodeURIComponent(item.id)}&autorun=1`;
+
         div.innerHTML = `
           <div class="item-title">${escapeHtml(item.name || item.nickname || item.contact || '이름 없음')}</div>
           <div class="item-meta">
@@ -556,8 +559,16 @@
             <span>${formatDate(item.createdAt || item.created_at)}</span>
           </div>
           <div class="muted" style="margin-top:8px;">${escapeHtml((item.question || '').slice(0, 120) || '질문 없음')}</div>
+          <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
+            <a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary" data-stop-row="1">자동 실행</a>
+          </div>
         `;
-        div.addEventListener('click', () => selectConsultation(item.id));
+
+        div.addEventListener('click', (e) => {
+          if (e.target.closest('[data-stop-row="1"]')) return;
+          selectConsultation(item.id);
+        });
+
         root.appendChild(div);
       });
     }
@@ -609,7 +620,7 @@
       `;
 
       $('recommendationText').value = item.recommendation || '';
-      $('drawResultText').value = (item.drawResult && JSON.stringify(item.drawResult, null, 2)) || item.draw_result || '';
+      $('drawResultText').value = item.drawResult || item.draw_result || '';
       $('finalReadingText').value = item.finalReading || item.final_reading || '';
       $('kakaoText').value = item.kakaoText || item.kakao_text || '';
     }
