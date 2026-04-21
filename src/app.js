@@ -280,8 +280,8 @@ async function generateFinalReadingText(item, recommendation, drawResult) {
 
   const messages = [
     {
-  role: 'system',
-  content: `
+      role: 'system',
+      content: `
 당신은 레지나타로썰 스타일의 타로 리딩 작성자입니다.
 
 반드시 지킬 것:
@@ -304,8 +304,8 @@ async function generateFinalReadingText(item, recommendation, drawResult) {
 - 처음 보는 사람도 이해할 수 있게 쓰기
 - 위로보다 정리와 결정을 돕는 방향으로 쓰기
 - 마지막에 이어서 할 수 있는 질문 1~2개 제안
-`.trim(),
-}
+      `.trim(),
+    },
     {
       role: 'user',
       content: `
@@ -391,7 +391,7 @@ app.post('/api/draw', async (req, res) => {
 // 외부 연결용 최종 리딩 API
 app.post('/api/reading', async (req, res) => {
   try {
-    const { question = '', cards = '' } = req.body || {};
+    const { question = '', cards = '', productKind = 'standard' } = req.body || {};
 
     if (!String(question).trim()) {
       return res.status(400).json({ ok: false, error: '질문이 필요해요.' });
@@ -399,10 +399,14 @@ app.post('/api/reading', async (req, res) => {
 
     const fakeItem = {
       question,
-      product_kind: 'standard',
+      product_kind: productKind,
     };
 
-    const reading = await generateFinalReadingText(fakeItem, '', typeof cards === 'string' ? cards : JSON.stringify(cards, null, 2));
+    const reading = await generateFinalReadingText(
+      fakeItem,
+      '',
+      typeof cards === 'string' ? cards : JSON.stringify(cards, null, 2)
+    );
 
     return res.status(200).json({
       ok: true,
@@ -484,7 +488,7 @@ app.post('/api/consultations', async (req, res) => {
         '추가 질문이 있으시면 이어서 남겨주세요.'
       ].join('\n');
 
-      consultation.status = 'reading_completed';
+      consultation.status = 'ready_to_send';
       consultation.reading_completed_at = new Date().toISOString();
 
       autoReading = finalReading;
@@ -731,6 +735,28 @@ app.post('/api/admin/consultations/:id/reading', requireAdmin, async (req, res) 
   } catch (error) {
     console.error('reading save error:', error);
     return res.status(500).json({ ok: false, error: '최종 리딩 저장에 실패했어요.' });
+  }
+});
+
+app.post('/api/admin/consultations/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { status = '' } = req.body || {};
+    const items = await readJsonArray(CONSULTATION_FILE);
+    const idx = items.findIndex((x) => x.id === req.params.id);
+
+    if (idx === -1) {
+      return res.status(404).json({ ok: false, error: '해당 접수를 찾지 못했어요.' });
+    }
+
+    items[idx].status = status;
+    items[idx].updated_at = new Date().toISOString();
+
+    await writeJsonArray(CONSULTATION_FILE, items);
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('status save error:', error);
+    return res.status(500).json({ ok: false, error: '상태 저장 실패' });
   }
 });
 
