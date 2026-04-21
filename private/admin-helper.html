@@ -220,6 +220,11 @@
       color: #ffd1d1;
     }
 
+    .status.warn {
+      border-color: rgba(245,158,11,0.25);
+      color: #fde68a;
+    }
+
     .block-title {
       display: flex;
       align-items: center;
@@ -310,7 +315,7 @@
     <div class="topbar">
       <div class="title-box">
         <h1>레지나 관리자 보조앱</h1>
-        <p>상담건 자동 불러오기 → 추천 → 드로우 → 최종 리딩 → 저장까지 한 화면에서 처리</p>
+        <p>상담건 자동 불러오기 → 추천 → 드로우 → 최종 리딩 → 저장 → 카톡 복사/열기까지 한 화면에서 처리</p>
       </div>
 
       <div class="top-actions">
@@ -405,16 +410,29 @@
           </div>
           <div id="readingPreview" class="readonly-box out">아직 없음</div>
         </div>
+
+        <div class="section">
+          <div class="block-title">
+            <strong>카톡 전달 문구</strong>
+            <div class="mini-actions">
+              <button class="btn-ghost" id="copyKakaoBtn" type="button">복사</button>
+              <button class="btn-secondary" id="openKakaoBtn" type="button">카카오 채널 열기</button>
+            </div>
+          </div>
+          <div id="kakaoPreview" class="readonly-box out">아직 없음</div>
+        </div>
       </section>
     </div>
 
     <div class="footer-note">
-      사용 예시: <code>/admin/helper?id=CONS-20260421-123456</code><br>
-      이 화면은 관리자 로그인 쿠키가 살아 있어야 정상 작동합니다.
+      사용 예시: <code>/admin/helper?id=CONS-20260421-123456&autorun=1</code><br>
+      자동 실행 시 카톡 문구는 복사되고, 카카오 채널 창이 새 탭으로 열립니다.
     </div>
   </div>
 
   <script>
+    const KAKAO_CHANNEL_URL = 'http://pf.kakao.com/_xamZxfn/chat';
+
     const $ = (id) => document.getElementById(id);
 
     const els = {
@@ -431,6 +449,7 @@
       recommendChips: $('recommendChips'),
       drawPreview: $('drawPreview'),
       readingPreview: $('readingPreview'),
+      kakaoPreview: $('kakaoPreview'),
 
       loadConsultationBtn: $('loadConsultationBtn'),
       runAllBtn: $('runAllBtn'),
@@ -442,6 +461,8 @@
       copyRecommendBtn: $('copyRecommendBtn'),
       copyDrawBtn: $('copyDrawBtn'),
       copyReadingBtn: $('copyReadingBtn'),
+      copyKakaoBtn: $('copyKakaoBtn'),
+      openKakaoBtn: $('openKakaoBtn'),
 
       checkAuthBtn: $('checkAuthBtn'),
       logoutBtn: $('logoutBtn'),
@@ -453,6 +474,7 @@
       recommendConfig: null,
       drawResult: '',
       finalReading: '',
+      kakaoText: '',
     };
 
     function setStatus(text, type = '') {
@@ -514,6 +536,10 @@
 
     function renderReading(reading) {
       els.readingPreview.textContent = reading || '아직 없음';
+    }
+
+    function renderKakao(text) {
+      els.kakaoPreview.textContent = text || '아직 없음';
     }
 
     function escapeHtml(str) {
@@ -579,6 +605,34 @@
       ].join('\n');
     }
 
+    function buildKakaoText() {
+      const name = (els.customerName.value || '내담자님').trim();
+      const text = [
+        `${name}님 안녕하세요.`,
+        '',
+        '요청주신 리딩 결과 전달드려요.',
+        '',
+        state.finalReading || '',
+        '',
+        '추가 질문이 있으시면 이어서 남겨주세요.'
+      ].join('\n');
+
+      state.kakaoText = text;
+      renderKakao(text);
+      return text;
+    }
+
+    async function copyToClipboard(text) {
+      if (!text || text === '아직 없음') {
+        throw new Error('복사할 내용이 없어요.');
+      }
+      await navigator.clipboard.writeText(text);
+    }
+
+    function openKakaoChannel() {
+      window.open(KAKAO_CHANNEL_URL, '_blank', 'noopener,noreferrer');
+    }
+
     async function loadConsultation() {
       const id = getConsultationId();
       if (!id) throw new Error('상담 ID가 필요해요.');
@@ -596,11 +650,13 @@
       state.recommendText = item.recommendation || '';
       state.drawResult = item.drawResult || item.draw_result || '';
       state.finalReading = item.finalReading || item.final_reading || '';
+      state.kakaoText = item.kakaoText || item.kakao_text || '';
 
       renderMeta(item);
       renderRecommend(state.recommendText, null);
       renderDraw(state.drawResult);
       renderReading(state.finalReading);
+      renderKakao(state.kakaoText);
 
       setStatus('상담건 불러오기 완료', 'ok');
       return item;
@@ -699,19 +755,29 @@
       if (!question) throw new Error('질문을 먼저 입력해주세요.');
 
       const id = getConsultationId();
-      const customer = (els.customerName.value || '').trim();
+      const name = (els.customerName.value || '내담자님').trim();
 
-      setStatus(customer ? `${customer} 건 전체 자동 실행 중...` : '전체 자동 실행 중...');
+      setStatus(`${name} 건 전체 자동 실행 중...`, 'warn');
 
       await runRecommendAndSave();
       await runDrawAndSave();
       await runReadingAndSave();
 
-      if (id) {
-        await loadConsultation();
+      const kakaoText = buildKakaoText();
+
+      try {
+        await copyToClipboard(kakaoText);
+        openKakaoChannel();
+        setStatus(`${name} 리딩 + 카톡 문구 생성 + 복사 완료`, 'ok');
+      } catch (error) {
+        console.error(error);
+        setStatus(`${name} 리딩 완료 (복사는 수동 필요)`, 'warn');
       }
 
-      setStatus(customer ? `${customer} 건 전체 자동 실행 + 저장 완료` : '전체 자동 실행 + 저장 완료', 'ok');
+      if (id) {
+        await loadConsultation();
+        renderKakao(kakaoText);
+      }
     }
 
     async function checkAdminAuth() {
@@ -743,15 +809,6 @@
       }, 500);
     }
 
-    async function copyText(text) {
-      if (!text || text === '아직 없음') {
-        throw new Error('복사할 내용이 없어요.');
-      }
-
-      await navigator.clipboard.writeText(text);
-      setStatus('복사 완료', 'ok');
-    }
-
     function clearAll() {
       state = {
         consultation: null,
@@ -759,6 +816,7 @@
         recommendConfig: null,
         drawResult: '',
         finalReading: '',
+        kakaoText: '',
       };
 
       els.consultationId.value = '';
@@ -771,12 +829,18 @@
       renderRecommend('', null);
       renderDraw('');
       renderReading('');
+      renderKakao('');
       setStatus('초기화 완료');
     }
 
     function getIdFromQuery() {
       const url = new URL(window.location.href);
       return url.searchParams.get('id') || '';
+    }
+
+    function getAutorunFromQuery() {
+      const url = new URL(window.location.href);
+      return url.searchParams.get('autorun') || '';
     }
 
     els.loadConsultationBtn.addEventListener('click', async () => {
@@ -828,7 +892,8 @@
 
     els.copyRecommendBtn.addEventListener('click', async () => {
       try {
-        await copyText(els.recommendPreview.textContent);
+        await copyToClipboard(els.recommendPreview.textContent);
+        setStatus('추천 결과 복사 완료', 'ok');
       } catch (error) {
         console.error(error);
         setStatus(error.message || '복사 실패', 'error');
@@ -837,7 +902,8 @@
 
     els.copyDrawBtn.addEventListener('click', async () => {
       try {
-        await copyText(els.drawPreview.textContent);
+        await copyToClipboard(els.drawPreview.textContent);
+        setStatus('드로우 결과 복사 완료', 'ok');
       } catch (error) {
         console.error(error);
         setStatus(error.message || '복사 실패', 'error');
@@ -846,11 +912,28 @@
 
     els.copyReadingBtn.addEventListener('click', async () => {
       try {
-        await copyText(els.readingPreview.textContent);
+        await copyToClipboard(els.readingPreview.textContent);
+        setStatus('최종 리딩 복사 완료', 'ok');
       } catch (error) {
         console.error(error);
         setStatus(error.message || '복사 실패', 'error');
       }
+    });
+
+    els.copyKakaoBtn.addEventListener('click', async () => {
+      try {
+        const text = state.kakaoText || els.kakaoPreview.textContent;
+        await copyToClipboard(text);
+        setStatus('카톡 문구 복사 완료', 'ok');
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || '복사 실패', 'error');
+      }
+    });
+
+    els.openKakaoBtn.addEventListener('click', () => {
+      openKakaoChannel();
+      setStatus('카카오 채널 창을 열었어요.', 'ok');
     });
 
     els.checkAuthBtn.addEventListener('click', async () => {
@@ -876,9 +959,16 @@
         await checkAdminAuth();
 
         const id = getIdFromQuery();
+        const autorun = getAutorunFromQuery();
+
         if (id) {
           els.consultationId.value = id;
           await loadConsultation();
+
+          if (autorun === '1') {
+            setStatus('상담건 자동 실행 시작...', 'warn');
+            await runAll();
+          }
         }
       } catch (error) {
         console.error(error);
