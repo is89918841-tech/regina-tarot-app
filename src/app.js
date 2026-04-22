@@ -955,3 +955,23 @@ ensureDataFiles()
     console.error('Failed to initialize data files:', error);
     process.exit(1);
   });
+
+const fs = require('fs');
+const path = require('path');
+
+function loadDeck(fileName) {
+  try {
+    const filePath = path.join(__dirname, '../public/data', fileName);
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return [];
+  }
+}
+
+function pickRandom(arr, count = 1) {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+
