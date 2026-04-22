@@ -61,9 +61,9 @@ async function generateReading({ question, spread, deck, topic }) {
     ],
   });
 
-  // 🔥 여기 중요 (줄바꿈 깨짐 해결)
-  const rawReading = completion.choices?.[0]?.message?.content?.trim() || '';
-  const cleanedReading = rawReading.replace(/\\n/g, '\n');
+ const cleanedReading = rawReading
+  .replace(/\\\\n/g, '\n')
+  .replace(/\\n/g, '\n');
 
   return {
     intent,
