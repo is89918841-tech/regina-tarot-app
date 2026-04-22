@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const OpenAI = require('openai');
+const { generateReadingPlan } = require('./services/readingService');
 
 const app = express();
 
@@ -348,25 +349,47 @@ app.get('/healthz', (_, res) => {
   res.status(200).json({ ok: true, status: 'healthy' });
 });
 
-// 외부 연결용 추천 API
+// 외부 연결용 추천 API (GPT 자동 판단 버전)
 app.post('/api/recommend', async (req, res) => {
   try {
-    const { question = '', productKind = 'standard' } = req.body || {};
-    const setup = recommendReadingSetup(question, productKind);
+    const { question = '' } = req.body || {};
+
+    if (!String(question).trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: '질문이 필요해요.',
+      });
+    }
+
+    const plan = await generateReadingPlan({
+      question: String(question).trim(),
+    });
 
     return res.status(200).json({
       ok: true,
+      plan,
       config: {
-        deck: setup.deck,
-        spread: setup.spread,
-        count: setup.positions.length,
-        extras: setup.auxTools,
-        positions: setup.positions,
+        deck: plan.deck,
+        spread: plan.spread_name,
+        count: plan.card_count,
+        extras: [
+          ...(plan.use_oracle && plan.oracle_deck ? [plan.oracle_deck] : []),
+          ...(plan.use_lenormand ? ['레노먼드 카드'] : []),
+          ...(plan.use_runes ? ['룬스톤'] : []),
+          ...(plan.use_iching ? ['아이칭 카드'] : []),
+          ...(plan.use_yukyo ? ['주역육효괘'] : []),
+          ...(plan.use_ogangi ? ['오간기'] : []),
+          ...(plan.use_obanggi ? ['오방기'] : []),
+          ...(Array.isArray(plan.selected_aux_decks) ? plan.selected_aux_decks : []),
+        ],
       },
     });
   } catch (error) {
     console.error('POST /api/recommend error:', error);
-    return res.status(500).json({ ok: false, error: '추천 생성에 실패했어요.' });
+    return res.status(500).json({
+      ok: false,
+      error: '추천 생성에 실패했어요.',
+    });
   }
 });
 
