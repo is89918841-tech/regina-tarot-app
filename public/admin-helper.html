@@ -73,10 +73,24 @@ async function generateRecommendation() {
 
 // 자동 드로우 (간단 안정화 버전)
 function drawCards() {
-  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
-
   const rec = document.getElementById('recommendationText').value || '';
 
+  // 🔥 덱 자동 선택
+  let deckName = "유니버셜 타로";
+
+  const deckMatch =
+    rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
+    rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
+    rec.match(/덱\s*[:：]?\s*([^\n]+)/i);
+
+  if (deckMatch) {
+    deckName = deckMatch[1].trim();
+  }
+
+  // 🔥 카드 데이터 (임시)
+  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+
+  // 🔥 장수 자동
   const countMatch =
     rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
     rec.match(/(\d+)\s*장/i);
@@ -85,7 +99,7 @@ function drawCards() {
     ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
     : 3;
 
-  let result = `**덱**: 유니버셜 타로\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
+  let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
 
   for (let i = 0; i < count; i++) {
     result += `- 카드 ${i + 1}: ${cards[Math.floor(Math.random() * cards.length)]}\n`;
