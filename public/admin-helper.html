@@ -660,6 +660,7 @@ function App() {
       aux: aux
     };
     setResult(r);
+          window.latestResult = r;
     try {
       var _document$getElementB;
       (_document$getElementB = document.getElementById('result-anchor')) === null || _document$getElementB === void 0 || _document$getElementB.scrollIntoView({
@@ -2494,6 +2495,9 @@ const drawSelectedAuxDecks = ()=>{
           } catch { alert('클립보드 권한 문제로 자동 복사 실패.'); }
         };
 
+        window.onDraw = onDraw;
+        window.templateText = templateText;
+
         return (
           <div className="max-w-5xl mx-auto">
             <header className="mb-6">
@@ -2970,12 +2974,21 @@ async function realDrawFromAdmin() {
   try {
     adminStatus('drawStatus', '실제 카드 드로우 실행 중...', 'warn');
     document.getElementById('admin-auto-state').textContent = '실카드 드로우 중';
-    if (typeof onDraw !== 'function') throw new Error('보조앱 onDraw 함수를 찾지 못했습니다.');
-    onDraw();
-    await new Promise(r => setTimeout(r, 500));
+    if (typeof window.onDraw === 'function') {
+      window.onDraw();
+    } else {
+      const drawBtn = [...document.querySelectorAll('button')].find(btn => btn.textContent && btn.textContent.includes('카드 뽑기'));
+      if (!drawBtn) throw new Error('카드 뽑기 버튼을 찾지 못했습니다.');
+      drawBtn.click();
+    }
+    await new Promise(r => setTimeout(r, 700));
     const result = window.latestResult;
-    if (!result) throw new Error('드로우 결과를 찾지 못했습니다.');
-    document.getElementById('drawResultText').value = helperTemplateText(result);
+    if (!result) {
+      const copied = [...document.querySelectorAll('button')].find(btn => btn.textContent && btn.textContent.includes('결과 복사'));
+      if (!copied) throw new Error('드로우 결과를 찾지 못했습니다.');
+      throw new Error('드로우는 실행됐지만 결과 연결에 실패했습니다.');
+    }
+    document.getElementById('drawResultText').value = (typeof window.templateText === 'function') ? window.templateText(result) : helperTemplateText(result);
     adminStatus('drawStatus', '실제 카드 드로우 완료', 'ok');
     document.getElementById('admin-auto-state').textContent = '드로우 완료';
   } catch (e) {
