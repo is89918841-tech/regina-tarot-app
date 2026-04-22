@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs/promises');
+const fsp = require('fs/promises');
+const fs = require('fs');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
@@ -15,6 +16,7 @@ const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const PRIVATE_DIR = path.join(ROOT_DIR, 'private');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+const PUBLIC_DATA_DIR = path.join(PUBLIC_DIR, 'data');
 
 const CONSULTATION_FILE = path.join(DATA_DIR, 'consultations.json');
 const FILES_FILE = path.join(DATA_DIR, 'files.json');
@@ -24,9 +26,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'regina-secret';
 const SESSION_COOKIE = 'regina_admin_session';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 app.use(cors());
 app.use(cookieParser());
@@ -53,25 +55,25 @@ function requireAdmin(req, res, next) {
 }
 
 async function ensureDataFiles() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  await fsp.mkdir(DATA_DIR, { recursive: true });
+  await fsp.mkdir(UPLOAD_DIR, { recursive: true });
 
   try {
-    await fs.access(CONSULTATION_FILE);
+    await fsp.access(CONSULTATION_FILE);
   } catch {
-    await fs.writeFile(CONSULTATION_FILE, '[]', 'utf8');
+    await fsp.writeFile(CONSULTATION_FILE, '[]', 'utf8');
   }
 
   try {
-    await fs.access(FILES_FILE);
+    await fsp.access(FILES_FILE);
   } catch {
-    await fs.writeFile(FILES_FILE, '[]', 'utf8');
+    await fsp.writeFile(FILES_FILE, '[]', 'utf8');
   }
 }
 
 async function readJsonArray(filePath) {
   await ensureDataFiles();
-  const raw = await fs.readFile(filePath, 'utf8');
+  const raw = await fsp.readFile(filePath, 'utf8');
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -82,7 +84,7 @@ async function readJsonArray(filePath) {
 
 async function writeJsonArray(filePath, items) {
   await ensureDataFiles();
-  await fs.writeFile(filePath, JSON.stringify(items, null, 2), 'utf8');
+  await fsp.writeFile(filePath, JSON.stringify(items, null, 2), 'utf8');
 }
 
 function makeConsultationId() {
@@ -115,24 +117,33 @@ function toAdminConsultationShape(item) {
 
 function universalTarot78() {
   return [
-    '0 바보', 'I 마법사', 'II 여사제', 'III 여제', 'IV 황제', 'V 교황', 'VI 연인',
-    'VII 전차', 'VIII 힘', 'IX 은둔자', 'X 운명의 수레바퀴', 'XI 정의', 'XII 매달린 남자',
-    'XIII 죽음', 'XIV 절제', 'XV 악마', 'XVI 탑', 'XVII 별', 'XVIII 달', 'XIX 태양',
-    'XX 심판', 'XXI 세계',
-    '컵 에이스', '컵 2', '컵 3', '컵 4', '컵 5', '컵 6', '컵 7', '컵 8', '컵 9', '컵 10',
-    '컵 시종', '컵 기사', '컵 여왕', '컵 왕',
-    '완드 에이스', '완드 2', '완드 3', '완드 4', '완드 5', '완드 6', '완드 7', '완드 8',
-    '완드 9', '완드 10', '완드 시종', '완드 기사', '완드 여왕', '완드 왕',
-    '소드 에이스', '소드 2', '소드 3', '소드 4', '소드 5', '소드 6', '소드 7', '소드 8',
-    '소드 9', '소드 10', '소드 시종', '소드 기사', '소드 여왕', '소드 왕',
-    '펜타클 에이스', '펜타클 2', '펜타클 3', '펜타클 4', '펜타클 5', '펜타클 6',
-    '펜타클 7', '펜타클 8', '펜타클 9', '펜타클 10',
-    '펜타클 시종', '펜타클 기사', '펜타클 여왕', '펜타클 왕'
+    'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
+    'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit',
+    'Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance',
+    'The Devil', 'The Tower', 'The Star', 'The Moon', 'The Sun', 'Judgement',
+    'The World',
+
+    'Ace of Wands', 'Two of Wands', 'Three of Wands', 'Four of Wands', 'Five of Wands',
+    'Six of Wands', 'Seven of Wands', 'Eight of Wands', 'Nine of Wands', 'Ten of Wands',
+    'Page of Wands', 'Knight of Wands', 'Queen of Wands', 'King of Wands',
+
+    'Ace of Cups', 'Two of Cups', 'Three of Cups', 'Four of Cups', 'Five of Cups',
+    'Six of Cups', 'Seven of Cups', 'Eight of Cups', 'Nine of Cups', 'Ten of Cups',
+    'Page of Cups', 'Knight of Cups', 'Queen of Cups', 'King of Cups',
+
+    'Ace of Swords', 'Two of Swords', 'Three of Swords', 'Four of Swords', 'Five of Swords',
+    'Six of Swords', 'Seven of Swords', 'Eight of Swords', 'Nine of Swords', 'Ten of Swords',
+    'Page of Swords', 'Knight of Swords', 'Queen of Swords', 'King of Swords',
+
+    'Ace of Pentacles', 'Two of Pentacles', 'Three of Pentacles', 'Four of Pentacles',
+    'Five of Pentacles', 'Six of Pentacles', 'Seven of Pentacles', 'Eight of Pentacles',
+    'Nine of Pentacles', 'Ten of Pentacles',
+    'Page of Pentacles', 'Knight of Pentacles', 'Queen of Pentacles', 'King of Pentacles'
   ];
 }
 
 function pickUnique(list, count) {
-  const arr = [...list];
+  const arr = Array.isArray(list) ? [...list] : [];
   for (let i = arr.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -144,136 +155,224 @@ function maybeReverse(card) {
   return Math.random() < 0.3 ? `${card} (역방향)` : card;
 }
 
-function recommendReadingSetup(question, productKind) {
-  const q = String(question || '').toLowerCase();
-
-  const isLove =
-    /연애|재회|속마음|관계|썸|전남친|전여친|남친|여친|좋아하|연락|호감|짝사랑/.test(q);
-  const isCareer =
-    /직장|이직|퇴사|합격|면접|커리어|회사|승진|업무|프로젝트|사업/.test(q);
-  const isMoney =
-    /금전|돈|재물|수입|매출|투자|계약|정산|매매/.test(q);
-  const isDecision =
-    /선택|결정|둘 중|어느 쪽|해야 할까|맞을까|가야 할까/.test(q);
-  const isPersonality =
-    /성격|어떤 사람|나를 어떻게|주변에서|왜 이럴까/.test(q);
-
-  let deck = '하모니 타로';
-  let spread = '핵심 흐름 스프레드';
-  let positions = ['현재 상태', '흐름', '조언'];
-
-  if (productKind === 'simple') {
-    spread = '간단 방향 스프레드';
-    positions = ['현재 상태', '조언'];
+function loadJsonSafe(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const raw = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
-
-  if (isLove) {
-    deck = '너에게로 다이브';
-    spread = productKind === 'simple' ? '연애 핵심 스프레드' : '관계 흐름 스프레드';
-    positions = productKind === 'simple'
-      ? ['상대 흐름', '조언']
-      : ['현재 관계 상태', '상대 흐름', '조언'];
-  } else if (isCareer) {
-    deck = '세피로트 타로';
-    spread = productKind === 'simple' ? '직장 방향 스프레드' : '현실 정리 스프레드';
-    positions = productKind === 'simple'
-      ? ['현재 흐름', '조언']
-      : ['현재 업무 상태', '방해 요소', '조언'];
-  } else if (isMoney) {
-    deck = '리치 타로카드';
-    spread = productKind === 'simple' ? '재물 핵심 스프레드' : '재물 흐름 스프레드';
-    positions = productKind === 'simple'
-      ? ['재물 흐름', '조언']
-      : ['현재 재정 상태', '흐름', '조언'];
-  } else if (isDecision) {
-    deck = '나전의 빛 타로';
-    spread = productKind === 'simple' ? '결정 포인트 스프레드' : '결정 정리 스프레드';
-    positions = productKind === 'simple'
-      ? ['핵심 포인트', '조언']
-      : ['현재 조건', '선택의 포인트', '조언'];
-  } else if (isPersonality) {
-    deck = '로제딕 타로';
-    spread = productKind === 'simple' ? '인상 포인트 스프레드' : '성향 분석 스프레드';
-    positions = productKind === 'simple'
-      ? ['겉으로 보이는 면', '조언']
-      : ['겉으로 보이는 면', '내부 흐름', '조언'];
-  }
-
-  const auxTools = [];
-  if (isLove) auxTools.push('하트 로맨틱 오라클');
-  if (isDecision) auxTools.push('주역육효괘');
-  if (isCareer || isMoney) auxTools.push('오간기');
-  if (!auxTools.length && productKind !== 'simple') auxTools.push('오방기');
-
-  return { deck, spread, positions, auxTools };
 }
 
-function buildDrawResultFromSetup(setup) {
-  const tarot = universalTarot78();
-  const picked = pickUnique(tarot, setup.positions.length).map(maybeReverse);
+function loadManifest() {
+  return loadJsonSafe(path.join(PUBLIC_DATA_DIR, 'manifest.json')) || {
+    tarot: {},
+    oracle: {},
+    aux: {},
+    iching: 'iching.json',
+    yukyo: '주역육효_simple.json',
+  };
+}
+
+function loadDeckFromPublic(fileName) {
+  if (!fileName) return [];
+  const filePath = path.join(PUBLIC_DATA_DIR, fileName);
+  const parsed = loadJsonSafe(filePath);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function loadLenormandDeck() {
+  const publicFile = loadJsonSafe(path.join(PUBLIC_DATA_DIR, 'lenormand36.json'));
+  if (Array.isArray(publicFile)) return publicFile;
+
+  const rootFile = loadJsonSafe(path.join(DATA_DIR, 'lenormand36.json'));
+  if (Array.isArray(rootFile)) return rootFile;
+
+  return [];
+}
+
+function normalizeCardValue(value) {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return '';
+
+  return (
+    value.name ||
+    value.title ||
+    value.card ||
+    value.label ||
+    value.korean ||
+    value.keyword ||
+    JSON.stringify(value)
+  );
+}
+
+function drawCardsFromArray(arr, count = 1, useReverse = false) {
+  const normalized = arr
+    .map(normalizeCardValue)
+    .filter(Boolean);
+
+  if (!normalized.length) return [];
+
+  const picked = pickUnique(normalized, Math.min(count, normalized.length));
+  return useReverse ? picked.map(maybeReverse) : picked;
+}
+
+function planToSetup(plan) {
+  const positions = Array.from(
+    { length: Math.max(1, Number(plan?.card_count) || 3) },
+    (_, idx) => `카드 ${idx + 1}`
+  );
+
+  const auxTools = [
+    ...(plan?.use_oracle && plan?.oracle_deck ? [plan.oracle_deck] : []),
+    ...(plan?.use_lenormand ? ['레노먼드 카드'] : []),
+    ...(plan?.use_runes ? ['룬스톤'] : []),
+    ...(plan?.use_iching ? ['아이칭 카드'] : []),
+    ...(plan?.use_yukyo ? ['주역육효괘'] : []),
+    ...(plan?.use_ogangi ? ['오간기'] : []),
+    ...(plan?.use_obanggi ? ['오방기'] : []),
+    ...(Array.isArray(plan?.selected_aux_decks) ? plan.selected_aux_decks : []),
+  ];
+
+  return {
+    deck: plan?.deck || '유니버셜 타로',
+    spread: plan?.spread_name || '기본 3카드',
+    positions,
+    auxTools,
+  };
+}
+
+function buildRecommendationTextFromPlan(plan) {
+  return [
+    `추천 덱: ${plan.deck || '유니버셜 타로'}`,
+    `스프레드: ${plan.spread_name || '기본 3카드'}`,
+    `장수: ${plan.card_count || 3}`,
+    `이유: ${plan.reason || '질문 성격에 맞는 구조로 설계됨'}`
+  ].join('\n');
+}
+
+function buildRealDraw(plan) {
+  const manifest = loadManifest();
+  const setup = planToSetup(plan);
+
+  const tarotFile = manifest.tarot?.[setup.deck] || 'universal.json';
+  let tarotDeck = loadDeckFromPublic(tarotFile);
+
+  if (!Array.isArray(tarotDeck) || tarotDeck.length < setup.positions.length) {
+    tarotDeck = universalTarot78();
+  }
+
+  const tarotCards = drawCardsFromArray(tarotDeck, setup.positions.length, true);
 
   const lines = [];
   lines.push(`**덱**: ${setup.deck}`);
-  lines.push(`**장수**: ${setup.positions.length}`);
+  lines.push(`**장수**: ${tarotCards.length}`);
   lines.push('');
   lines.push('**포지션별 드로우**');
+
   setup.positions.forEach((position, idx) => {
-    lines.push(`- 카드 ${idx + 1} (${position}): ${picked[idx]}`);
+    lines.push(`- 카드 ${idx + 1} (${position}): ${tarotCards[idx] || '-'}`);
   });
-  if (setup.auxTools?.length) {
-    lines.push(`**보조**: ${setup.auxTools.join(', ')}`);
+
+  if (plan?.use_oracle && plan?.oracle_deck) {
+    const oracleFile = manifest.oracle?.[plan.oracle_deck];
+    const oracleDeck = loadDeckFromPublic(oracleFile);
+    const oracleCards = drawCardsFromArray(oracleDeck, Math.max(1, Number(plan.oracle_count) || 1), false);
+    if (oracleCards.length) {
+      lines.push(`**오라클**: ${oracleCards.join(', ')}`);
+    }
   }
+
+  if (plan?.use_lenormand) {
+    const lenormandDeck = loadLenormandDeck();
+    const lenormandCards = drawCardsFromArray(
+      lenormandDeck,
+      Math.max(1, Number(plan.lenormand_count) || 1),
+      false
+    );
+    if (lenormandCards.length) {
+      lines.push(`**레노먼드**: ${lenormandCards.join(', ')}`);
+    }
+  }
+
+  if (plan?.use_iching) {
+    const ichingDeck = loadDeckFromPublic(manifest.iching);
+    const ichingCards = drawCardsFromArray(
+      ichingDeck,
+      Math.max(1, Number(plan.iching_count) || 1),
+      false
+    );
+    if (ichingCards.length) {
+      lines.push(`**주역**: ${ichingCards.join(', ')}`);
+    }
+  }
+
+  if (plan?.use_yukyo) {
+    const yukyoDeck = loadDeckFromPublic(manifest.yukyo);
+    const yukyoCards = drawCardsFromArray(
+      yukyoDeck,
+      Math.max(1, Number(plan.yukyo_count) || 1),
+      false
+    );
+    if (yukyoCards.length) {
+      lines.push(`**주역육효괘**: ${yukyoCards.join(', ')}`);
+    }
+  }
+
+  const auxDraws = [];
+
+  if (Array.isArray(plan?.selected_aux_decks)) {
+    for (const auxName of plan.selected_aux_decks) {
+      const auxFile = manifest.aux?.[auxName];
+      const auxDeck = loadDeckFromPublic(auxFile);
+      const auxCards = drawCardsFromArray(
+        auxDeck,
+        Math.max(1, Number(plan.aux_counts?.[auxName]) || 1),
+        false
+      );
+      if (auxCards.length) {
+        auxDraws.push(`${auxName}: ${auxCards.join(', ')}`);
+      } else {
+        auxDraws.push(auxName);
+      }
+    }
+  }
+
+  if (plan?.use_ogangi) auxDraws.push('오간기');
+  if (plan?.use_obanggi) auxDraws.push('오방기');
+  if (plan?.use_runes) auxDraws.push('룬스톤');
+
+  if (auxDraws.length) {
+    lines.push(`**보조**: ${auxDraws.join(' / ')}`);
+  }
+
   return lines.join('\n');
 }
 
 async function callOpenAI(messages, temperature = 0.9) {
+  if (!openai) {
+    throw new Error('OPENAI_API_KEY가 설정되지 않았어요.');
+  }
+
   const completion = await openai.chat.completions.create({
     model: 'gpt-4.1-mini',
     temperature,
     messages,
   });
+
   return completion.choices?.[0]?.message?.content?.trim() || '';
 }
 
 async function generateRecommendationText(item) {
-  const setup = recommendReadingSetup(item.question || '', item.product_kind || 'standard');
+  const plan = await generateReadingPlan({
+    question: item.question || '',
+  });
 
-  const messages = [
-    {
-      role: 'system',
-      content: `
-당신은 레지나타로썰 운영 보조자입니다.
-질문을 보고 가장 어울리는 덱, 스프레드, 보조도구를 추천해주세요.
+  const recommendation = buildRecommendationTextFromPlan(plan);
+  const setup = planToSetup(plan);
 
-규칙:
-- 한국어 존댓말
-- 내담자님이라고 부르지 말고, 내부 관리자용 추천문처럼 작성
-- 짧고 명확하게
-- 아래 형식 그대로
-
-추천 덱: ...
-추천 스프레드: ...
-포지션: ...
-보조도구: ...
-추천 이유: ...
-      `.trim(),
-    },
-    {
-      role: 'user',
-      content: `
-질문: ${item.question || ''}
-상품: ${item.product_name || ''}
-기본 추천 세팅:
-- 덱: ${setup.deck}
-- 스프레드: ${setup.spread}
-- 포지션: ${setup.positions.join(', ')}
-- 보조도구: ${setup.auxTools.join(', ') || '없음'}
-      `.trim(),
-    },
-  ];
-
-  const recommendation = await callOpenAI(messages, 0.7);
-  return { recommendation, setup };
+  return { recommendation, setup, plan };
 }
 
 async function generateFinalReadingText(item, recommendation, drawResult) {
@@ -372,16 +471,7 @@ app.post('/api/recommend', async (req, res) => {
         deck: plan.deck,
         spread: plan.spread_name,
         count: plan.card_count,
-        extras: [
-          ...(plan.use_oracle && plan.oracle_deck ? [plan.oracle_deck] : []),
-          ...(plan.use_lenormand ? ['레노먼드 카드'] : []),
-          ...(plan.use_runes ? ['룬스톤'] : []),
-          ...(plan.use_iching ? ['아이칭 카드'] : []),
-          ...(plan.use_yukyo ? ['주역육효괘'] : []),
-          ...(plan.use_ogangi ? ['오간기'] : []),
-          ...(plan.use_obanggi ? ['오방기'] : []),
-          ...(Array.isArray(plan.selected_aux_decks) ? plan.selected_aux_decks : []),
-        ],
+        extras: planToSetup(plan).auxTools,
       },
     });
   } catch (error) {
@@ -413,28 +503,8 @@ app.post('/api/draw', async (req, res) => {
       });
     }
 
-    const positions = Array.from(
-      { length: Math.max(1, Number(finalPlan.card_count) || 3) },
-      (_, idx) => `카드 ${idx + 1}`
-    );
-
-    const setup = {
-      deck: finalPlan.deck || '유니버셜 타로',
-      spread: finalPlan.spread_name || '기본 3카드',
-      positions,
-      auxTools: [
-        ...(finalPlan.use_oracle && finalPlan.oracle_deck ? [finalPlan.oracle_deck] : []),
-        ...(finalPlan.use_lenormand ? ['레노먼드 카드'] : []),
-        ...(finalPlan.use_runes ? ['룬스톤'] : []),
-        ...(finalPlan.use_iching ? ['아이칭 카드'] : []),
-        ...(finalPlan.use_yukyo ? ['주역육효괘'] : []),
-        ...(finalPlan.use_ogangi ? ['오간기'] : []),
-        ...(finalPlan.use_obanggi ? ['오방기'] : []),
-        ...(Array.isArray(finalPlan.selected_aux_decks) ? finalPlan.selected_aux_decks : []),
-      ],
-    };
-
-    const drawResult = buildDrawResultFromSetup(setup);
+    const setup = planToSetup(finalPlan);
+    const drawResult = buildRealDraw(finalPlan);
 
     return res.status(200).json({
       ok: true,
@@ -528,76 +598,30 @@ app.post('/api/consultations', async (req, res) => {
       drawResult: '',
       finalReading: '',
       kakaoText: '',
+      readingPlan: null,
     };
 
     let autoReading = null;
     let recommended = null;
 
-   if (product_kind === 'simple' || product_kind === 'standard') {
+    if (product_kind === 'simple' || product_kind === 'standard') {
+      const plan = await generateReadingPlan({
+        question: consultation.question,
+      });
 
-  // 1️⃣ GPT로 리딩 설계
-  const plan = await generateReadingPlan({
-    question: consultation.question,
-  });
+      const setup = planToSetup(plan);
+      const recommendation = buildRecommendationTextFromPlan(plan);
+      const drawResult = buildRealDraw(plan);
+      const finalReading = await generateFinalReadingText(
+        consultation,
+        recommendation,
+        drawResult
+      );
 
-  // 2️⃣ plan 기준으로 카드 포지션 생성
-  const positions = Array.from(
-    { length: Math.max(1, Number(plan.card_count) || 3) },
-    (_, idx) => `카드 ${idx + 1}`
-  );
-
-  const setup = {
-    deck: plan.deck || '유니버셜 타로',
-    spread: plan.spread_name || '기본 스프레드',
-    positions,
-    auxTools: [
-      ...(plan.use_oracle && plan.oracle_deck ? [plan.oracle_deck] : []),
-      ...(plan.use_lenormand ? ['레노먼드 카드'] : []),
-      ...(plan.use_runes ? ['룬스톤'] : []),
-      ...(plan.use_iching ? ['아이칭 카드'] : []),
-      ...(plan.use_yukyo ? ['주역육효괘'] : []),
-      ...(plan.use_ogangi ? ['오간기'] : []),
-      ...(plan.use_obanggi ? ['오방기'] : []),
-      ...(Array.isArray(plan.selected_aux_decks) ? plan.selected_aux_decks : []),
-    ],
-  };
-
-  // 3️⃣ 카드 드로우
-  const drawResult = buildDrawResultFromSetup(setup);
-
-  // 4️⃣ 추천 문장 (간단 텍스트)
-  const recommendation = `
-추천 덱: ${plan.deck}
-스프레드: ${plan.spread_name}
-장수: ${plan.card_count}
-이유: ${plan.reason || ''}
-`.trim();
-
-  // 5️⃣ 최종 리딩 생성
-  const finalReading = await generateFinalReadingText(
-    consultation,
-    recommendation,
-    drawResult
-  );
-
-  // 6️⃣ 저장
-  consultation.recommendation = recommendation;
-  consultation.drawResult = drawResult;
-  consultation.finalReading = finalReading;
-
-  consultation.kakaoText = [
-    `${consultation.name}님 안녕하세요.`,
-    '',
-    '요청주신 리딩 결과 전달드려요.',
-    '',
-    finalReading,
-    '',
-    '추가 질문이 있으시면 이어서 남겨주세요.'
-  ].join('\n');
-
-  consultation.status = 'ready_to_send';
-  consultation.reading_completed_at = new Date().toISOString();
-}
+      consultation.readingPlan = plan;
+      consultation.recommendation = recommendation;
+      consultation.drawResult = drawResult;
+      consultation.finalReading = finalReading;
       consultation.kakaoText = [
         `${consultation.name}님 안녕하세요.`,
         '',
@@ -612,7 +636,7 @@ app.post('/api/consultations', async (req, res) => {
       consultation.reading_completed_at = new Date().toISOString();
 
       autoReading = finalReading;
-      recommended = setup;
+      recommended = { plan, setup };
     }
 
     items.unshift(consultation);
@@ -671,17 +695,25 @@ app.get('/api/admin/me', async (req, res) => {
 // 관리자 보조앱 추천 API
 app.post('/api/admin/recommend', requireAdmin, async (req, res) => {
   try {
-    const { question = '', productKind = 'standard' } = req.body || {};
-    const setup = recommendReadingSetup(question, productKind);
+    const { question = '' } = req.body || {};
+
+    if (!String(question).trim()) {
+      return res.status(400).json({ ok: false, error: '질문이 필요해요.' });
+    }
+
+    const plan = await generateReadingPlan({
+      question: String(question).trim(),
+    });
 
     return res.status(200).json({
       ok: true,
       recommendation: {
-        deck: setup.deck,
-        count: setup.positions.length,
-        aux: setup.auxTools,
+        deck: plan.deck,
+        count: plan.card_count,
+        aux: planToSetup(plan).auxTools,
       },
-      setup,
+      plan,
+      setup: planToSetup(plan),
     });
   } catch (error) {
     console.error('POST /api/admin/recommend error:', error);
@@ -729,13 +761,14 @@ app.post('/api/admin/consultations/:id/recommendation/generate', requireAdmin, a
       return res.status(404).json({ ok: false, error: '해당 접수를 찾지 못했어요.' });
     }
 
-    const { recommendation } = await generateRecommendationText(items[idx]);
+    const { recommendation, setup, plan } = await generateRecommendationText(items[idx]);
+    items[idx].readingPlan = plan;
     items[idx].recommendation = recommendation;
     items[idx].updated_at = new Date().toISOString();
 
     await writeJsonArray(CONSULTATION_FILE, items);
 
-    return res.status(200).json({ ok: true, recommendation });
+    return res.status(200).json({ ok: true, recommendation, setup, plan });
   } catch (error) {
     console.error('recommendation generate error:', error);
     return res.status(500).json({ ok: false, error: '추천 생성에 실패했어요.' });
@@ -773,14 +806,19 @@ app.post('/api/admin/consultations/:id/draw/generate', requireAdmin, async (req,
       return res.status(404).json({ ok: false, error: '해당 접수를 찾지 못했어요.' });
     }
 
-    const setup = recommendReadingSetup(items[idx].question || '', items[idx].product_kind || 'standard');
-    const drawResult = buildDrawResultFromSetup(setup);
+    const plan = items[idx].readingPlan || await generateReadingPlan({
+      question: items[idx].question || '',
+    });
 
+    const drawResult = buildRealDraw(plan);
+
+    items[idx].readingPlan = plan;
     items[idx].drawResult = drawResult;
     items[idx].updated_at = new Date().toISOString();
+
     await writeJsonArray(CONSULTATION_FILE, items);
 
-    return res.status(200).json({ ok: true, drawResult });
+    return res.status(200).json({ ok: true, drawResult, plan });
   } catch (error) {
     console.error('draw generate error:', error);
     return res.status(500).json({ ok: false, error: '자동 드로우에 실패했어요.' });
@@ -955,23 +993,3 @@ ensureDataFiles()
     console.error('Failed to initialize data files:', error);
     process.exit(1);
   });
-
-const fs = require('fs');
-const path = require('path');
-
-function loadDeck(fileName) {
-  try {
-    const filePath = path.join(__dirname, '../public/data', fileName);
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(raw);
-  } catch (e) {
-    return [];
-  }
-}
-
-function pickRandom(arr, count = 1) {
-  const shuffled = [...arr].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
-
