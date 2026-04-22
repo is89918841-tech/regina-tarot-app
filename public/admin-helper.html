@@ -3,518 +3,281 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regina Admin Dashboard</title>
+  <title>레지나 리딩 보조앱</title>
   <style>
-    :root {
-      --bg: #0b1020;
-      --panel: #12182b;
-      --panel-2: #19223a;
-      --line: #2a3658;
-      --text: #eef2ff;
-      --muted: #9aa6c7;
-      --accent: #8b5cf6;
-      --accent-2: #6366f1;
-      --ok: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
+    :root{
+      --bg:#0b1020;
+      --panel:#12182b;
+      --line:#2a3658;
+      --text:#eef2ff;
+      --muted:#9aa6c7;
+      --accent:#8b5cf6;
+      --accent2:#6366f1;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
     }
-
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(180deg, #0a0f1d, #10172a);
-      color: var(--text);
-      font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      background:linear-gradient(180deg,#0a0f1d,#10172a);
+      color:var(--text);
+      font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-
-    a { color: inherit; text-decoration: none; }
-    button, input, textarea, select { font: inherit; }
-
-    .hidden { display: none !important; }
-
-    .app {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 24px;
+    .app{
+      max-width:1100px;
+      margin:0 auto;
+      padding:24px;
     }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 20px;
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:20px;
+      flex-wrap:wrap;
     }
-
-    .brand h1 {
-      margin: 0 0 6px;
-      font-size: 28px;
-      line-height: 1.2;
+    .title{
+      font-size:28px;
+      font-weight:800;
+      margin:0 0 6px;
     }
-
-    .brand p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
     }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 16px;
-      align-items: start;
+    .panel{
+      background:rgba(18,24,43,.96);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.22);
+      margin-bottom:16px;
     }
-
-    .stack {
-      display: grid;
-      gap: 16px;
+    .grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
     }
-
-    .panel {
-      background: rgba(18, 24, 43, 0.95);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+    .field{
+      display:grid;
+      gap:6px;
+      margin-bottom:14px;
     }
-
-    .panel h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
+    .field label{
+      font-size:13px;
+      color:var(--muted);
     }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
+    .input,.textarea,.select{
+      width:100%;
+      background:#0d1428;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      outline:none;
     }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+    .textarea{
+      min-height:120px;
+      resize:vertical;
+      line-height:1.65;
     }
-
-    .btn {
-      border: 1px solid var(--line);
-      background: #1a2440;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 700;
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
     }
-
-    .btn:hover { filter: brightness(1.08); }
-    .btn.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); border-color: transparent; }
-    .btn.ghost { background: transparent; }
-    .btn.ok { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); }
-    .btn.warn { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); }
-    .btn.danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); }
-
-    .input, .textarea, .select {
-      width: 100%;
-      background: #0d1428;
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px 14px;
-      outline: none;
+    .btn{
+      border:1px solid var(--line);
+      background:#1a2440;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      text-decoration:none;
     }
-
-    .textarea {
-      min-height: 110px;
-      resize: vertical;
-      line-height: 1.6;
+    .btn:hover{filter:brightness(1.08)}
+    .btn.primary{
+      background:linear-gradient(180deg,var(--accent),var(--accent2));
+      border-color:transparent;
     }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
+    .btn.ok{
+      background:rgba(34,197,94,.15);
+      border-color:rgba(34,197,94,.4);
     }
-
-    .field {
-      display: grid;
-      gap: 6px;
+    .btn.warn{
+      background:rgba(245,158,11,.15);
+      border-color:rgba(245,158,11,.4);
     }
-
-    .field label {
-      font-size: 13px;
-      color: var(--muted);
+    .btn.danger{
+      background:rgba(239,68,68,.15);
+      border-color:rgba(239,68,68,.4);
     }
-
-    .login-wrap {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
+    .muted{color:var(--muted)}
+    .status{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+      white-space:pre-wrap;
+      line-height:1.6;
+      border:1px solid var(--line);
+      background:#10182c;
+      display:none;
     }
-
-    .login-card {
-      width: 100%;
-      max-width: 460px;
-      background: rgba(18, 24, 43, 0.96);
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 26px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    .status.show{display:block}
+    .status.ok{border-color:rgba(34,197,94,.4);color:#bbf7d0}
+    .status.error{border-color:rgba(239,68,68,.4);color:#fecaca}
+    .status.warn{border-color:rgba(245,158,11,.4);color:#fde68a}
+    .meta-box{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:10px;
+      font-size:14px;
+      line-height:1.7;
     }
-
-    .login-card h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
+    .meta-box + .meta-box{margin-top:8px}
+    .help{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+      line-height:1.6;
     }
-
-    .login-card p {
-      margin: 0 0 18px;
-      color: var(--muted);
-      line-height: 1.6;
+    .result-box{
+      white-space:pre-wrap;
+      line-height:1.75;
+      font-size:14px;
+      background:#0d1428;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+      min-height:180px;
     }
-
-    .status {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      white-space: pre-wrap;
-      line-height: 1.5;
-      border: 1px solid var(--line);
-      background: #10182c;
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:4px 8px;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid var(--line);
+      background:rgba(99,102,241,.12);
+      color:#c7d2fe;
     }
-
-    .status.ok { border-color: rgba(34,197,94,0.4); color: #bbf7d0; }
-    .status.error { border-color: rgba(239,68,68,0.4); color: #fecaca; }
-    .status.warn { border-color: rgba(245,158,11,0.4); color: #fde68a; }
-
-    .list {
-      display: grid;
-      gap: 10px;
-      max-height: 420px;
-      overflow: auto;
-      padding-right: 4px;
-    }
-
-    .item {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
-      background: rgba(25, 34, 58, 0.8);
-      cursor: pointer;
-    }
-
-    .item:hover { border-color: #4f5d84; }
-    .item.active { border-color: #8b5cf6; box-shadow: inset 0 0 0 1px rgba(139,92,246,0.5); }
-
-    .item-title {
-      font-weight: 800;
-      margin-bottom: 6px;
-      font-size: 15px;
-    }
-
-    .item-meta {
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .kv {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 10px;
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 800;
-      border: 1px solid var(--line);
-      background: rgba(99,102,241,0.12);
-      color: #c7d2fe;
-    }
-
-    .spacer { height: 6px; }
-    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .section-divider { height: 1px; background: var(--line); margin: 16px 0; }
-
-    @media (max-width: 1100px) {
-      .row, .grid-3 { grid-template-columns: 1fr; }
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div id="loginView" class="login-wrap">
-    <div class="login-card">
-      <h1>레지나 관리자</h1>
-      <p>상담 접수, 추천 생성, 자동 드로우, 최종 리딩 저장, 지식 파일 업로드를 한 화면에서 관리합니다.</p>
-
-      <div class="field">
-        <label for="password">관리자 비밀번호</label>
-        <input id="password" class="input" type="password" placeholder="비밀번호 입력" />
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1 class="title">레지나 리딩 보조앱</h1>
+        <p class="sub">상담 접수 1건을 불러와 추천 / 드로우 / 최종 리딩을 한 화면에서 정리합니다.</p>
       </div>
-
-      <div class="spacer"></div>
-
       <div class="toolbar">
-        <button id="loginBtn" class="btn primary" type="button">로그인</button>
-      </div>
-
-      <div id="loginStatus" class="status hidden"></div>
-    </div>
-  </div>
-
-  <div id="adminView" class="hidden">
-    <div class="app">
-      <div class="topbar">
-        <div class="brand">
-          <h1>Regina Admin Dashboard</h1>
-          <p>상담 접수 / 추천 생성 / 자동 드로우 / 최종 리딩 / 지식 파일 관리</p>
-        </div>
-
-        <div class="top-actions">
-          <a class="btn ghost" href="/admin/helper" target="_blank">보조앱 열기</a>
-          <a class="btn ghost" href="/admin/grand-tableau" target="_blank">그랑따블로 열기</a>
-          <button id="logoutBtn" class="btn danger" type="button">로그아웃</button>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="stack">
-          <section class="panel">
-            <div class="toolbar" style="justify-content: space-between; margin-bottom: 12px;">
-              <h2>상담 접수 목록</h2>
-              <div class="toolbar">
-                <button id="refreshConsultationsBtn" class="btn" type="button">새로고침</button>
-              </div>
-            </div>
-            <div id="consultationsList" class="list">
-              <div class="muted">아직 접수 내역이 없습니다.</div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="toolbar" style="justify-content: space-between; margin-bottom: 12px;">
-              <h2>지식 파일 관리</h2>
-              <div class="toolbar">
-                <button id="refreshFilesBtn" class="btn" type="button">파일 새로고침</button>
-              </div>
-            </div>
-
-            <div class="grid-3">
-              <div class="field">
-                <label for="uploadFile">파일</label>
-                <input id="uploadFile" class="input" type="file" />
-              </div>
-              <div class="field">
-                <label for="uploadDeck">덱</label>
-                <input id="uploadDeck" class="input" type="text" />
-              </div>
-              <div class="field">
-                <label for="uploadTopic">주제</label>
-                <input id="uploadTopic" class="input" type="text" />
-              </div>
-            </div>
-
-            <div class="grid-3" style="margin-top: 12px;">
-              <div class="field">
-                <label for="uploadPriority">우선순위</label>
-                <select id="uploadPriority" class="select">
-                  <option value="core">core</option>
-                  <option value="support">support</option>
-                  <option value="optional">optional</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="uploadType">파일 타입</label>
-                <select id="uploadType" class="select">
-                  <option value="guidebook">guidebook</option>
-                  <option value="interpretation">interpretation</option>
-                  <option value="tone">tone</option>
-                  <option value="rule">rule</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>&nbsp;</label>
-                <button id="uploadBtn" class="btn primary" type="button">업로드</button>
-              </div>
-            </div>
-
-            <div id="uploadStatus" class="status hidden" style="margin-top: 12px;"></div>
-
-            <div class="section-divider"></div>
-
-            <div id="filesList" class="list">
-              <div class="muted">아직 업로드된 파일이 없습니다.</div>
-            </div>
-          </section>
-        </div>
-
-        <div class="stack">
-          <section class="panel">
-            <h2>선택한 접수 상세</h2>
-            <div id="consultationDetail" class="muted">왼쪽에서 상담 접수를 선택해주세요.</div>
-          </section>
-
-          <section class="panel">
-            <h2>추천 생성 / 저장</h2>
-            <div class="field">
-              <label for="recommendationText">추천 결과</label>
-              <textarea id="recommendationText" class="textarea"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top: 12px;">
-              <button id="generateRecommendationBtn" class="btn primary" type="button">추천 생성</button>
-              <button id="saveRecommendationBtn" class="btn ok" type="button">추천 저장</button>
-            </div>
-            <div id="recommendationStatus" class="status hidden"></div>
-          </section>
-
-          <section class="panel">
-            <h2>자동 드로우 / 드로우 잠금</h2>
-            <div class="field">
-              <label for="drawResultText">드로우 결과</label>
-              <textarea id="drawResultText" class="textarea"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top: 12px;">
-              <button id="autoDrawBtn" class="btn primary" type="button">자동 드로우</button>
-              <button id="lockDrawBtn" class="btn warn" type="button">드로우 잠금 저장</button>
-            </div>
-            <div id="drawStatus" class="status hidden"></div>
-          </section>
-
-          <section class="panel">
-            <h2>최종 리딩 생성 / 저장</h2>
-            <div class="field">
-              <label for="finalReadingText">최종 리딩</label>
-              <textarea id="finalReadingText" class="textarea" style="min-height: 180px;"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top: 12px;">
-              <button id="generateFinalReadingBtn" class="btn primary" type="button">최종 리딩 생성</button>
-              <button id="saveFinalReadingBtn" class="btn ok" type="button">최종 리딩 저장</button>
-            </div>
-            <div id="readingStatus" class="status hidden"></div>
-          </section>
-
-          <section class="panel">
-            <h2>카톡 문구 생성 / 복사</h2>
-            <div class="field">
-              <label for="kakaoText">전달 문구</label>
-              <textarea id="kakaoText" class="textarea"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top: 12px;">
-              <button id="generateKakaoBtn" class="btn primary" type="button">카톡 문구 생성</button>
-              <button id="copyKakaoBtn" class="btn" type="button">복사</button>
-            </div>
-            <div id="kakaoStatus" class="status hidden"></div>
-          </section>
-        </div>
+        <a class="btn" href="/admin2.html" target="_blank" rel="noopener noreferrer">관리자 열기</a>
       </div>
     </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2 style="margin-top:0;">선택된 상담 정보</h2>
+        <div id="consultationInfo" class="muted">상담 정보를 불러오는 중입니다.</div>
+        <div id="infoStatus" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <h2 style="margin-top:0;">자동 실행</h2>
+        <div class="field">
+          <label>현재 상태</label>
+          <div id="autoRunState" class="badge">대기</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn primary" id="loadBtn" type="button">상담 다시 불러오기</button>
+          <button class="btn warn" id="autorunBtn" type="button">추천 → 드로우 자동 실행</button>
+        </div>
+        <p class="help">URL에 <code>?id=상담ID&autorun=1</code> 이 있으면 자동 실행됩니다.</p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2 style="margin-top:0;">추천 결과</h2>
+      <div class="field">
+        <label for="recommendationText">추천 텍스트</label>
+        <textarea id="recommendationText" class="textarea"></textarea>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="generateRecommendationBtn" type="button">추천 생성</button>
+        <button class="btn ok" id="saveRecommendationBtn" type="button">추천 저장</button>
+      </div>
+      <div id="recommendationStatus" class="status"></div>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-top:0;">드로우 결과</h2>
+      <div class="field">
+        <label for="drawResultText">드로우 텍스트</label>
+        <textarea id="drawResultText" class="textarea"></textarea>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="autoDrawBtn" type="button">자동 드로우</button>
+        <button class="btn ok" id="saveDrawBtn" type="button">드로우 저장</button>
+      </div>
+      <div id="drawStatus" class="status"></div>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-top:0;">최종 리딩</h2>
+      <div class="field">
+        <label for="finalReadingText">최종 리딩 텍스트</label>
+        <textarea id="finalReadingText" class="textarea" style="min-height:220px;"></textarea>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="generateFinalReadingBtn" type="button">최종 리딩 생성</button>
+        <button class="btn ok" id="saveFinalReadingBtn" type="button">최종 리딩 저장</button>
+      </div>
+      <div id="readingStatus" class="status"></div>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-top:0;">카톡 전달 문구</h2>
+      <div class="field">
+        <label for="kakaoText">전달용 문구</label>
+        <textarea id="kakaoText" class="textarea" style="min-height:180px;"></textarea>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="generateKakaoBtn" type="button">카톡 문구 생성</button>
+        <button class="btn" id="copyKakaoBtn" type="button">복사</button>
+      </div>
+      <div id="kakaoStatus" class="status"></div>
+    </section>
   </div>
 
   <script>
+    const qs = new URLSearchParams(location.search);
+    const consultationId = qs.get('id') || '';
+    const shouldAutorun = qs.get('autorun') === '1';
+
     const state = {
-      selectedConsultationId: null,
-      selectedConsultation: null,
-      consultations: [],
-      files: [],
+      consultation: null,
+      consultationId,
     };
 
     const $ = (id) => document.getElementById(id);
 
     function showStatus(el, text, type = 'ok') {
       el.textContent = text;
-      el.className = `status ${type}`;
-      el.classList.remove('hidden');
+      el.className = `status show ${type}`;
     }
 
-    function hideStatus(el) {
-      el.classList.add('hidden');
-    }
-
-    async function fetchJson(url, options = {}) {
-      const res = await fetch(url, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(options.headers || {}),
-        },
-        ...options,
-      });
-
-      let data = null;
-      const text = await res.text();
-
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        data = { ok: false, error: text || `HTTP ${res.status}` };
-      }
-
-      if (!res.ok || data.ok === false) {
-        throw new Error(data.error || data.message || `HTTP ${res.status}`);
-      }
-
-      return data;
-    }
-
-    async function loadAll() {
-      await Promise.all([loadConsultations(), loadFiles()]);
-    }
-
-    async function ensureSession() {
-      try {
-        await fetchJson('/api/admin/me');
-        await loadAll();
-        $('loginView').classList.add('hidden');
-        $('adminView').classList.remove('hidden');
-      } catch {
-        $('loginView').classList.remove('hidden');
-        $('adminView').classList.add('hidden');
-      }
-    }
-
-    async function login() {
-      const password = $('password').value.trim();
-
-      if (!password) {
-        return showStatus($('loginStatus'), '비밀번호를 입력해주세요.', 'error');
-      }
-
-      try {
-        hideStatus($('loginStatus'));
-
-        await fetchJson('/api/admin/login', {
-          method: 'POST',
-          body: JSON.stringify({ password }),
-        });
-
-        await loadAll();
-
-        $('password').value = '';
-        $('loginView').classList.add('hidden');
-        $('adminView').classList.remove('hidden');
-      } catch (error) {
-        $('loginView').classList.remove('hidden');
-        $('adminView').classList.add('hidden');
-        showStatus($('loginStatus'), error.message || '로그인 후 데이터 불러오기 실패', 'error');
-      }
-    }
-
-    async function logout() {
-      try {
-        await fetchJson('/api/admin/logout', { method: 'POST' });
-      } catch {}
-      location.reload();
+    function setBadge(text) {
+      $('autoRunState').textContent = text;
     }
 
     function escapeHtml(v) {
@@ -530,93 +293,49 @@
       return escapeHtml(v).replace(/\n/g, '<br>');
     }
 
-    function formatDate(v) {
-      if (!v) return '-';
-      const d = new Date(v);
-      return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString('ko-KR');
-    }
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {}),
+        },
+        ...options,
+      });
 
-    function renderConsultations() {
-      const root = $('consultationsList');
-      root.innerHTML = '';
-
-      if (!state.consultations.length) {
-        root.innerHTML = '<div class="muted">아직 접수 내역이 없습니다.</div>';
-        return;
+      const text = await res.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { ok: false, error: text || `HTTP ${res.status}` };
       }
 
-      state.consultations.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = 'item' + (state.selectedConsultationId === item.id ? ' active' : '');
-
-        const helperUrl = `/admin/helper?id=${encodeURIComponent(item.id)}&autorun=1`;
-
-        div.innerHTML = `
-          <div class="item-title">${escapeHtml(item.name || item.nickname || item.contact || '이름 없음')}</div>
-          <div class="item-meta">
-            <span class="badge">${escapeHtml(item.menuTitle || item.menu || '메뉴 미지정')}</span>
-            <span>${escapeHtml(item.contact || item.contactChannel || '-')}</span>
-            <span>${formatDate(item.createdAt || item.created_at)}</span>
-          </div>
-          <div class="muted" style="margin-top:8px;">${escapeHtml((item.question || '').slice(0, 120) || '질문 없음')}</div>
-          <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
-            <a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary" data-stop-row="1">자동 실행</a>
-          </div>
-        `;
-
-        div.addEventListener('click', (e) => {
-          if (e.target.closest('[data-stop-row="1"]')) return;
-          selectConsultation(item.id);
-        });
-
-        root.appendChild(div);
-      });
-    }
-
-    function renderFiles() {
-      const root = $('filesList');
-      root.innerHTML = '';
-
-      if (!state.files.length) {
-        root.innerHTML = '<div class="muted">아직 업로드된 파일이 없습니다.</div>';
-        return;
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.error || data.message || `HTTP ${res.status}`);
       }
 
-      state.files.forEach((file) => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div class="item-title">${escapeHtml(file.originalName || file.filename || file.storedName || '이름 없음')}</div>
-          <div class="item-meta">
-            <span class="badge">${escapeHtml(file.type || '-')}</span>
-            <span>${escapeHtml(file.deck || '-')}</span>
-            <span>${escapeHtml(file.topic || '-')}</span>
-            <span>${escapeHtml(file.priority || '-')}</span>
-            <span>${escapeHtml(file.status || '-')}</span>
-          </div>
-        `;
-        root.appendChild(div);
-      });
+      return data;
     }
 
-    function renderConsultationDetail() {
-      const root = $('consultationDetail');
-      const item = state.selectedConsultation;
+    function renderConsultation() {
+      const root = $('consultationInfo');
+      const item = state.consultation;
 
       if (!item) {
         root.className = 'muted';
-        root.textContent = '왼쪽에서 상담 접수를 선택해주세요.';
+        root.textContent = '상담 정보를 찾지 못했습니다.';
         return;
       }
 
       root.className = '';
       root.innerHTML = `
-        <div class="kv"><strong>ID</strong><div>${escapeHtml(item.id || '-')}</div></div>
-        <div class="kv"><strong>성함</strong><div>${escapeHtml(item.name || item.nickname || '-')}</div></div>
-        <div class="kv"><strong>연락처</strong><div>${escapeHtml(item.contact || item.contactChannel || '-')}</div></div>
-        <div class="kv"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle || item.menu || '-')}</div></div>
-        <div class="kv"><strong>추가 메모</strong><div>${nl2br(item.memo || '-')}</div></div>
-        <div class="kv"><strong>질문</strong><div>${nl2br(item.question || '-')}</div></div>
+        <div class="meta-box"><strong>ID</strong><div>${escapeHtml(item.id || '-')}</div></div>
+        <div class="meta-box"><strong>성함</strong><div>${escapeHtml(item.name || item.nickname || '-')}</div></div>
+        <div class="meta-box"><strong>연락처</strong><div>${escapeHtml(item.contact || item.contactChannel || '-')}</div></div>
+        <div class="meta-box"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle || item.menu || '-')}</div></div>
+        <div class="meta-box"><strong>질문</strong><div>${nl2br(item.question || '-')}</div></div>
+        <div class="meta-box"><strong>메모</strong><div>${nl2br(item.memo || '-')}</div></div>
       `;
 
       $('recommendationText').value = item.recommendation || '';
@@ -625,50 +344,51 @@
       $('kakaoText').value = item.kakaoText || item.kakao_text || '';
     }
 
-    async function loadConsultations() {
-      const data = await fetchJson('/api/admin/consultations');
-      state.consultations = data.consultations || data.items || [];
-      renderConsultations();
-    }
+    async function loadConsultation() {
+      if (!state.consultationId) {
+        showStatus($('infoStatus'), 'URL에 상담 ID가 없습니다. admin2에서 "자동 실행" 버튼으로 들어와 주세요.', 'error');
+        setBadge('상담 ID 없음');
+        return;
+      }
 
-    async function loadFiles() {
-      const data = await fetchJson('/api/admin/files');
-      state.files = data.files || [];
-      renderFiles();
-    }
-
-    async function selectConsultation(id) {
-      const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(id)}`);
-      state.selectedConsultationId = id;
-      state.selectedConsultation = data.consultation || data.item || null;
-      renderConsultations();
-      renderConsultationDetail();
+      try {
+        setBadge('상담 불러오는 중');
+        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}`);
+        state.consultation = data.consultation || data.item || null;
+        renderConsultation();
+        setBadge('상담 로딩 완료');
+        showStatus($('infoStatus'), '상담 정보를 불러왔습니다.', 'ok');
+      } catch (e) {
+        setBadge('로드 실패');
+        showStatus($('infoStatus'), e.message || '상담 정보 로드 실패', 'error');
+      }
     }
 
     async function generateRecommendation() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('recommendationStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      if (!state.consultationId) {
+        return showStatus($('recommendationStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
         showStatus($('recommendationStatus'), '추천 생성 중...', 'warn');
-        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/recommendation/generate`, {
+        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/recommendation/generate`, {
           method: 'POST',
         });
         $('recommendationText').value = data.recommendation || '';
         showStatus($('recommendationStatus'), '추천 생성 완료', 'ok');
       } catch (e) {
         showStatus($('recommendationStatus'), e.message || '추천 생성 실패', 'error');
+        throw e;
       }
     }
 
     async function saveRecommendation() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('recommendationStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      if (!state.consultationId) {
+        return showStatus($('recommendationStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
-        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/recommendation`, {
+        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/recommendation`, {
           method: 'POST',
           body: JSON.stringify({ recommendation: $('recommendationText').value }),
         });
@@ -679,47 +399,50 @@
     }
 
     async function autoDraw() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('drawStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      if (!state.consultationId) {
+        return showStatus($('drawStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
         showStatus($('drawStatus'), '자동 드로우 실행 중...', 'warn');
-        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/draw/generate`, {
+        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/draw/generate`, {
           method: 'POST',
-          body: JSON.stringify({ recommendation: $('recommendationText').value }),
+          body: JSON.stringify({
+            recommendation: $('recommendationText').value
+          }),
         });
         $('drawResultText').value = data.drawResult || data.result || '';
         showStatus($('drawStatus'), '자동 드로우 완료', 'ok');
       } catch (e) {
         showStatus($('drawStatus'), e.message || '자동 드로우 실패', 'error');
+        throw e;
       }
     }
 
-    async function lockDraw() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('drawStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+    async function saveDraw() {
+      if (!state.consultationId) {
+        return showStatus($('drawStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
-        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/draw`, {
+        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/draw`, {
           method: 'POST',
           body: JSON.stringify({ drawResult: $('drawResultText').value }),
         });
-        showStatus($('drawStatus'), '드로우 잠금 저장 완료', 'ok');
+        showStatus($('drawStatus'), '드로우 저장 완료', 'ok');
       } catch (e) {
         showStatus($('drawStatus'), e.message || '드로우 저장 실패', 'error');
       }
     }
 
     async function generateFinalReading() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('readingStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      if (!state.consultationId) {
+        return showStatus($('readingStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
         showStatus($('readingStatus'), '최종 리딩 생성 중...', 'warn');
-        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/reading/generate`, {
+        const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/reading/generate`, {
           method: 'POST',
           body: JSON.stringify({
             recommendation: $('recommendationText').value,
@@ -734,12 +457,12 @@
     }
 
     async function saveFinalReading() {
-      if (!state.selectedConsultationId) {
-        return showStatus($('readingStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      if (!state.consultationId) {
+        return showStatus($('readingStatus'), '상담 ID가 없습니다.', 'error');
       }
 
       try {
-        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/reading`, {
+        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.consultationId)}/reading`, {
           method: 'POST',
           body: JSON.stringify({ finalReading: $('finalReadingText').value }),
         });
@@ -750,13 +473,14 @@
     }
 
     function generateKakao() {
+      const item = state.consultation || {};
       const reading = $('finalReadingText').value.trim();
+
       if (!reading) {
         return showStatus($('kakaoStatus'), '최종 리딩이 비어 있습니다.', 'error');
       }
 
-      const item = state.selectedConsultation || {};
-      const text = [
+      $('kakaoText').value = [
         `${item.name || item.nickname || '내담자님'} 안녕하세요.`,
         '',
         '요청주신 리딩 결과 전달드려요.',
@@ -766,7 +490,6 @@
         '추가 질문이 있으시면 이어서 남겨주세요.',
       ].join('\n');
 
-      $('kakaoText').value = text;
       showStatus($('kakaoStatus'), '카톡 문구 생성 완료', 'ok');
     }
 
@@ -779,67 +502,40 @@
       try {
         await navigator.clipboard.writeText(text);
         showStatus($('kakaoStatus'), '복사 완료', 'ok');
-      } catch {
-        showStatus($('kakaoStatus'), '복사 실패', 'error');
-      }
-    }
-
-    async function uploadFile() {
-      const file = $('uploadFile').files[0];
-      if (!file) {
-        return showStatus($('uploadStatus'), '업로드할 파일을 선택해주세요.', 'error');
-      }
-
-      try {
-        showStatus($('uploadStatus'), '업로드 중...', 'warn');
-        const body = new FormData();
-        body.append('file', file);
-        body.append('deck', $('uploadDeck').value.trim());
-        body.append('topic', $('uploadTopic').value.trim());
-        body.append('priority', $('uploadPriority').value);
-        body.append('type', $('uploadType').value);
-
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          credentials: 'include',
-          body,
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || '업로드 실패');
-        }
-
-        $('uploadFile').value = '';
-        $('uploadDeck').value = '';
-        $('uploadTopic').value = '';
-        showStatus($('uploadStatus'), '업로드 완료', 'ok');
-        await loadFiles();
       } catch (e) {
-        showStatus($('uploadStatus'), e.message || '업로드 실패', 'error');
+        showStatus($('kakaoStatus'), e.message || '복사 실패', 'error');
       }
     }
 
-    $('loginBtn').addEventListener('click', login);
-    $('password').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') login();
-    });
+    async function autorun() {
+      try {
+        setBadge('자동 실행 중');
+        await generateRecommendation();
+        await saveRecommendation();
+        await autoDraw();
+        await saveDraw();
+        setBadge('자동 실행 완료');
+      } catch {
+        setBadge('자동 실행 실패');
+      }
+    }
 
-    $('logoutBtn').addEventListener('click', logout);
-    $('refreshConsultationsBtn').addEventListener('click', loadConsultations);
-    $('refreshFilesBtn').addEventListener('click', loadFiles);
-
+    $('loadBtn').addEventListener('click', loadConsultation);
     $('generateRecommendationBtn').addEventListener('click', generateRecommendation);
     $('saveRecommendationBtn').addEventListener('click', saveRecommendation);
     $('autoDrawBtn').addEventListener('click', autoDraw);
-    $('lockDrawBtn').addEventListener('click', lockDraw);
+    $('saveDrawBtn').addEventListener('click', saveDraw);
     $('generateFinalReadingBtn').addEventListener('click', generateFinalReading);
     $('saveFinalReadingBtn').addEventListener('click', saveFinalReading);
     $('generateKakaoBtn').addEventListener('click', generateKakao);
     $('copyKakaoBtn').addEventListener('click', copyKakao);
-    $('uploadBtn').addEventListener('click', uploadFile);
 
-    ensureSession();
+    (async () => {
+      await loadConsultation();
+      if (shouldAutorun && state.consultationId) {
+        await autorun();
+      }
+    })();
   </script>
 </body>
 </html>
