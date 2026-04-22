@@ -393,21 +393,61 @@ app.post('/api/recommend', async (req, res) => {
   }
 });
 
-// 외부 연결용 드로우 API
+// 외부 연결용 드로우 API (GPT 추천 plan 기준)
 app.post('/api/draw', async (req, res) => {
   try {
-    const { question = '', productKind = 'standard' } = req.body || {};
-    const setup = recommendReadingSetup(question, productKind);
+    const { question = '', plan = null } = req.body || {};
+
+    let finalPlan = plan;
+
+    if (!finalPlan) {
+      if (!String(question).trim()) {
+        return res.status(400).json({
+          ok: false,
+          error: '질문 또는 plan이 필요해요.',
+        });
+      }
+
+      finalPlan = await generateReadingPlan({
+        question: String(question).trim(),
+      });
+    }
+
+    const positions = Array.from(
+      { length: Math.max(1, Number(finalPlan.card_count) || 3) },
+      (_, idx) => `카드 ${idx + 1}`
+    );
+
+    const setup = {
+      deck: finalPlan.deck || '유니버셜 타로',
+      spread: finalPlan.spread_name || '기본 3카드',
+      positions,
+      auxTools: [
+        ...(finalPlan.use_oracle && finalPlan.oracle_deck ? [finalPlan.oracle_deck] : []),
+        ...(finalPlan.use_lenormand ? ['레노먼드 카드'] : []),
+        ...(finalPlan.use_runes ? ['룬스톤'] : []),
+        ...(finalPlan.use_iching ? ['아이칭 카드'] : []),
+        ...(finalPlan.use_yukyo ? ['주역육효괘'] : []),
+        ...(finalPlan.use_ogangi ? ['오간기'] : []),
+        ...(finalPlan.use_obanggi ? ['오방기'] : []),
+        ...(Array.isArray(finalPlan.selected_aux_decks) ? finalPlan.selected_aux_decks : []),
+      ],
+    };
+
     const drawResult = buildDrawResultFromSetup(setup);
 
     return res.status(200).json({
       ok: true,
+      plan: finalPlan,
       setup,
       drawResult,
     });
   } catch (error) {
     console.error('POST /api/draw error:', error);
-    return res.status(500).json({ ok: false, error: '자동 드로우에 실패했어요.' });
+    return res.status(500).json({
+      ok: false,
+      error: '자동 드로우에 실패했어요.',
+    });
   }
 });
 
