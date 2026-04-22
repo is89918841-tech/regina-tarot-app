@@ -533,14 +533,71 @@ app.post('/api/consultations', async (req, res) => {
     let autoReading = null;
     let recommended = null;
 
-    if (product_kind === 'simple' || product_kind === 'standard') {
-      const { recommendation, setup } = await generateRecommendationText(consultation);
-      const drawResult = buildDrawResultFromSetup(setup);
-      const finalReading = await generateFinalReadingText(consultation, recommendation, drawResult);
+   if (product_kind === 'simple' || product_kind === 'standard') {
 
-      consultation.recommendation = recommendation;
-      consultation.drawResult = drawResult;
-      consultation.finalReading = finalReading;
+  // 1️⃣ GPT로 리딩 설계
+  const plan = await generateReadingPlan({
+    question: consultation.question,
+  });
+
+  // 2️⃣ plan 기준으로 카드 포지션 생성
+  const positions = Array.from(
+    { length: Math.max(1, Number(plan.card_count) || 3) },
+    (_, idx) => `카드 ${idx + 1}`
+  );
+
+  const setup = {
+    deck: plan.deck || '유니버셜 타로',
+    spread: plan.spread_name || '기본 스프레드',
+    positions,
+    auxTools: [
+      ...(plan.use_oracle && plan.oracle_deck ? [plan.oracle_deck] : []),
+      ...(plan.use_lenormand ? ['레노먼드 카드'] : []),
+      ...(plan.use_runes ? ['룬스톤'] : []),
+      ...(plan.use_iching ? ['아이칭 카드'] : []),
+      ...(plan.use_yukyo ? ['주역육효괘'] : []),
+      ...(plan.use_ogangi ? ['오간기'] : []),
+      ...(plan.use_obanggi ? ['오방기'] : []),
+      ...(Array.isArray(plan.selected_aux_decks) ? plan.selected_aux_decks : []),
+    ],
+  };
+
+  // 3️⃣ 카드 드로우
+  const drawResult = buildDrawResultFromSetup(setup);
+
+  // 4️⃣ 추천 문장 (간단 텍스트)
+  const recommendation = `
+추천 덱: ${plan.deck}
+스프레드: ${plan.spread_name}
+장수: ${plan.card_count}
+이유: ${plan.reason || ''}
+`.trim();
+
+  // 5️⃣ 최종 리딩 생성
+  const finalReading = await generateFinalReadingText(
+    consultation,
+    recommendation,
+    drawResult
+  );
+
+  // 6️⃣ 저장
+  consultation.recommendation = recommendation;
+  consultation.drawResult = drawResult;
+  consultation.finalReading = finalReading;
+
+  consultation.kakaoText = [
+    `${consultation.name}님 안녕하세요.`,
+    '',
+    '요청주신 리딩 결과 전달드려요.',
+    '',
+    finalReading,
+    '',
+    '추가 질문이 있으시면 이어서 남겨주세요.'
+  ].join('\n');
+
+  consultation.status = 'ready_to_send';
+  consultation.reading_completed_at = new Date().toISOString();
+}
       consultation.kakaoText = [
         `${consultation.name}님 안녕하세요.`,
         '',
