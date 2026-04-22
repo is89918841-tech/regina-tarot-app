@@ -201,8 +201,7 @@ function normalizePlan(plan = {}, question = '') {
       : 3,
 
     use_oracle: Boolean(plan.use_oracle),
-    oracle_deck:
-      typeof plan.oracle_deck === 'string' ? plan.oracle_deck.trim() : '',
+    oracle_deck: typeof plan.oracle_deck === 'string' ? plan.oracle_deck.trim() : '',
     oracle_count: Number.isFinite(Number(plan.oracle_count))
       ? Math.min(13, Math.max(0, Number(plan.oracle_count)))
       : 0,
@@ -253,19 +252,15 @@ function normalizePlan(plan = {}, question = '') {
   if (normalized.use_oracle && normalized.oracle_count === 0) {
     normalized.oracle_count = 1;
   }
-
   if (normalized.use_lenormand && normalized.lenormand_count === 0) {
     normalized.lenormand_count = 2;
   }
-
   if (normalized.use_runes && normalized.rune_count === 0) {
     normalized.rune_count = 1;
   }
-
   if (normalized.use_iching && normalized.iching_count === 0) {
     normalized.iching_count = 1;
   }
-
   if (normalized.use_yukyo && normalized.yukyo_count === 0) {
     normalized.yukyo_count = 1;
   }
@@ -389,6 +384,17 @@ async function generateReadingPlan({ question }) {
   return normalizePlan(parsed, trimmedQuestion);
 }
 
+function cleanReadingText(text = '') {
+  return String(text)
+    .replace(/\\\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/^"(.*)"$/s, '$1')
+    .replace(/^'(.*)'$/s, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 async function generateReading({ question, spread, deck, topic, cards = [] }) {
   const intent = detectIntent(question);
   const knowledge = await retrieveKnowledge({
@@ -402,7 +408,7 @@ async function generateReading({ question, spread, deck, topic, cards = [] }) {
     return {
       intent,
       knowledge,
-      reading: fallbackReading(),
+      reading: cleanReadingText(fallbackReading()),
     };
   }
 
@@ -431,11 +437,7 @@ async function generateReading({ question, spread, deck, topic, cards = [] }) {
   });
 
   const rawReading = completion.choices?.[0]?.message?.content?.trim() || '';
-
-  const cleanedReading = rawReading
-    .replace(/\\\\n/g, '\n')
-    .replace(/\\n/g, '\n')
-    .replace(/\r\n/g, '\n');
+  const cleanedReading = cleanReadingText(rawReading);
 
   return {
     intent,
