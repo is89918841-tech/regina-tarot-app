@@ -75,6 +75,44 @@ async function generateRecommendation() {
 function drawCards() {
   const rec = document.getElementById('recommendationText').value || '';
 
+  // 🔥 보조도구 자동 추가
+let extra = [];
+
+// 오라클
+if (/오라클/i.test(rec)) {
+  const oracle = ["희망", "회복", "균형", "전환", "기회"];
+  extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
+}
+
+// 레노먼드
+if (/레노먼드/i.test(rec)) {
+  const leno = ["1 라이더","2 클로버","3 배","4 집"];
+  extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
+}
+
+// 룬
+if (/룬/i.test(rec)) {
+  const rune = ["Fehu","Uruz","Jera","Ehwaz"];
+  extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
+}
+
+// 오간기
+if (/오간기/i.test(rec)) {
+  const ogangi = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
+  extra.push(`오간기: ${ogangi[Math.floor(Math.random()*ogangi.length)]}`);
+}
+
+// 오방기
+if (/오방기/i.test(rec)) {
+  const obang = ["동","서","남","북","중앙"];
+  extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
+}
+
+// 👉 결과에 붙이기
+if (extra.length > 0) {
+  result += "\n" + extra.join("\n");
+}
+
   // 🔥 덱 자동 선택
   let deckName = "유니버셜 타로";
 
