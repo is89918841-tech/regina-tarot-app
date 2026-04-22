@@ -2,56 +2,54 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>레지나 리딩 보조앱 — 관리자 통합본</title>
-  <style>
-    :root{
-      --bg:#0b1020; --panel:#12182b; --line:#2a3658; --text:#eef2ff; --muted:#9aa6c7;
-      --accent:#8b5cf6; --accent2:#6366f1; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0f1d,#10172a);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
-    .app{max-width:1200px;margin:0 auto;padding:24px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-    .title{font-size:30px;font-weight:800;margin:0 0 6px}
-    .sub{margin:0;color:var(--muted);font-size:14px}
-    .layout{display:grid;grid-template-columns:1fr;gap:16px}
-    .panel{background:rgba(18,24,43,.96);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
-    .panel h2{margin:0 0 12px;font-size:19px}
-    .field{display:grid;gap:6px;margin-bottom:12px}
-    .field label{font-size:13px;color:var(--muted)}
-    .input,.select,.textarea{width:100%;background:#0d1428;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
-    .textarea{min-height:130px;resize:vertical;line-height:1.7;white-space:pre-wrap}
-    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-    .btn{border:1px solid var(--line);background:#1a2440;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700}
-    .btn:hover{filter:brightness(1.08)}
-    .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}
-    .btn.ok{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4)}
-    .btn.warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4)}
-    .btn.danger{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4)}
-    .muted{color:var(--muted)}
-    .status{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:13px;white-space:pre-wrap;line-height:1.6;border:1px solid var(--line);background:#10182c;display:none}
-    .status.show{display:block}.status.ok{border-color:rgba(34,197,94,.4);color:#bbf7d0}.status.error{border-color:rgba(239,68,68,.4);color:#fecaca}.status.warn{border-color:rgba(245,158,11,.4);color:#fde68a}
-    .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    .meta{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:14px;line-height:1.7}
-    .meta+.meta{margin-top:6px}
-    .small{font-size:12px;color:var(--muted)}
-    .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-    .check{display:flex;align-items:center;gap:8px;background:#0d1428;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
-    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid var(--line);background:rgba(99,102,241,.12);color:#c7d2fe}
-    .result-box{white-space:pre-wrap;line-height:1.75;font-size:14px;background:#0d1428;border:1px solid var(--line);border-radius:12px;padding:14px;min-height:150px}
-    .helper-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-    @media (max-width:980px){.grid2,.grid3,.checks{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>레지나 리딩 보조앱 — 관리자 통합본 (수정본)</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#12182b; --line:#2a3658; --text:#eef2ff; --muted:#9aa6c7;
+    --accent:#8b5cf6; --accent2:#6366f1; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0f1d,#10172a);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+  .app{max-width:1200px;margin:0 auto;padding:24px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .title{font-size:30px;font-weight:800;margin:0 0 6px}
+  .sub{margin:0;color:var(--muted);font-size:14px}
+  .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .panel{background:rgba(18,24,43,.96);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.22);margin-bottom:16px}
+  .panel h2{margin:0 0 12px;font-size:19px}
+  .field{display:grid;gap:6px;margin-bottom:12px}
+  .field label,.small{font-size:12px;color:var(--muted)}
+  .input,.select,.textarea{width:100%;background:#0d1428;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
+  .textarea{min-height:130px;resize:vertical;line-height:1.7;white-space:pre-wrap}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .btn{border:1px solid var(--line);background:#1a2440;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700;text-decoration:none}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}
+  .btn.ok{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4)}
+  .btn.warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4)}
+  .btn.danger{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4)}
+  .status{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:13px;white-space:pre-wrap;line-height:1.6;border:1px solid var(--line);background:#10182c;display:none}
+  .status.show{display:block}
+  .status.ok{border-color:rgba(34,197,94,.4);color:#bbf7d0}
+  .status.error{border-color:rgba(239,68,68,.4);color:#fecaca}
+  .status.warn{border-color:rgba(245,158,11,.4);color:#fde68a}
+  .meta{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:14px;line-height:1.7}
+  .meta+.meta{margin-top:6px}
+  .check{display:flex;align-items:center;gap:8px;background:#0d1428;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+  .pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid var(--line);background:rgba(99,102,241,.12);color:#c7d2fe}
+  @media (max-width:980px){.grid2,.grid3,.checks{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div>
       <h1 class="title">레지나 리딩 보조앱 (관리자 통합본)</h1>
-      <p class="sub">추천 → 덱 자동 반영 → 실제 카드 드로우 → 저장 → 최종 리딩 생성</p>
+      <p class="sub">추천 → 자동 반영 → 실제 카드 드로우 → 저장 → 최종 리딩 생성</p>
     </div>
     <div class="toolbar">
       <a class="btn" href="/admin2.html" target="_blank" rel="noopener noreferrer">관리자 열기</a>
@@ -77,7 +75,7 @@
         </div>
       </div>
 
-      <div class="checks" style="margin-top:8px;">
+      <div class="checks">
         <label class="check"><input id="useRunes" type="checkbox"> <span>룬스톤</span></label>
         <label class="check"><input id="useLenormand" type="checkbox"> <span>레노먼드</span></label>
         <label class="check"><input id="useIching" type="checkbox"> <span>주역</span></label>
@@ -108,19 +106,17 @@
         <button id="drawBtn" class="btn primary">카드 뽑기</button>
         <button id="autorunBtn" class="btn warn">추천 → 자동 실행</button>
       </div>
-
-      <div class="small" style="margin-top:10px;">보조앱이 따로 죽어 있는 껍데기처럼 보이지 않도록, 이 페이지 안에서 실제 드로우가 돌아가게 만든 통합본입니다.</div>
       <div id="helperStatus" class="status"></div>
     </section>
 
     <section class="panel">
       <h2>상담 정보</h2>
-      <div id="consultationInfo" class="muted">상담 정보를 불러오는 중입니다.</div>
+      <div id="consultationInfo">상담 정보를 불러오는 중입니다.</div>
       <div id="infoStatus" class="status"></div>
     </section>
   </div>
 
-  <section class="panel" style="margin-top:16px;">
+  <section class="panel">
     <h2>추천 결과</h2>
     <textarea id="recommendationText" class="textarea"></textarea>
     <div class="toolbar" style="margin-top:10px;">
@@ -130,7 +126,7 @@
     <div id="recommendationStatus" class="status"></div>
   </section>
 
-  <section class="panel" style="margin-top:16px;">
+  <section class="panel">
     <h2>드로우 결과</h2>
     <textarea id="drawResultText" class="textarea"></textarea>
     <div class="toolbar" style="margin-top:10px;">
@@ -139,7 +135,7 @@
     <div id="drawStatus" class="status"></div>
   </section>
 
-  <section class="panel" style="margin-top:16px;">
+  <section class="panel">
     <h2>최종 리딩</h2>
     <textarea id="finalReadingText" class="textarea" style="min-height:220px;"></textarea>
     <div class="toolbar" style="margin-top:10px;">
@@ -149,7 +145,7 @@
     <div id="readingStatus" class="status"></div>
   </section>
 
-  <section class="panel" style="margin-top:16px;">
+  <section class="panel">
     <h2>카톡 전달 문구</h2>
     <textarea id="kakaoText" class="textarea" style="min-height:180px;"></textarea>
     <div class="toolbar" style="margin-top:10px;">
@@ -181,11 +177,29 @@ const OBANGGI_5 = ["동","서","남","북","중앙"];
 const ORACLE_KEYWORD_FALLBACK = ['경계','확장','정화','인내','회복','소통','결단','유연성','균형','휴식','몰입','신뢰','재정비','성장','재시도','축복','배움','경로수정','연결','해방','용기','겸손','보호','변화','기회','통찰','전환','안정','기초','자기돌봄','성찰','협력','해소','도약','선택','실행'];
 
 const $ = (id) => document.getElementById(id);
-function showStatus(el, text, type='ok'){ el.textContent=text; el.className=`status show ${type}`; }
+
+function showStatus(el, text, type='ok'){
+  el.textContent = text;
+  el.className = `status show ${type}`;
+}
 function setBadge(text){ $('autoRunState').textContent = text; }
-function escapeHtml(v){ return String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;'); }
+function escapeHtml(v){
+  return String(v ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'", '&#39;');
+}
 function nl2br(v){ return escapeHtml(v).replace(/\n/g,'<br>'); }
-function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 async function fetchJson(url, options = {}) {
@@ -211,23 +225,30 @@ async function fetchLooseJson(url){
 async function loadData(){
   try{
     const m = await fetchLooseJson('./data/manifest.json');
-    const tarotEntries = await Promise.all(Object.entries(m.tarot || {}).map(async ([name, path])=>{
+
+    const tarotEntries = await Promise.all(Object.entries(m.tarot || {}).map(async ([name, path]) => {
       const raw = await fetchLooseJson(`./data/${path}`);
       let arr = raw;
-      if (!Array.isArray(raw) && raw && typeof raw === 'object') arr = Object.values(raw).flat().filter(Boolean);
+      if (!Array.isArray(raw) && raw && typeof raw === 'object') {
+        arr = Object.values(raw).flat().filter(Boolean);
+      }
       return [name, Array.isArray(arr) ? arr : []];
     }));
-    const oracleEntries = await Promise.all(Object.entries(m.oracle || {}).map(async ([name, path])=>{
+
+    const oracleEntries = await Promise.all(Object.entries(m.oracle || {}).map(async ([name, path]) => {
       const raw = await fetchLooseJson(`./data/${path}`);
       let arr = raw;
-      if (!Array.isArray(raw) && raw && typeof raw === 'object') arr = Object.values(raw).flat().filter(Boolean);
+      if (!Array.isArray(raw) && raw && typeof raw === 'object') {
+        arr = Object.values(raw).flat().filter(Boolean);
+      }
       return [name, Array.isArray(arr) ? arr : []];
     }));
-    const auxEntries = await Promise.all(Object.entries(m.aux || {}).map(async ([name, path])=>{
+
+    const auxEntries = await Promise.all(Object.entries(m.aux || {}).map(async ([name, path]) => {
       const raw = await fetchLooseJson(`./data/${path}`);
       let arr = raw;
       if (Array.isArray(raw) && raw.length && typeof raw[0] === 'object') {
-        arr = raw.map(o=>{
+        arr = raw.map(o => {
           const h = o?.hanzi ?? o?.괘명 ?? o?.name ?? '';
           const k = o?.ko ?? o?.한글 ?? o?.meaning ?? '';
           const extra = o?.의미 ?? '';
@@ -244,7 +265,9 @@ async function loadData(){
     state.oracleMap = Object.fromEntries(oracleEntries);
     state.auxDeckMap = Object.fromEntries(auxEntries);
 
-    if (m.iching) state.iching64 = await fetchLooseJson(`./data/${m.iching}`);
+    if (m.iching) {
+      state.iching64 = await fetchLooseJson(`./data/${m.iching}`);
+    }
     if (m.yukyo) {
       const y = await fetchLooseJson(`./data/${m.yukyo}`);
       state.yukyoCards = Array.isArray(y) ? y : (y.cards || []);
@@ -252,18 +275,15 @@ async function loadData(){
 
     fillSelects();
     showStatus($('helperStatus'), '보조앱 데이터 로딩 완료', 'ok');
-  }catch(e){
+  } catch (e) {
     showStatus($('helperStatus'), e.message || '보조앱 데이터 로딩 실패', 'error');
   }
 }
 
 function fillSelects(){
-  const tarotDeck = $('tarotDeck');
-  tarotDeck.innerHTML = Object.keys(state.tarotMap).map(name => `<option value="${name}">${name}</option>`).join('');
-  const oracleDeck = $('oracleDeck');
-  oracleDeck.innerHTML = Object.keys(state.oracleMap).map(name => `<option value="${name}">${name}</option>`).join('');
-  const auxDeckSelect = $('auxDeckSelect');
-  auxDeckSelect.innerHTML = Object.keys(state.auxDeckMap).map(name => `<option value="${name}">${name}</option>`).join('');
+  $('tarotDeck').innerHTML = Object.keys(state.tarotMap).map(name => `<option value="${name}">${name}</option>`).join('');
+  $('oracleDeck').innerHTML = Object.keys(state.oracleMap).map(name => `<option value="${name}">${name}</option>`).join('');
+  $('auxDeckSelect').innerHTML = Object.keys(state.auxDeckMap).map(name => `<option value="${name}">${name}</option>`).join('');
 }
 
 function formatYukyoCard(c){
@@ -324,10 +344,10 @@ function buildDrawResult(){
   }
   if ($('useOracle').checked) {
     const deck = $('oracleDeck').value;
-    const count = Math.min(13, Math.max(1, parseInt($('oracleCount').value || '1', 10)));
+    const oCount = Math.min(13, Math.max(1, parseInt($('oracleCount').value || '1', 10)));
     const list = state.oracleMap[deck];
     const cards = (Array.isArray(list) && list.length ? list : ORACLE_KEYWORD_FALLBACK);
-    lines.push(`**오라클**: ${shuffle(cards).slice(0,count).join(', ')}`);
+    lines.push(`**오라클**: ${shuffle(cards).slice(0,oCount).join(', ')}`);
   }
 
   const aux = [];
@@ -351,12 +371,12 @@ async function loadConsultation(){
     state.consultation = data.consultation || data.item || null;
     const item = state.consultation || {};
     $('consultationInfo').innerHTML = `
-      <div class="meta"><strong>ID</strong><div>${item.id || '-'}</div></div>
-      <div class="meta"><strong>성함</strong><div>${item.name || item.nickname || '-'}</div></div>
-      <div class="meta"><strong>연락처</strong><div>${item.contact || item.contactChannel || '-'}</div></div>
-      <div class="meta"><strong>메뉴</strong><div>${item.menuTitle || item.menu || '-'}</div></div>
-      <div class="meta"><strong>질문</strong><div>${item.question || '-'}</div></div>
-      <div class="meta"><strong>메모</strong><div>${item.memo || '-'}</div></div>
+      <div class="meta"><strong>ID</strong><div>${escapeHtml(item.id || '-')}</div></div>
+      <div class="meta"><strong>성함</strong><div>${escapeHtml(item.name || item.nickname || '-')}</div></div>
+      <div class="meta"><strong>연락처</strong><div>${escapeHtml(item.contact || item.contactChannel || '-')}</div></div>
+      <div class="meta"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle || item.menu || '-')}</div></div>
+      <div class="meta"><strong>질문</strong><div>${nl2br(item.question || '-')}</div></div>
+      <div class="meta"><strong>메모</strong><div>${nl2br(item.memo || '-')}</div></div>
     `;
     $('recommendationText').value = item.recommendation || '';
     $('drawResultText').value = item.drawResult || item.draw_result || '';
@@ -373,7 +393,7 @@ async function loadConsultation(){
 function applyRecommendation(){
   const rec = $('recommendationText').value || '';
   const deckMatch = rec.match(/덱\s*[:：]\s*([^\n]+)/) || rec.match(/추천\s*덱\s*[:：]\s*([^\n]+)/);
-  const countMatch = rec.match(/장수\s*[:：]\s*(\d+)/) || rec.match(/장\s*수\s*(\d+)/) || rec.match(/장수\s*(\d+)/);
+  const countMatch = rec.match(/장수\s*[:：]\s*(\d+)/) || rec.match(/장수\s*(\d+)/);
   if (deckMatch) {
     const deck = deckMatch[1].trim();
     if (state.tarotMap[deck]) $('tarotDeck').value = deck;
