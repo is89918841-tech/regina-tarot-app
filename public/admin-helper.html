@@ -71,51 +71,12 @@ async function generateRecommendation() {
   document.getElementById('recommendationText').value = data.recommendation || '';
 }
 
-// 자동 드로우 (간단 안정화 버전)
+// 🔥 핵심: 자동 드로우
 function drawCards() {
   const rec = document.getElementById('recommendationText').value || '';
 
-  // 🔥 보조도구 자동 추가
-let extra = [];
-
-// 오라클
-if (/오라클/i.test(rec)) {
-  const oracle = ["희망", "회복", "균형", "전환", "기회"];
-  extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
-}
-
-// 레노먼드
-if (/레노먼드/i.test(rec)) {
-  const leno = ["1 라이더","2 클로버","3 배","4 집"];
-  extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
-}
-
-// 룬
-if (/룬/i.test(rec)) {
-  const rune = ["Fehu","Uruz","Jera","Ehwaz"];
-  extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
-}
-
-// 오간기
-if (/오간기/i.test(rec)) {
-  const ogangi = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
-  extra.push(`오간기: ${ogangi[Math.floor(Math.random()*ogangi.length)]}`);
-}
-
-// 오방기
-if (/오방기/i.test(rec)) {
-  const obang = ["동","서","남","북","중앙"];
-  extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
-}
-
-// 👉 결과에 붙이기
-if (extra.length > 0) {
-  result += "\n" + extra.join("\n");
-}
-
-  // 🔥 덱 자동 선택
+  // 덱 자동
   let deckName = "유니버셜 타로";
-
   const deckMatch =
     rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
     rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
@@ -125,10 +86,7 @@ if (extra.length > 0) {
     deckName = deckMatch[1].trim();
   }
 
-  // 🔥 카드 데이터 (임시)
-  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
-
-  // 🔥 장수 자동
+  // 장수 자동
   const countMatch =
     rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
     rec.match(/(\d+)\s*장/i);
@@ -137,16 +95,50 @@ if (extra.length > 0) {
     ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
     : 3;
 
+  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+
   let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
 
   for (let i = 0; i < count; i++) {
     result += `- 카드 ${i + 1}: ${cards[Math.floor(Math.random() * cards.length)]}\n`;
   }
 
+  // 🔥 보조도구
+  let extra = [];
+
+  if (/오라클/i.test(rec)) {
+    const oracle = ["희망","회복","균형","전환","기회"];
+    extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
+  }
+
+  if (/레노먼드/i.test(rec)) {
+    const leno = ["1 라이더","2 클로버","3 배","4 집"];
+    extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
+  }
+
+  if (/룬/i.test(rec)) {
+    const rune = ["Fehu","Uruz","Jera","Ehwaz"];
+    extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
+  }
+
+  if (/오간기/i.test(rec)) {
+    const ogangi = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
+    extra.push(`오간기: ${ogangi[Math.floor(Math.random()*ogangi.length)]}`);
+  }
+
+  if (/오방기/i.test(rec)) {
+    const obang = ["동","서","남","북","중앙"];
+    extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
+  }
+
+  if (extra.length > 0) {
+    result += "\n" + extra.join("\n");
+  }
+
   document.getElementById('drawResultText').value = result;
   return result;
 }
-  
+
 // 저장
 async function saveDraw(draw) {
   await fetch(`/api/admin/consultations/${consultationId}/draw`, {
@@ -156,7 +148,7 @@ async function saveDraw(draw) {
   });
 }
 
-// 최종 리딩 생성
+// 리딩 생성
 async function generateReading() {
   const res = await fetch(`/api/admin/consultations/${consultationId}/reading/generate`, {
     method:'POST',
@@ -173,32 +165,24 @@ async function generateReading() {
 
 // 전체 자동 흐름
 async function autorun() {
-  try {
-    console.log("자동 시작");
+  await generateRecommendation();
+  await sleep(400);
 
-    await generateRecommendation();
-    await sleep(500);
+  const draw = drawCards();
+  await saveDraw(draw);
 
-    const draw = drawCards();
-    await saveDraw(draw);
-
-    await generateReading();
-
-    console.log("완료");
-  } catch (e) {
-    console.error(e);
-  }
+  await generateReading();
 }
 
-// 버튼 연결
+// 버튼
 document.getElementById('runBtn').addEventListener('click', autorun);
 
-// 초기 실행
+// 초기
 window.addEventListener('load', async ()=>{
   await loadConsultation();
 
   if (shouldAutorun && consultationId) {
-    setTimeout(autorun, 500);
+    setTimeout(autorun, 400);
   }
 });
 </script>
