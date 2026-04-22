@@ -1,624 +1,144 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>레지나 리딩 보조앱 — 관리자 통합본 (수정본)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>레지나 리딩 보조앱</title>
+
 <style>
-  :root{
-    --bg:#0b1020; --panel:#12182b; --line:#2a3658; --text:#eef2ff; --muted:#9aa6c7;
-    --accent:#8b5cf6; --accent2:#6366f1; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0f1d,#10172a);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
-  .app{max-width:1200px;margin:0 auto;padding:24px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-  .title{font-size:30px;font-weight:800;margin:0 0 6px}
-  .sub{margin:0;color:var(--muted);font-size:14px}
-  .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .panel{background:rgba(18,24,43,.96);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.22);margin-bottom:16px}
-  .panel h2{margin:0 0 12px;font-size:19px}
-  .field{display:grid;gap:6px;margin-bottom:12px}
-  .field label,.small{font-size:12px;color:var(--muted)}
-  .input,.select,.textarea{width:100%;background:#0d1428;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
-  .textarea{min-height:130px;resize:vertical;line-height:1.7;white-space:pre-wrap}
-  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .btn{border:1px solid var(--line);background:#1a2440;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700;text-decoration:none}
-  .btn:hover{filter:brightness(1.08)}
-  .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border-color:transparent}
-  .btn.ok{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4)}
-  .btn.warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4)}
-  .btn.danger{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4)}
-  .status{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:13px;white-space:pre-wrap;line-height:1.6;border:1px solid var(--line);background:#10182c;display:none}
-  .status.show{display:block}
-  .status.ok{border-color:rgba(34,197,94,.4);color:#bbf7d0}
-  .status.error{border-color:rgba(239,68,68,.4);color:#fecaca}
-  .status.warn{border-color:rgba(245,158,11,.4);color:#fde68a}
-  .meta{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:14px;line-height:1.7}
-  .meta+.meta{margin-top:6px}
-  .check{display:flex;align-items:center;gap:8px;background:#0d1428;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
-  .pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid var(--line);background:rgba(99,102,241,.12);color:#c7d2fe}
-  @media (max-width:980px){.grid2,.grid3,.checks{grid-template-columns:1fr}}
+body { background:#0b1020; color:#fff; font-family:sans-serif; margin:0; }
+.app { padding:20px; max-width:900px; margin:auto; }
+.btn { padding:10px 14px; border-radius:10px; background:#1a2440; color:#fff; border:none; cursor:pointer; }
+.btn.primary { background:#8b5cf6; }
+textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; }
+.panel { border:1px solid #333; padding:16px; border-radius:12px; margin-top:16px; }
 </style>
 </head>
+
 <body>
 <div class="app">
-  <div class="topbar">
-    <div>
-      <h1 class="title">레지나 리딩 보조앱 (관리자 통합본)</h1>
-      <p class="sub">추천 → 자동 반영 → 실제 카드 드로우 → 저장 → 최종 리딩 생성</p>
-    </div>
-    <div class="toolbar">
-      <a class="btn" href="/admin2.html" target="_blank" rel="noopener noreferrer">관리자 열기</a>
-      <span id="autoRunState" class="pill">대기</span>
-    </div>
-  </div>
 
-  <div class="grid2">
-    <section class="panel">
-      <h2>실제 드로우 설정</h2>
-      <div class="grid3">
-        <div class="field">
-          <label for="tarotDeck">메인 타로 덱</label>
-          <select id="tarotDeck" class="select"></select>
-        </div>
-        <div class="field">
-          <label for="cardCount">장수</label>
-          <input id="cardCount" class="input" type="number" min="1" max="13" value="3" />
-        </div>
-        <div class="field">
-          <label for="reverseRatio">역방향 비율 (%)</label>
-          <input id="reverseRatio" class="input" type="number" min="0" max="100" value="50" />
-        </div>
-      </div>
+<h1>레지나 리딩 보조앱</h1>
 
-      <div class="checks">
-        <label class="check"><input id="useRunes" type="checkbox"> <span>룬스톤</span></label>
-        <label class="check"><input id="useLenormand" type="checkbox"> <span>레노먼드</span></label>
-        <label class="check"><input id="useIching" type="checkbox"> <span>주역</span></label>
-        <label class="check"><input id="useYukyo" type="checkbox"> <span>주역육효괘</span></label>
-        <label class="check"><input id="useOracle" type="checkbox"> <span>오라클</span></label>
-        <label class="check"><input id="useAuxDeck" type="checkbox"> <span>보조덱</span></label>
-        <label class="check"><input id="useOgangi" type="checkbox"> <span>오간기</span></label>
-        <label class="check"><input id="useObanggi" type="checkbox"> <span>오방기</span></label>
-      </div>
+<div class="panel">
+  <button id="runBtn" class="btn primary">자동 실행</button>
+</div>
 
-      <div class="grid3" style="margin-top:12px;">
-        <div class="field">
-          <label for="oracleDeck">오라클 덱</label>
-          <select id="oracleDeck" class="select"></select>
-        </div>
-        <div class="field">
-          <label for="oracleCount">오라클 장수</label>
-          <input id="oracleCount" class="input" type="number" min="1" max="13" value="1" />
-        </div>
-        <div class="field">
-          <label for="auxDeckSelect">보조덱 선택</label>
-          <select id="auxDeckSelect" class="select" multiple size="6"></select>
-        </div>
-      </div>
+<div class="panel">
+  <h3>추천</h3>
+  <textarea id="recommendationText"></textarea>
+</div>
 
-      <div class="toolbar" style="margin-top:12px;">
-        <button id="applyRecommendationBtn" class="btn">추천값 반영</button>
-        <button id="drawBtn" class="btn primary">카드 뽑기</button>
-        <button id="autorunBtn" class="btn warn">추천 → 자동 실행</button>
-      </div>
-      <div id="helperStatus" class="status"></div>
-    </section>
+<div class="panel">
+  <h3>드로우 결과</h3>
+  <textarea id="drawResultText"></textarea>
+</div>
 
-    <section class="panel">
-      <h2>상담 정보</h2>
-      <div id="consultationInfo">상담 정보를 불러오는 중입니다.</div>
-      <div id="infoStatus" class="status"></div>
-    </section>
-  </div>
+<div class="panel">
+  <h3>최종 리딩</h3>
+  <textarea id="finalReadingText"></textarea>
+</div>
 
-  <section class="panel">
-    <h2>추천 결과</h2>
-    <textarea id="recommendationText" class="textarea"></textarea>
-    <div class="toolbar" style="margin-top:10px;">
-      <button id="generateRecommendationBtn" class="btn primary">추천 생성</button>
-      <button id="saveRecommendationBtn" class="btn ok">추천 저장</button>
-    </div>
-    <div id="recommendationStatus" class="status"></div>
-  </section>
-
-  <section class="panel">
-    <h2>드로우 결과</h2>
-    <textarea id="drawResultText" class="textarea"></textarea>
-    <div class="toolbar" style="margin-top:10px;">
-      <button id="saveDrawBtn" class="btn ok">드로우 저장</button>
-    </div>
-    <div id="drawStatus" class="status"></div>
-  </section>
-
-  <section class="panel">
-    <h2>최종 리딩</h2>
-    <textarea id="finalReadingText" class="textarea" style="min-height:220px;"></textarea>
-    <div class="toolbar" style="margin-top:10px;">
-      <button id="generateFinalReadingBtn" class="btn primary">최종 리딩 생성</button>
-      <button id="saveFinalReadingBtn" class="btn ok">최종 리딩 저장</button>
-    </div>
-    <div id="readingStatus" class="status"></div>
-  </section>
-
-  <section class="panel">
-    <h2>카톡 전달 문구</h2>
-    <textarea id="kakaoText" class="textarea" style="min-height:180px;"></textarea>
-    <div class="toolbar" style="margin-top:10px;">
-      <button id="generateKakaoBtn" class="btn primary">카톡 문구 생성</button>
-      <button id="copyKakaoBtn" class="btn">복사</button>
-    </div>
-    <div id="kakaoStatus" class="status"></div>
-  </section>
 </div>
 
 <script>
 const qs = new URLSearchParams(location.search);
-const consultationId = qs.get('id') || '';
+const consultationId = qs.get('id');
 const shouldAutorun = qs.get('autorun') === '1';
 
-const state = {
-  consultation: null,
-  tarotMap: {},
-  oracleMap: {},
-  auxDeckMap: {},
-  iching64: [],
-  yukyoCards: []
-};
-
-const RUNES_24 = ["Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz","Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera","Eihwaz","Perthro","Algiz","Sowilo","Tiwaz","Berkano","Ehwaz","Mannaz","Laguz","Ingwaz","Othala","Dagaz"];
-const LENORMAND_36 = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","7 뱀","8 관","9 꽃다발","10 낫","11 채찍","12 새","13 아이","14 여우","15 곰","16 별","17 황새","18 개","19 탑","20 정원","21 산","22 갈림길","23 쥐","24 하트","25 반지","26 책","27 편지","28 남자","29 여자","30 백합","31 태양","32 달","33 열쇠","34 물고기","35 닻","36 십자가"];
-const OGANGI_5 = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
-const OBANGGI_5 = ["동","서","남","북","중앙"];
-const ORACLE_KEYWORD_FALLBACK = ['경계','확장','정화','인내','회복','소통','결단','유연성','균형','휴식','몰입','신뢰','재정비','성장','재시도','축복','배움','경로수정','연결','해방','용기','겸손','보호','변화','기회','통찰','전환','안정','기초','자기돌봄','성찰','협력','해소','도약','선택','실행'];
-
-const $ = (id) => document.getElementById(id);
-
-function showStatus(el, text, type='ok'){
-  el.textContent = text;
-  el.className = `status show ${type}`;
-}
-function setBadge(text){ $('autoRunState').textContent = text; }
-function escapeHtml(v){
-  return String(v ?? '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'", '&#39;');
-}
-function nl2br(v){ return escapeHtml(v).replace(/\n/g,'<br>'); }
-function shuffle(arr){
-  const a = [...arr];
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
-}
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
-async function fetchJson(url, options = {}) {
-  const res = await fetch(url, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
+// 상담 불러오기
+async function loadConsultation() {
+  if (!consultationId) return;
+
+  const res = await fetch(`/api/admin/consultations/${consultationId}`);
+  const data = await res.json();
+
+  const item = data.consultation || {};
+
+  document.getElementById('recommendationText').value = item.recommendation || '';
+  document.getElementById('drawResultText').value = item.drawResult || '';
+  document.getElementById('finalReadingText').value = item.finalReading || '';
+}
+
+// 추천 생성
+async function generateRecommendation() {
+  const res = await fetch(`/api/admin/consultations/${consultationId}/recommendation/generate`, {
+    method:'POST'
   });
-  const text = await res.text();
-  let data;
-  try { data = text ? JSON.parse(text) : {}; }
-  catch { data = { ok:false, error:text || `HTTP ${res.status}` }; }
-  if (!res.ok || data.ok === false) throw new Error(data.error || data.message || `HTTP ${res.status}`);
-  return data;
+  const data = await res.json();
+  document.getElementById('recommendationText').value = data.recommendation || '';
 }
 
-async function fetchLooseJson(url){
-  const res = await fetch(url, { cache:'no-store' });
-  if(!res.ok) throw new Error(`JSON fetch 실패: ${url} (${res.status})`);
-  return await res.json();
+// 자동 드로우 (간단 안정화 버전)
+function drawCards() {
+  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+  let result = "**덱**: 유니버셜 타로\n**장수**: 3\n\n**포지션별 드로우**\n";
+
+  for (let i=0;i<3;i++){
+    result += `- 카드 ${i+1}: ${cards[Math.floor(Math.random()*cards.length)]}\n`;
+  }
+
+  document.getElementById('drawResultText').value = result;
+  return result;
 }
 
-async function loadData(){
-  try{
-    const m = await fetchLooseJson('./data/manifest.json');
-
-    const tarotEntries = await Promise.all(Object.entries(m.tarot || {}).map(async ([name, path]) => {
-      const raw = await fetchLooseJson(`./data/${path}`);
-      let arr = raw;
-      if (!Array.isArray(raw) && raw && typeof raw === 'object') {
-        arr = Object.values(raw).flat().filter(Boolean);
-      }
-      return [name, Array.isArray(arr) ? arr : []];
-    }));
-
-    const oracleEntries = await Promise.all(Object.entries(m.oracle || {}).map(async ([name, path]) => {
-      const raw = await fetchLooseJson(`./data/${path}`);
-      let arr = raw;
-      if (!Array.isArray(raw) && raw && typeof raw === 'object') {
-        arr = Object.values(raw).flat().filter(Boolean);
-      }
-      return [name, Array.isArray(arr) ? arr : []];
-    }));
-
-    const auxEntries = await Promise.all(Object.entries(m.aux || {}).map(async ([name, path]) => {
-      const raw = await fetchLooseJson(`./data/${path}`);
-      let arr = raw;
-      if (Array.isArray(raw) && raw.length && typeof raw[0] === 'object') {
-        arr = raw.map(o => {
-          const h = o?.hanzi ?? o?.괘명 ?? o?.name ?? '';
-          const k = o?.ko ?? o?.한글 ?? o?.meaning ?? '';
-          const extra = o?.의미 ?? '';
-          const tail = [k, extra].filter(Boolean).join(' / ');
-          return tail ? `${h} (${tail})` : String(h || '');
-        }).filter(Boolean);
-      } else if (!Array.isArray(raw) && raw && typeof raw === 'object') {
-        arr = Object.values(raw).flat().filter(Boolean);
-      }
-      return [name, Array.isArray(arr) ? arr : []];
-    }));
-
-    state.tarotMap = Object.fromEntries(tarotEntries);
-    state.oracleMap = Object.fromEntries(oracleEntries);
-    state.auxDeckMap = Object.fromEntries(auxEntries);
-
-    if (m.iching) {
-      state.iching64 = await fetchLooseJson(`./data/${m.iching}`);
-    }
-    if (m.yukyo) {
-      const y = await fetchLooseJson(`./data/${m.yukyo}`);
-      state.yukyoCards = Array.isArray(y) ? y : (y.cards || []);
-    }
-
-    fillSelects();
-    showStatus($('helperStatus'), '보조앱 데이터 로딩 완료', 'ok');
-  } catch (e) {
-    showStatus($('helperStatus'), e.message || '보조앱 데이터 로딩 실패', 'error');
-  }
+// 저장
+async function saveDraw(draw) {
+  await fetch(`/api/admin/consultations/${consultationId}/draw`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ drawResult: draw })
+  });
 }
 
-function fillSelects(){
-  $('tarotDeck').innerHTML = Object.keys(state.tarotMap).map(name => `<option value="${name}">${name}</option>`).join('');
-  $('oracleDeck').innerHTML = Object.keys(state.oracleMap).map(name => `<option value="${name}">${name}</option>`).join('');
-  $('auxDeckSelect').innerHTML = Object.keys(state.auxDeckMap).map(name => `<option value="${name}">${name}</option>`).join('');
-}
-
-function formatYukyoCard(c){
-  if (!c) return '';
-  const name = c.괘명 || c.name || '';
-  const kor = c.한글 ? `(${c.한글})` : '';
-  const meaning = c.의미 ? ` — ${c.의미}` : '';
-  const up = c.상괘 ? ` — 상:${c.상괘}` : '';
-  const low = c.하괘 ? ` 하:${c.하괘}` : '';
-  return `${name}${kor}${meaning}${up}${low}`.trim();
-}
-
-function drawSelectedAuxDecks(){
-  const selected = Array.from($('auxDeckSelect').selectedOptions).map(o=>o.value);
-  const out = [];
-  for (const deckName of selected){
-    const list = state.auxDeckMap[deckName] || [];
-    const picks = shuffle(list).slice(0, 1);
-    for (const k of picks){
-      if (String(deckName).includes('귀문방')) {
-        const dir = Math.random() < 0.5 ? '정방향' : '역방향';
-        out.push(`${deckName}: ${k} (${dir})`);
-      } else {
-        out.push(`${deckName}: ${k}`);
-      }
-    }
-  }
-  return out;
-}
-
-function buildDrawResult(){
-  const tarotDeck = $('tarotDeck').value;
-  const count = Math.min(13, Math.max(1, parseInt($('cardCount').value || '3', 10)));
-  const reverseRatio = Math.min(100, Math.max(0, parseInt($('reverseRatio').value || '50', 10)));
-  const allowReversal = reverseRatio > 0;
-
-  const cards = state.tarotMap[tarotDeck] || [];
-  if (!cards.length) throw new Error('선택된 타로 덱 데이터가 비어 있습니다.');
-
-  const picked = shuffle(cards).slice(0, count).map((name, idx)=>({
-    position:`카드 ${idx+1}`,
-    card: `${name}${allowReversal && Math.random()*100 < reverseRatio ? ' (역방향)' : ''}`
-  }));
-
-  const lines = [
-    `**덱**: ${tarotDeck}`,
-    `**장수**: ${count}`,
-    '',
-    '**포지션별 드로우**',
-    ...picked.map(t => `- ${t.position}: ${t.card}`)
-  ];
-
-  if ($('useRunes').checked) lines.push(`**룬**: ${shuffle(RUNES_24).slice(0,2).join(', ')}`);
-  if ($('useLenormand').checked) lines.push(`**레노먼드**: ${shuffle(LENORMAND_36).slice(0,2).join(', ')}`);
-  if ($('useIching').checked && state.iching64.length) {
-    const picks = shuffle(state.iching64).slice(0,1).map(x => typeof x === 'string' ? x : (x.name || x.괘명 || JSON.stringify(x)));
-    lines.push(`**주역**: ${picks.join(', ')}`);
-  }
-  if ($('useOracle').checked) {
-    const deck = $('oracleDeck').value;
-    const oCount = Math.min(13, Math.max(1, parseInt($('oracleCount').value || '1', 10)));
-    const list = state.oracleMap[deck];
-    const cards = (Array.isArray(list) && list.length ? list : ORACLE_KEYWORD_FALLBACK);
-    lines.push(`**오라클**: ${shuffle(cards).slice(0,oCount).join(', ')}`);
-  }
-
-  const aux = [];
-  if ($('useOgangi').checked) aux.push(`오간기: ${shuffle(OGANGI_5)[0]}`);
-  if ($('useObanggi').checked) aux.push(`오방기: ${shuffle(OBANGGI_5)[0]}`);
-  if ($('useAuxDeck').checked) aux.push(...drawSelectedAuxDecks());
-  if ($('useYukyo').checked && state.yukyoCards.length) aux.push(`주역육효괘: ${formatYukyoCard(shuffle(state.yukyoCards)[0])}`);
-  if (aux.length) lines.push(`**보조**: ${aux.join(', ')}`);
-
-  return lines.join('\n');
-}
-
-async function loadConsultation(){
-  if (!consultationId) {
-    setBadge('상담 ID 없음');
-    return showStatus($('infoStatus'), 'URL에 상담 ID가 없습니다. admin2에서 자동 실행으로 들어와 주세요.', 'error');
-  }
-  try{
-    setBadge('상담 불러오는 중');
-    const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}`);
-    state.consultation = data.consultation || data.item || null;
-    const item = state.consultation || {};
-    $('consultationInfo').innerHTML = `
-      <div class="meta"><strong>ID</strong><div>${escapeHtml(item.id || '-')}</div></div>
-      <div class="meta"><strong>성함</strong><div>${escapeHtml(item.name || item.nickname || '-')}</div></div>
-      <div class="meta"><strong>연락처</strong><div>${escapeHtml(item.contact || item.contactChannel || '-')}</div></div>
-      <div class="meta"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle || item.menu || '-')}</div></div>
-      <div class="meta"><strong>질문</strong><div>${nl2br(item.question || '-')}</div></div>
-      <div class="meta"><strong>메모</strong><div>${nl2br(item.memo || '-')}</div></div>
-    `;
-    $('recommendationText').value = item.recommendation || '';
-    $('drawResultText').value = item.drawResult || item.draw_result || '';
-    $('finalReadingText').value = item.finalReading || item.final_reading || '';
-    $('kakaoText').value = item.kakaoText || item.kakao_text || '';
-    setBadge('상담 로딩 완료');
-    showStatus($('infoStatus'), '상담 정보를 불러왔습니다.', 'ok');
-  }catch(e){
-    setBadge('로드 실패');
-    showStatus($('infoStatus'), e.message || '상담 로드 실패', 'error');
-  }
-}
-
-function applyRecommendation(){
-  const rec = $('recommendationText').value || '';
-
-  // 🔥 덱 자동 선택
-  const deckMatch = rec.match(/덱\s*[:：]?\s*([^\n]+)/);
-  if (deckMatch) {
-    const deck = deckMatch[1].trim();
-    if (state.tarotMap[deck]) {
-      $('tarotDeck').value = deck;
-    }
-  }
-
-  // 🔥 장수 자동
-  const countMatch = rec.match(/장수\s*[:：]?\s*(\d+)/) || rec.match(/(\d+)장/);
-  if (countMatch) {
-    $('cardCount').value = Math.min(13, Math.max(1, parseInt(countMatch[1], 10)));
-  }
-
-  // 🔥 보조도구 자동 체크
-  $('useOracle').checked = /오라클/i.test(rec);
-  $('useLenormand').checked = /레노먼드/i.test(rec);
-  $('useRunes').checked = /룬/i.test(rec);
-  $('useIching').checked = /주역(?!육효)/i.test(rec);
-  $('useYukyo').checked = /육효|주역육효/i.test(rec);
-  $('useOgangi').checked = /오간기/i.test(rec);
-  $('useObanggi').checked = /오방기/i.test(rec);
-
-  // 🔥 보조덱 자동 선택
-  const auxSelect = $('auxDeckSelect');
-  const options = Array.from(auxSelect.options);
-
-  options.forEach(opt => {
-    opt.selected = rec.includes(opt.value);
+// 최종 리딩 생성
+async function generateReading() {
+  const res = await fetch(`/api/admin/consultations/${consultationId}/reading/generate`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      recommendation: document.getElementById('recommendationText').value,
+      drawResult: document.getElementById('drawResultText').value
+    })
   });
 
-  showStatus($('helperStatus'), '추천값 자동 세팅 완료', 'ok');
+  const data = await res.json();
+  document.getElementById('finalReadingText').value = data.reading || '';
 }
 
-function doDraw(){
-  try{
-    const text = buildDrawResult();
-    $('drawResultText').value = text;
-    showStatus($('helperStatus'), '실제 카드 드로우 완료', 'ok');
-    return text;
-  }catch(e){
-    showStatus($('helperStatus'), e.message || '드로우 실패', 'error');
-    throw e;
-  }
-}
+// 전체 자동 흐름
+async function autorun() {
+  try {
+    console.log("자동 시작");
 
-async function generateRecommendation(){
-  if (!consultationId) return showStatus($('recommendationStatus'), '상담 ID가 없습니다.', 'error');
-  try{
-    showStatus($('recommendationStatus'), '추천 생성 중...', 'warn');
-    const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}/recommendation/generate`, { method:'POST' });
-    $('recommendationText').value = data.recommendation || '';
-    showStatus($('recommendationStatus'), '추천 생성 완료', 'ok');
-  }catch(e){
-    showStatus($('recommendationStatus'), e.message || '추천 생성 실패', 'error');
-    throw e;
-  }
-}
-
-async function saveRecommendation(){
-  if (!consultationId) return showStatus($('recommendationStatus'), '상담 ID가 없습니다.', 'error');
-  try{
-    await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}/recommendation`, {
-      method:'POST',
-      body: JSON.stringify({ recommendation: $('recommendationText').value })
-    });
-    showStatus($('recommendationStatus'), '추천 저장 완료', 'ok');
-  }catch(e){
-    showStatus($('recommendationStatus'), e.message || '추천 저장 실패', 'error');
-  }
-}
-
-async function saveDraw(){
-  if (!consultationId) return showStatus($('drawStatus'), '상담 ID가 없습니다.', 'error');
-  try{
-    await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}/draw`, {
-      method:'POST',
-      body: JSON.stringify({ drawResult: $('drawResultText').value })
-    });
-    showStatus($('drawStatus'), '드로우 저장 완료', 'ok');
-  }catch(e){
-    showStatus($('drawStatus'), e.message || '드로우 저장 실패', 'error');
-  }
-}
-
-async function generateFinalReading(){
-  if (!consultationId) return showStatus($('readingStatus'), '상담 ID가 없습니다.', 'error');
-  try{
-    showStatus($('readingStatus'), '최종 리딩 생성 중...', 'warn');
-    const data = await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}/reading/generate`, {
-      method:'POST',
-      body: JSON.stringify({
-        recommendation: $('recommendationText').value,
-        drawResult: $('drawResultText').value
-      })
-    });
-    $('finalReadingText').value = data.reading || data.finalReading || '';
-    showStatus($('readingStatus'), '최종 리딩 생성 완료', 'ok');
-  }catch(e){
-    showStatus($('readingStatus'), e.message || '최종 리딩 생성 실패', 'error');
-  }
-}
-
-async function saveFinalReading(){
-  if (!consultationId) return showStatus($('readingStatus'), '상담 ID가 없습니다.', 'error');
-  try{
-    await fetchJson(`/api/admin/consultations/${encodeURIComponent(consultationId)}/reading`, {
-      method:'POST',
-      body: JSON.stringify({ finalReading: $('finalReadingText').value })
-    });
-    showStatus($('readingStatus'), '최종 리딩 저장 완료', 'ok');
-  }catch(e){
-    showStatus($('readingStatus'), e.message || '최종 리딩 저장 실패', 'error');
-  }
-}
-
-function generateKakao(){
-  const item = state.consultation || {};
-  const reading = $('finalReadingText').value.trim();
-  if (!reading) return showStatus($('kakaoStatus'), '최종 리딩이 비어 있습니다.', 'error');
-  $('kakaoText').value = [
-    `${item.name || item.nickname || '내담자님'} 안녕하세요.`,
-    '',
-    '요청주신 리딩 결과 전달드려요.',
-    '',
-    reading,
-    '',
-    '추가 질문이 있으시면 이어서 남겨주세요.'
-  ].join('\n');
-  showStatus($('kakaoStatus'), '카톡 문구 생성 완료', 'ok');
-}
-
-async function copyKakao(){
-  try{
-    await navigator.clipboard.writeText($('kakaoText').value || '');
-    showStatus($('kakaoStatus'), '복사 완료', 'ok');
-  }catch(e){
-    showStatus($('kakaoStatus'), e.message || '복사 실패', 'error');
-  }
-}
-
-async function autorunFlow(){
-  try{
-    setBadge('자동 실행 중');
     await generateRecommendation();
-    function applyRecommendation(){
-  const rec = $('recommendationText').value || '';
+    await sleep(500);
 
-  // 메인 덱 자동 선택
-  const deckMatch =
-    rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
-    rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
-    rec.match(/덱\s*[:：]?\s*([^\n]+)/i);
+    const draw = drawCards();
+    await saveDraw(draw);
 
-  if (deckMatch) {
-    const rawDeck = deckMatch[1].trim();
-    const deck = Object.keys(state.tarotMap).find(name => rawDeck.includes(name) || name.includes(rawDeck));
-    if (deck) {
-      $('tarotDeck').value = deck;
-    }
+    await generateReading();
+
+    console.log("완료");
+  } catch (e) {
+    console.error(e);
   }
-
-  // 장수 자동
-  const countMatch =
-    rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
-    rec.match(/(\d+)\s*장/i);
-
-  if (countMatch) {
-    $('cardCount').value = Math.min(13, Math.max(1, parseInt(countMatch[1], 10)));
-  }
-
-  // 보조도구 자동 체크
-  $('useOracle').checked = /오라클/i.test(rec);
-  $('useLenormand').checked = /레노먼드/i.test(rec);
-  $('useRunes').checked = /룬|룬스톤/i.test(rec);
-  $('useIching').checked = /주역(?!육효)/i.test(rec);
-  $('useYukyo').checked = /육효|주역육효/i.test(rec);
-  $('useOgangi').checked = /오간기/i.test(rec);
-  $('useObanggi').checked = /오방기/i.test(rec);
-
-  // 오라클 덱 자동 선택
-  if ($('useOracle').checked) {
-    const oracleDeck = Object.keys(state.oracleMap).find(name => rec.includes(name));
-    if (oracleDeck) {
-      $('oracleDeck').value = oracleDeck;
-    }
-  }
-
-  // 보조덱 자동 선택
-  const auxSelect = $('auxDeckSelect');
-  const options = Array.from(auxSelect.options);
-  options.forEach(opt => {
-    opt.selected = rec.includes(opt.value);
-  });
-
-  const selectedAux = options.filter(opt => opt.selected).map(opt => opt.value).join(', ') || '없음';
-  showStatus(
-    $('helperStatus'),
-    `추천값 자동 세팅 완료
-덱: ${$('tarotDeck').value}
-장수: ${$('cardCount').value}
-오라클: ${$('useOracle').checked ? '사용' : '미사용'}
-보조덱: ${selectedAux}`,
-    'ok'
-  );
 }
 
-$('generateRecommendationBtn').addEventListener('click', generateRecommendation);
-$('saveRecommendationBtn').addEventListener('click', saveRecommendation);
-$('applyRecommendationBtn').addEventListener('click', applyRecommendation);
-$('drawBtn').addEventListener('click', doDraw);
-$('autorunBtn').addEventListener('click', autorunFlow);
-$('saveDrawBtn').addEventListener('click', saveDraw);
-$('generateFinalReadingBtn').addEventListener('click', generateFinalReading);
-$('saveFinalReadingBtn').addEventListener('click', saveFinalReading);
-$('generateKakaoBtn').addEventListener('click', generateKakao);
-$('copyKakaoBtn').addEventListener('click', copyKakao);
+// 버튼 연결
+document.getElementById('runBtn').addEventListener('click', autorun);
 
-window.addEventListener('load', async () => {
-  await loadData();
+// 초기 실행
+window.addEventListener('load', async ()=>{
   await loadConsultation();
+
   if (shouldAutorun && consultationId) {
-    setTimeout(autorunFlow, 700);
+    setTimeout(autorun, 500);
   }
 });
 </script>
+
 </body>
 </html>
