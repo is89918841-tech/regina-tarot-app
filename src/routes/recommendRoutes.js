@@ -1,43 +1,33 @@
 const express = require('express');
+const { generateReadingPlan } = require('../services/readingService');
+
 const router = express.Router();
-const OpenAI = require('openai');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-router.post('/', async (req, res) => {
+router.post('/plan', async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question } = req.body || {};
 
-    const prompt = `
-질문을 분석해서 아래 JSON만 출력해:
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'question is required',
+      });
+    }
 
-{
-  "deck": "타로 덱 이름",
-  "spread": "스프레드 이름",
-  "count": 숫자,
-  "extras": ["오간기", "오방기"]
-}
-
-질문:
-${question}
-`;
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
+    const plan = await generateReadingPlan({
+      question: String(question).trim(),
     });
 
-    const text = completion.choices[0].message.content;
-
-    const json = JSON.parse(text);
-
-    res.json({ ok: true, config: json });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ ok: false });
+    return res.json({
+      ok: true,
+      plan,
+    });
+  } catch (error) {
+    console.error('recommendRoutes /plan error:', error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message || 'failed to generate reading plan',
+    });
   }
 });
 
