@@ -392,21 +392,40 @@ async function loadConsultation(){
 
 function applyRecommendation(){
   const rec = $('recommendationText').value || '';
-  const deckMatch = rec.match(/덱\s*[:：]\s*([^\n]+)/) || rec.match(/추천\s*덱\s*[:：]\s*([^\n]+)/);
-  const countMatch = rec.match(/장수\s*[:：]\s*(\d+)/) || rec.match(/장수\s*(\d+)/);
+
+  // 🔥 덱 자동 선택
+  const deckMatch = rec.match(/덱\s*[:：]?\s*([^\n]+)/);
   if (deckMatch) {
     const deck = deckMatch[1].trim();
-    if (state.tarotMap[deck]) $('tarotDeck').value = deck;
+    if (state.tarotMap[deck]) {
+      $('tarotDeck').value = deck;
+    }
   }
-  if (countMatch) $('cardCount').value = Math.min(13, Math.max(1, parseInt(countMatch[1], 10)));
-  if (/오라클/i.test(rec)) $('useOracle').checked = true;
-  if (/레노먼드/i.test(rec)) $('useLenormand').checked = true;
-  if (/룬/i.test(rec)) $('useRunes').checked = true;
-  if (/주역육효|육효/i.test(rec)) $('useYukyo').checked = true;
-  if (/주역/i.test(rec)) $('useIching').checked = true;
-  if (/오간기/i.test(rec)) $('useOgangi').checked = true;
-  if (/오방기/i.test(rec)) $('useObanggi').checked = true;
-  showStatus($('helperStatus'), '추천값을 드로우 설정에 반영했습니다.', 'ok');
+
+  // 🔥 장수 자동
+  const countMatch = rec.match(/장수\s*[:：]?\s*(\d+)/) || rec.match(/(\d+)장/);
+  if (countMatch) {
+    $('cardCount').value = Math.min(13, Math.max(1, parseInt(countMatch[1], 10)));
+  }
+
+  // 🔥 보조도구 자동 체크
+  $('useOracle').checked = /오라클/i.test(rec);
+  $('useLenormand').checked = /레노먼드/i.test(rec);
+  $('useRunes').checked = /룬/i.test(rec);
+  $('useIching').checked = /주역(?!육효)/i.test(rec);
+  $('useYukyo').checked = /육효|주역육효/i.test(rec);
+  $('useOgangi').checked = /오간기/i.test(rec);
+  $('useObanggi').checked = /오방기/i.test(rec);
+
+  // 🔥 보조덱 자동 선택
+  const auxSelect = $('auxDeckSelect');
+  const options = Array.from(auxSelect.options);
+
+  options.forEach(opt => {
+    opt.selected = rec.includes(opt.value);
+  });
+
+  showStatus($('helperStatus'), '추천값 자동 세팅 완료', 'ok');
 }
 
 function doDraw(){
@@ -520,17 +539,66 @@ async function autorunFlow(){
   try{
     setBadge('자동 실행 중');
     await generateRecommendation();
-    applyRecommendation();
-    await sleep(150);
-    doDraw();
-    await saveRecommendation();
-    await saveDraw();
-    await generateFinalReading();
-    setBadge('자동 실행 완료');
-  }catch(e){
-    setBadge('자동 실행 실패');
-    showStatus($('helperStatus'), e.message || '자동 실행 실패', 'error');
+    function applyRecommendation(){
+  const rec = $('recommendationText').value || '';
+
+  // 메인 덱 자동 선택
+  const deckMatch =
+    rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
+    rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
+    rec.match(/덱\s*[:：]?\s*([^\n]+)/i);
+
+  if (deckMatch) {
+    const rawDeck = deckMatch[1].trim();
+    const deck = Object.keys(state.tarotMap).find(name => rawDeck.includes(name) || name.includes(rawDeck));
+    if (deck) {
+      $('tarotDeck').value = deck;
+    }
   }
+
+  // 장수 자동
+  const countMatch =
+    rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
+    rec.match(/(\d+)\s*장/i);
+
+  if (countMatch) {
+    $('cardCount').value = Math.min(13, Math.max(1, parseInt(countMatch[1], 10)));
+  }
+
+  // 보조도구 자동 체크
+  $('useOracle').checked = /오라클/i.test(rec);
+  $('useLenormand').checked = /레노먼드/i.test(rec);
+  $('useRunes').checked = /룬|룬스톤/i.test(rec);
+  $('useIching').checked = /주역(?!육효)/i.test(rec);
+  $('useYukyo').checked = /육효|주역육효/i.test(rec);
+  $('useOgangi').checked = /오간기/i.test(rec);
+  $('useObanggi').checked = /오방기/i.test(rec);
+
+  // 오라클 덱 자동 선택
+  if ($('useOracle').checked) {
+    const oracleDeck = Object.keys(state.oracleMap).find(name => rec.includes(name));
+    if (oracleDeck) {
+      $('oracleDeck').value = oracleDeck;
+    }
+  }
+
+  // 보조덱 자동 선택
+  const auxSelect = $('auxDeckSelect');
+  const options = Array.from(auxSelect.options);
+  options.forEach(opt => {
+    opt.selected = rec.includes(opt.value);
+  });
+
+  const selectedAux = options.filter(opt => opt.selected).map(opt => opt.value).join(', ') || '없음';
+  showStatus(
+    $('helperStatus'),
+    `추천값 자동 세팅 완료
+덱: ${$('tarotDeck').value}
+장수: ${$('cardCount').value}
+오라클: ${$('useOracle').checked ? '사용' : '미사용'}
+보조덱: ${selectedAux}`,
+    'ok'
+  );
 }
 
 $('generateRecommendationBtn').addEventListener('click', generateRecommendation);
