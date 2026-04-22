@@ -243,6 +243,24 @@
       color: #c7d2fe;
     }
 
+    .badge.ready {
+      background: rgba(245,158,11,0.14);
+      border-color: rgba(245,158,11,0.45);
+      color: #fde68a;
+    }
+
+    .badge.sent {
+      background: rgba(34,197,94,0.14);
+      border-color: rgba(34,197,94,0.45);
+      color: #bbf7d0;
+    }
+
+    .badge.wait {
+      background: rgba(239,68,68,0.14);
+      border-color: rgba(239,68,68,0.45);
+      color: #fecaca;
+    }
+
     .spacer { height: 6px; }
     .top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .section-divider { height: 1px; background: var(--line); margin: 16px 0; }
@@ -256,7 +274,7 @@
   <div id="loginView" class="login-wrap">
     <div class="login-card">
       <h1>레지나 관리자</h1>
-      <p>상담 접수, 추천 생성, 자동 드로우, 최종 리딩 저장, 지식 파일 업로드를 한 화면에서 관리합니다.</p>
+      <p>상담 접수, 추천 생성, 자동 드로우, 최종 리딩 저장, 전달 상태 관리, 지식 파일 업로드를 한 화면에서 관리합니다.</p>
 
       <div class="field">
         <label for="password">관리자 비밀번호</label>
@@ -278,12 +296,12 @@
       <div class="topbar">
         <div class="brand">
           <h1>Regina Admin Dashboard</h1>
-          <p>상담 접수 / 추천 생성 / 자동 드로우 / 최종 리딩 / 지식 파일 관리</p>
+          <p>상담 접수 / 자동 실행 / 전달 대기 / 전달 완료 / 파일 관리</p>
         </div>
 
         <div class="top-actions">
-          <a class="btn ghost" href="/admin/helper" target="_blank">보조앱 열기</a>
-          <a class="btn ghost" href="/admin/grand-tableau" target="_blank">그랑따블로 열기</a>
+          <a class="btn ghost" href="/admin-helper.html" target="_blank" rel="noopener noreferrer">보조앱 열기</a>
+          <a class="btn ghost" href="/admin/grand-tableau" target="_blank" rel="noopener noreferrer">그랑따블로 열기</a>
           <button id="logoutBtn" class="btn danger" type="button">로그아웃</button>
         </div>
       </div>
@@ -405,7 +423,7 @@
           </section>
 
           <section class="panel">
-            <h2>카톡 문구 생성 / 복사</h2>
+            <h2>카톡 문구 생성 / 복사 / 전달 완료</h2>
             <div class="field">
               <label for="kakaoText">전달 문구</label>
               <textarea id="kakaoText" class="textarea"></textarea>
@@ -413,6 +431,7 @@
             <div class="toolbar" style="margin-top: 12px;">
               <button id="generateKakaoBtn" class="btn primary" type="button">카톡 문구 생성</button>
               <button id="copyKakaoBtn" class="btn" type="button">복사</button>
+              <button id="markSentBtn" class="btn ok" type="button">전달 완료 처리</button>
             </div>
             <div id="kakaoStatus" class="status hidden"></div>
           </section>
@@ -536,6 +555,13 @@
       return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString('ko-KR');
     }
 
+    function getStatusBadge(status) {
+      const s = String(status || '');
+      if (s === 'sent') return '<span class="badge sent">전달 완료</span>';
+      if (s === 'ready_to_send' || s === 'reading_completed') return '<span class="badge ready">전달 대기</span>';
+      return `<span class="badge wait">${escapeHtml(s || '대기')}</span>`;
+    }
+
     function renderConsultations() {
       const root = $('consultationsList');
       root.innerHTML = '';
@@ -549,12 +575,13 @@
         const div = document.createElement('div');
         div.className = 'item' + (state.selectedConsultationId === item.id ? ' active' : '');
 
-        const helperUrl = `/admin/helper?id=${encodeURIComponent(item.id)}&autorun=1`;
+        const helperUrl = `/admin-helper.html?id=${encodeURIComponent(item.id)}&autorun=1`;
 
         div.innerHTML = `
           <div class="item-title">${escapeHtml(item.name || item.nickname || item.contact || '이름 없음')}</div>
           <div class="item-meta">
             <span class="badge">${escapeHtml(item.menuTitle || item.menu || '메뉴 미지정')}</span>
+            ${getStatusBadge(item.status)}
             <span>${escapeHtml(item.contact || item.contactChannel || '-')}</span>
             <span>${formatDate(item.createdAt || item.created_at)}</span>
           </div>
@@ -615,6 +642,7 @@
         <div class="kv"><strong>성함</strong><div>${escapeHtml(item.name || item.nickname || '-')}</div></div>
         <div class="kv"><strong>연락처</strong><div>${escapeHtml(item.contact || item.contactChannel || '-')}</div></div>
         <div class="kv"><strong>메뉴</strong><div>${escapeHtml(item.menuTitle || item.menu || '-')}</div></div>
+        <div class="kv"><strong>상태</strong><div>${getStatusBadge(item.status)}</div></div>
         <div class="kv"><strong>추가 메모</strong><div>${nl2br(item.memo || '-')}</div></div>
         <div class="kv"><strong>질문</strong><div>${nl2br(item.question || '-')}</div></div>
       `;
@@ -645,6 +673,12 @@
       renderConsultationDetail();
     }
 
+    async function refreshSelectedConsultation() {
+      if (!state.selectedConsultationId) return;
+      await selectConsultation(state.selectedConsultationId);
+      await loadConsultations();
+    }
+
     async function generateRecommendation() {
       if (!state.selectedConsultationId) {
         return showStatus($('recommendationStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
@@ -657,6 +691,7 @@
         });
         $('recommendationText').value = data.recommendation || '';
         showStatus($('recommendationStatus'), '추천 생성 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('recommendationStatus'), e.message || '추천 생성 실패', 'error');
       }
@@ -673,6 +708,7 @@
           body: JSON.stringify({ recommendation: $('recommendationText').value }),
         });
         showStatus($('recommendationStatus'), '추천 저장 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('recommendationStatus'), e.message || '추천 저장 실패', 'error');
       }
@@ -691,6 +727,7 @@
         });
         $('drawResultText').value = data.drawResult || data.result || '';
         showStatus($('drawStatus'), '자동 드로우 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('drawStatus'), e.message || '자동 드로우 실패', 'error');
       }
@@ -707,6 +744,7 @@
           body: JSON.stringify({ drawResult: $('drawResultText').value }),
         });
         showStatus($('drawStatus'), '드로우 잠금 저장 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('drawStatus'), e.message || '드로우 저장 실패', 'error');
       }
@@ -728,6 +766,7 @@
         });
         $('finalReadingText').value = data.reading || data.finalReading || '';
         showStatus($('readingStatus'), '최종 리딩 생성 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('readingStatus'), e.message || '최종 리딩 생성 실패', 'error');
       }
@@ -744,6 +783,7 @@
           body: JSON.stringify({ finalReading: $('finalReadingText').value }),
         });
         showStatus($('readingStatus'), '최종 리딩 저장 완료', 'ok');
+        await refreshSelectedConsultation();
       } catch (e) {
         showStatus($('readingStatus'), e.message || '최종 리딩 저장 실패', 'error');
       }
@@ -781,6 +821,23 @@
         showStatus($('kakaoStatus'), '복사 완료', 'ok');
       } catch {
         showStatus($('kakaoStatus'), '복사 실패', 'error');
+      }
+    }
+
+    async function markSent() {
+      if (!state.selectedConsultationId) {
+        return showStatus($('kakaoStatus'), '먼저 상담 접수를 선택해주세요.', 'error');
+      }
+
+      try {
+        await fetchJson(`/api/admin/consultations/${encodeURIComponent(state.selectedConsultationId)}/status`, {
+          method: 'POST',
+          body: JSON.stringify({ status: 'sent' }),
+        });
+        showStatus($('kakaoStatus'), '전달 완료 처리됨', 'ok');
+        await refreshSelectedConsultation();
+      } catch (e) {
+        showStatus($('kakaoStatus'), e.message || '전달 완료 처리 실패', 'error');
       }
     }
 
@@ -837,6 +894,7 @@
     $('saveFinalReadingBtn').addEventListener('click', saveFinalReading);
     $('generateKakaoBtn').addEventListener('click', generateKakao);
     $('copyKakaoBtn').addEventListener('click', copyKakao);
+    $('markSentBtn').addEventListener('click', markSent);
     $('uploadBtn').addEventListener('click', uploadFile);
 
     ensureSession();
