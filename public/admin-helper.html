@@ -232,8 +232,8 @@ picked.forEach((card, i) => {
 
   // 🔥 주역 / 아이칭 / 육효 (실데이터)
 {
-  const useIching = /아이칭|주역/i.test(rec);
-  const useYukyo = /육효/i.test(rec);
+  const useIching = /아이칭|아이칭\s*카드|I\s*Ching|주역/i.test(rec);
+const useYukyo = /주역육효|주역\s*육효|육효/i.test(rec);
 
   // 1️⃣ 주역 64괘
   if (useIching) {
