@@ -76,7 +76,7 @@ async function generateRecommendation() {
 }
 
 // 자동 드로우
-function drawCards() {
+async function drawCards() {
   const rec = document.getElementById('recommendationText').value || '';
 
   let deckName = "유니버셜 타로";
@@ -130,11 +130,25 @@ function drawCards() {
       matchedDeck = ORACLE_DECKS[Math.floor(Math.random() * ORACLE_DECKS.length)];
     }
 
-    const oracleMsg = ["희망", "회복", "균형", "전환", "기회"];
-    const msg = oracleMsg[Math.floor(Math.random() * oracleMsg.length)];
+    const ORACLE_FILES = {
+  "힐링 워터 오라클": "/data/healing_water.json",
+  "BUDDHA WISDOM SHAKTI POWER Oracle": "/data/buddha_wisdom_shakti_power_oracle_simple.json",
+  "하트 로맨틱 오라클": "/data/heart_romantic_oracle_simple.json"
+};
 
-    extra.push(`**오라클**: ${matchedDeck} - ${msg}`);
+let msg = "메시지 없음";
+
+if (ORACLE_FILES[matchedDeck]) {
+  try {
+    const res = await fetch(ORACLE_FILES[matchedDeck]);
+    const data = await res.json();
+
+    const card = data[Math.floor(Math.random() * data.length)];
+    msg = card.name || card;
+  } catch(e) {
+    msg = "로딩 실패";
   }
+}
 
   // 🔥 레노먼드
   if (/레노먼드/i.test(rec)) {
@@ -205,7 +219,7 @@ async function autorun() {
   await generateRecommendation();
   await sleep(400);
 
-  const draw = drawCards();
+  const draw = await drawCards();
   await saveDraw(draw);
 
   await generateReading();
