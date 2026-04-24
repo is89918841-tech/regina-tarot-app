@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>레지나타로썰 리딩 결과</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -15,7 +17,12 @@
       line-height: 1.7;
       padding: 32px 16px;
     }
-    .wrap { max-width: 760px; margin: 0 auto; }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
     .card {
       background: #111733;
       border: 1px solid rgba(255,255,255,0.12);
@@ -23,9 +30,24 @@
       padding: 28px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.28);
     }
-    .brand { font-size: 14px; opacity: 0.75; margin-bottom: 8px; }
-    h1 { font-size: 26px; margin: 0 0 20px; }
-    .meta { font-size: 14px; opacity: 0.75; margin-bottom: 20px; }
+
+    .brand {
+      font-size: 14px;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 20px;
+    }
+
+    .meta {
+      font-size: 14px;
+      opacity: 0.75;
+      margin-bottom: 20px;
+    }
+
     .result {
       white-space: pre-wrap;
       word-break: keep-all;
@@ -35,33 +57,84 @@
       padding: 20px;
       min-height: 180px;
     }
-    .notice { margin-top: 18px; font-size: 13px; opacity: 0.72; }
+
+    .notice {
+      margin-top: 18px;
+      font-size: 13px;
+      opacity: 0.72;
+    }
+
+    /* 🔥 결제 영역 */
+    .pay-box {
+      margin-top: 28px;
+      padding: 22px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .pay-box h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .pay-box p {
+      font-size: 14px;
+      color: #cfd6ff;
+      margin-bottom: 16px;
+    }
+
+    .pay-btn {
+      display: block;
+      text-align: center;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 10px;
+      background: #8b5cf6;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .pay-btn.secondary {
+      background: #334155;
+    }
   </style>
 </head>
+
 <body>
   <main class="wrap">
     <section class="card">
+
       <div class="brand">Regina Tarot Spill</div>
       <h1>🔮 레지나타로썰 리딩 결과</h1>
+
       <div class="meta" id="meta">불러오는 중...</div>
-     <div class="result" id="result">잠시만 기다려주세요.</div>
 
-<div class="notice">리딩 결과가 보이지 않으면 접수번호가 맞는지 확인해주세요.</div>
+      <div class="result" id="result">
+        잠시만 기다려주세요.
+      </div>
 
-<!-- 🔥 여기부터 추가 -->
-<div class="pay-box">
-  <h2>🔮 이어서 더 보고 싶다면</h2>
-  <p>지금 결과에서 더 깊게 확인하고 싶다면 추가 리딩으로 이어서 볼 수 있어요.</p>
+      <div class="notice">
+        리딩 결과가 보이지 않으면 접수번호가 맞는지 확인해주세요.
+      </div>
 
-  <a class="pay-btn" href="/consultation.html?product=simple">
-    추가 질문 1개 · 3,000원
-  </a>
+      <!-- 🔥 결제 영역 -->
+      <div class="pay-box">
+        <h2>🔮 이어서 더 보고 싶다면</h2>
+        <p>
+          지금 결과에서 더 깊게 확인하고 싶다면 추가 리딩으로 이어서 볼 수 있어요.
+        </p>
 
-  <a class="pay-btn secondary" href="/consultation.html?product=standard">
-    핵심 정리 리딩 · 7,000원
-  </a>
-</div>
-<!-- 🔥 여기까지 -->
+        <a class="pay-btn" href="/consultation.html?product=simple">
+          추가 질문 1개 · 3,000원
+        </a>
+
+        <a class="pay-btn secondary" href="/consultation.html?product=standard">
+          핵심 정리 리딩 · 7,000원
+        </a>
+      </div>
+
     </section>
   </main>
 
@@ -69,12 +142,13 @@
     async function loadResult() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
+
       const meta = document.getElementById('meta');
       const result = document.getElementById('result');
 
       if (!id) {
         meta.textContent = '접수번호 없음';
-        result.textContent = '잘못된 접근입니다. 안내받은 링크로 다시 접속해주세요.';
+        result.textContent = '잘못된 접근입니다.';
         return;
       }
 
@@ -88,17 +162,23 @@
           return;
         }
 
-        const consultation = data.consultation || {};
-        meta.textContent = `${consultation.name || '내담자'}님 · ${consultation.product_name || '리딩 결과'}`;
-        result.textContent = consultation.finalReading && consultation.finalReading.trim()
-          ? consultation.finalReading
-          : '리딩이 아직 준비되지 않았어요. 조금 뒤 다시 확인해주세요.';
-      } catch (error) {
-        meta.textContent = '불러오기 실패';
-        result.textContent = '리딩 결과를 불러오는 중 문제가 생겼어요.';
+        const c = data.consultation || {};
+
+        meta.textContent = `${c.name || '내담자'}님 · 리딩 결과`;
+
+        result.textContent =
+          c.finalReading && c.finalReading.trim()
+            ? c.finalReading
+            : '리딩이 아직 준비되지 않았어요.';
+
+      } catch (e) {
+        meta.textContent = '오류 발생';
+        result.textContent = '불러오기 실패';
       }
     }
+
     loadResult();
   </script>
+
 </body>
 </html>
