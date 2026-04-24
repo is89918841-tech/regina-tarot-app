@@ -474,8 +474,12 @@
             ${escapeHtml((item.question || '').slice(0, 140) || '질문 없음')}
           </div>
           <div class="toolbar" style="margin-top:10px;">
-            <a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary">자동 실행</a>
-          </div>
+  <a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary">자동 실행</a>
+
+  <button class="btn danger" onclick="confirmPaid('${item.id}')">
+    입금 확인 후 발송
+  </button>
+</div>
         `;
 
         root.appendChild(div);
@@ -622,6 +626,23 @@
     $('uploadBtn').addEventListener('click', uploadFile);
     $('logoutBtn').addEventListener('click', logout);
 
+    async function confirmPaid(id) {
+  if (!confirm('입금 확인하고 알림톡 발송할까요?')) return;
+
+  const res = await fetch(`/api/admin/consultations/${id}/paid`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    alert('알림톡 발송 완료');
+  } else {
+    alert(data.error || '발송 실패');
+  }
+}
+    
     ensureSession();
   </script>
 </body>
