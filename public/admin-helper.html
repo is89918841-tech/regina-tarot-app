@@ -201,11 +201,43 @@ async function drawCards() {
     extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
   }
 
-  // 🔥 주역 / 아이칭 / 육효
-  if (/아이칭|주역|육효/i.test(rec)) {
-    const iching = ["건(乾)", "곤(坤)", "수뢰둔", "화수미제", "천풍구"];
-    extra.push(`**주역**: ${iching[Math.floor(Math.random()*iching.length)]}`);
+  // 🔥 주역 / 아이칭 / 육효 (실데이터)
+{
+  const recCompact = rec.replace(/\s/g, '');
+
+  const useIching = /아이칭|주역/i.test(rec);
+  const useYukyo = /육효/i.test(rec);
+
+  // 1️⃣ 주역 64괘
+  if (useIching) {
+    try {
+      const res = await fetch("/data/iching.json");
+      const data = await res.json();
+
+      const list = Array.isArray(data) ? data : Object.values(data).flat();
+      const pick = list[Math.floor(Math.random() * list.length)];
+
+      extra.push(`**주역**: ${pick}`);
+    } catch (e) {
+      extra.push(`**주역**: 로딩 실패`);
+    }
   }
+
+  // 2️⃣ 주역육효괘
+  if (useYukyo) {
+    try {
+      const res = await fetch("/data/yukyo.json"); // ⚠ 파일명 맞춰줘
+      const data = await res.json();
+
+      const list = Array.isArray(data) ? data : Object.values(data).flat();
+      const pick = list[Math.floor(Math.random() * list.length)];
+
+      extra.push(`**주역육효괘**: ${pick}`);
+    } catch (e) {
+      extra.push(`**주역육효괘**: 로딩 실패`);
+    }
+  }
+}
 
   // 🔥 오간기
   if (/오간기/i.test(rec)) {
