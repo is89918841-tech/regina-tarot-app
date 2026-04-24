@@ -116,7 +116,9 @@ function shuffle(array) {
 // 카드 수 계산
 const countMatch =
   rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
-  rec.match(/(\d+)\s*장/i);
+  rec.match(/cardCount\s*[:：]?\s*(\d+)/i) ||
+  rec.match(/(\d+)\s*장/i) ||
+  rec.match(/(\d+)\s*카드/i);
 
 const count = countMatch
   ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
