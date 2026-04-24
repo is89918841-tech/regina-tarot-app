@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const OpenAI = require('openai');
+const fetch = require('node-fetch');
 const { generateReadingPlan } = require('./services/readingService');
 
 const app = express();
@@ -993,3 +994,36 @@ ensureDataFiles()
     console.error('Failed to initialize data files:', error);
     process.exit(1);
   });
+
+app.post('/api/send-kakao', async (req, res) => {
+  try {
+    const { phone, name } = req.body;
+
+    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+
+    const result = await fetch('https://alimtalk-api.bizmsg.kr/v2/sender/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        userid: process.env.BIZM_USER_ID
+      },
+      body: JSON.stringify([
+        {
+          message_type: 'AT',
+          phn: cleanPhone,
+          profile: process.env.BIZM_PROFILE_KEY,
+          tmplId: process.env.BIZM_TEMPLATE_ID,
+          msg: `[레지나타로썰]\n안녕하세요, ${name || '고객'}님.\n리딩 접수가 완료되었습니다.`,
+          reserveDt: '00000000000000'
+        }
+      ])
+    });
+
+    const data = await result.json();
+    return res.json({ ok: true, data });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
