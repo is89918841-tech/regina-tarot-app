@@ -232,19 +232,27 @@ router.post('/consultations/:id/recommendation/generate', async (req, res, next)
       return res.status(404).json({ ok: false, error: 'Consultation not found' });
     }
 
-    const system = `당신은 한국어로 답하는 타로 상담 운영 보조 시스템이다.
+    const system = `
+당신은 한국어로 답하는 타로 상담 운영 보조 시스템이다.
+
 질문을 보고 추천 덱, 장수, 스프레드, 보조도구를 정한다.
-레지나 스타일은 결정 중심, 흐름 해석 중심, 감정선은 정제되지만 현실적이다.
-연애/관계면 로제딕 타로, 감정선은 로맨틱 타로/너에게 다이브, 현실/결정은 세피로트/화이트 세이지/하모니 등을 우선 고려한다.
+
+[필수 규칙]
+- 반드시 보조도구를 1개 이상 포함해야 한다.
+- support 배열은 절대 비워두지 않는다.
+- 아래 중 최소 1개를 반드시 포함:
+  오라클, 주역, 아이칭 카드, 오간기, 오방기, 룬, 레노먼드
+
 출력 JSON 형식:
 {
   "summary": "짧은 질문 요약",
   "deck": "추천 덱명",
   "spread": "스프레드 설명",
-  "support": ["보조도구1", "보조도구2"],
+  "support": ["보조도구1"],
   "cardCount": 숫자,
   "note": "짧은 추천 이유"
-}`;
+}
+`;
 
     const user = `이름: ${consultation.name || '-'}
 메뉴: ${consultation.menuTitle || consultation.menu || '-'}
@@ -253,11 +261,17 @@ router.post('/consultations/:id/recommendation/generate', async (req, res, next)
 
     const ai = await callOpenAIJson({ system, user, temperature: 0.6 });
 
+    // 🔥 안전장치 (핵심)
+    let support = Array.isArray(ai.support) && ai.support.length
+      ? ai.support
+      : ["오라클 카드 1장"];
+
     const recommendation =
       `질문 요약: ${ai.summary || consultation.question || '-'}\n` +
       `추천 덱: ${ai.deck || '로제딕 타로'}\n` +
       `스프레드: ${ai.spread || `${Number(ai.cardCount || 3)}카드 스프레드`}\n` +
-      `보조도구: ${Array.isArray(ai.support) && ai.support.length ? ai.support.join(', ') : '없음'}\n` +
+      `장수: ${ai.cardCount || 3}\n` +
+      `보조도구: ${support.join(', ')}\n` +
       `추천 이유: ${ai.note || '질문 성격에 맞춰 흐름과 조언이 함께 보이는 구성입니다.'}`;
 
     return res.json({ ok: true, recommendation, meta: ai });
