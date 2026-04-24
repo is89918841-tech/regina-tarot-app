@@ -126,9 +126,9 @@ async function drawCards() {
   ];
 
   // 🔥 오라클 (덱 이름까지 반영)
-  if (/오라클/i.test(rec)) {
+  if (ORACLE_DECKS.some(d => rec.includes(d))) {
     let matchedDeck = ORACLE_DECKS.find(d =>
-  rec.includes(d) || d.includes(rec) || rec.replace(/\s/g,'').includes(d.replace(/\s/g,''))
+  rec.replace(/\s/g,'').includes(d.replace(/\s/g,''))
 );
     if (!matchedDeck) {
       matchedDeck = ORACLE_DECKS[Math.floor(Math.random() * ORACLE_DECKS.length)];
