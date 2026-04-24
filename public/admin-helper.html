@@ -145,6 +145,7 @@ if (ORACLE_FILES[matchedDeck]) {
 
     const card = data[Math.floor(Math.random() * data.length)];
     msg = card.name || card;
+    extra.push(`**오라클**: ${matchedDeck} - ${msg}`);
   } catch(e) {
     msg = "로딩 실패";
   }
