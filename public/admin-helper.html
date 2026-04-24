@@ -148,6 +148,16 @@ async function drawCards() {
   "로맨스 엔젤 오라클": "/data/common_oracle.json"
 };
 
+    if (/자두|해결카드|답변카드/i.test(rec)) {
+  try {
+    const res = await fetch('/data/jadu_answer_oracle.json');
+    const data = await res.json();
+    const card = data[Math.floor(Math.random() * data.length)];
+    const msg = card.name || card;
+    extra.push(`해결카드: ${msg}`);
+  } catch(e) {}
+}
+
 let msg = "메시지 없음";
 
 if (ORACLE_FILES[matchedDeck]) {
