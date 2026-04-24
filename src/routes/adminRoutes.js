@@ -283,13 +283,17 @@ router.post('/consultations/:id/recommendation/generate', async (req, res, next)
       ? ai.support
       : ["오라클 카드 1장"];
 
-    const recommendation =
-      `질문 요약: ${ai.summary || consultation.question || '-'}\n` +
-      `추천 덱: ${ai.deck || '로제딕 타로'}\n` +
-      `스프레드: ${ai.spread || `${Number(ai.cardCount || 3)}카드 스프레드`}\n` +
-      `장수: ${ai.cardCount || 3}\n` +
-      `보조도구: ${support.join(', ')}\n` +
-      `추천 이유: ${ai.note || '질문 성격에 맞춰 흐름과 조언이 함께 보이는 구성입니다.'}`;
+   // 🔥 안전 장수 계산
+const cardCount = Math.min(13, Math.max(1, Number(ai.cardCount || 3)));
+
+// 🔥 추천 문장 생성 (완성본)
+const recommendation =
+  `질문 요약: ${ai.summary || consultation.question || '-'}\n` +
+  `추천 덱: ${ai.deck || '로제딕 타로'}\n` +
+  `스프레드: ${ai.spread || `${cardCount}카드 스프레드`}\n` +
+  `장수: ${cardCount}\n` +
+  `보조도구: ${support.join(', ')}\n` +
+  `추천 이유: ${ai.note || '질문 성격에 맞춰 흐름과 조언이 함께 보이는 구성입니다.'}`;
 
     return res.json({ ok: true, recommendation, meta: ai });
   } catch (error) {
