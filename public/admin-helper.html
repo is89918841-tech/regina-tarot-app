@@ -79,18 +79,17 @@ async function generateRecommendation() {
 function drawCards() {
   const rec = document.getElementById('recommendationText').value || '';
 
-  // 덱 자동
   let deckName = "유니버셜 타로";
+
   const deckMatch =
     rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
     rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
     rec.match(/덱\s*[:：]?\s*([^\n]+)/i);
 
-  if (deckMatch) {
-    deckName = deckMatch[1].trim();
-  }
+  if (deckMatch) deckName = deckMatch[1].trim();
 
-  // 장수 자동
+  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+
   const countMatch =
     rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
     rec.match(/(\d+)\s*장/i);
@@ -98,8 +97,6 @@ function drawCards() {
   const count = countMatch
     ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
     : 3;
-
-  const cards = ["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 
   let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
 
@@ -109,67 +106,40 @@ function drawCards() {
 
   let extra = [];
 
-  // 오라클 + 오라클 덱명 자동
+  // 🔥 오라클
   if (/오라클/i.test(rec)) {
-    let oracleDeck = "오라클";
-    const oracleDeckMatch =
-      rec.match(/([가-힣A-Za-z\s]+오라클)/i);
-
-    if (oracleDeckMatch) {
-      oracleDeck = oracleDeckMatch[1].trim();
-    }
-
-    const oracle = ["희망","회복","균형","전환","기회","보호","정화","용기","기다림","흐름"];
-    extra.push(`**오라클**: ${oracleDeck} - ${oracle[Math.floor(Math.random()*oracle.length)]}`);
+    const oracle = ["희망", "회복", "균형", "전환", "기회"];
+    extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
   }
 
-  // 레노먼드
+  // 🔥 레노먼드
   if (/레노먼드/i.test(rec)) {
-    const leno = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","11 채찍","24 하트","25 반지","30 백합"];
+    const leno = ["1 라이더","2 클로버","3 배","4 집"];
     extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
   }
 
-  // 룬
-  if (/룬|룬스톤/i.test(rec)) {
-    const rune = ["Fehu","Uruz","Jera","Ehwaz","Ansuz","Raidho","Laguz","Othala"];
+  // 🔥 룬
+  if (/룬/i.test(rec)) {
+    const rune = ["Fehu","Uruz","Jera","Ehwaz"];
     extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
   }
 
-  // 주역 + 아이칭
-  if (/주역|아이칭/i.test(rec)) {
-    const iching = ["건(乾)","곤(坤)","둔(屯)","몽(蒙)","수뢰둔","산택손","화천대유","지산겸"];
+  // 🔥 아이칭 / 주역 / 육효 (통합 처리)
+  if (/아이칭|주역|육효/i.test(rec)) {
+    const iching = ["건(乾)", "곤(坤)", "수뢰둔", "화수미제", "천풍구"];
     extra.push(`**주역**: ${iching[Math.floor(Math.random()*iching.length)]}`);
   }
 
-  // 주역육효괘
-  if (/육효|주역육효/i.test(rec)) {
-    const yukyo = ["건위천 — 시작 / 주도", "곤위지 — 수용 / 기반", "산택손 — 덜어냄 / 조정", "화천대유 — 성취 / 확장", "수뢰둔 — 막힘 속 시작"];
-    extra.push(`주역육효괘: ${yukyo[Math.floor(Math.random()*yukyo.length)]}`);
-  }
-
-  // 오간기
+  // 🔥 오간기
   if (/오간기/i.test(rec)) {
     const ogangi = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
     extra.push(`오간기: ${ogangi[Math.floor(Math.random()*ogangi.length)]}`);
   }
 
-  // 오방기
+  // 🔥 오방기
   if (/오방기/i.test(rec)) {
     const obang = ["동","서","남","북","중앙"];
     extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
-  }
-
-  // 귀문방
-  if (/귀문방/i.test(rec)) {
-    const gwimun = ["목귀","화귀","수귀","우물귀","독각귀","무명귀"];
-    const dir = Math.random() < 0.5 ? "정방향" : "역방향";
-    extra.push(`귀문방: ${gwimun[Math.floor(Math.random()*gwimun.length)]} (${dir})`);
-  }
-
-  // 갑골영패
-  if (/갑골영패/i.test(rec)) {
-    const gapgol = ["열림","닫힘","기다림","경계","결단","회복"];
-    extra.push(`갑골영패: ${gapgol[Math.floor(Math.random()*gapgol.length)]}`);
   }
 
   if (extra.length > 0) {
