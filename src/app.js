@@ -973,9 +973,6 @@ app.get('/admin/grand-tableau', requireAdmin, async (_, res) => {
   return res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
-// static pages
-app.use(express.static(PUBLIC_DIR));
-
 app.get('/', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
@@ -983,17 +980,6 @@ app.get('/', (_, res) => {
 app.get('/admin', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
-
-ensureDataFiles()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Regina server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to initialize data files:', error);
-    process.exit(1);
-  });
 
 app.post('/api/send-kakao', async (req, res) => {
   try {
@@ -1027,3 +1013,50 @@ app.post('/api/send-kakao', async (req, res) => {
     return res.status(500).json({ ok: false, error: err.message });
   }
 });
+
+// 🔮 리딩 결과 조회 API (고객용)
+app.get('/api/consultations/:id', async (req, res) => {
+  try {
+    const items = await readJsonArray(CONSULTATION_FILE);
+    const item = items.find((x) => x.id === req.params.id);
+
+    if (!item) {
+      return res.status(404).json({
+        ok: false,
+        error: '리딩 결과를 찾지 못했어요.'
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      consultation: {
+        id: item.id,
+        name: item.name,
+        finalReading: item.finalReading || '',
+        status: item.status || ''
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      error: '리딩 결과 불러오기 실패'
+    });
+  }
+});
+
+// static pages
+app.use(express.static(PUBLIC_DIR));
+
+ensureDataFiles()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Regina server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Failed to initialize data files:', error);
+    process.exit(1);
+  });
+
