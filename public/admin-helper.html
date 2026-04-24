@@ -203,8 +203,6 @@ async function drawCards() {
 
   // 🔥 주역 / 아이칭 / 육효 (실데이터)
 {
-  const recCompact = rec.replace(/\s/g, '');
-
   const useIching = /아이칭|주역/i.test(rec);
   const useYukyo = /육효/i.test(rec);
 
@@ -226,7 +224,7 @@ async function drawCards() {
   // 2️⃣ 주역육효괘
   if (useYukyo) {
     try {
-      const res = await fetch("/data/yukyo.json"); // ⚠ 파일명 맞춰줘
+      const res = await fetch("/data/주역육효_simple.json");
       const data = await res.json();
 
       const list = Array.isArray(data) ? data : Object.values(data).flat();
