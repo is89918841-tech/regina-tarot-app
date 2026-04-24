@@ -643,20 +643,6 @@ app.post('/api/consultations', async (req, res) => {
     items.unshift(consultation);
 await writeJsonArray(CONSULTATION_FILE, items);
 
-if (consultation.status === 'ready_to_send') {
-  fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      phone: consultation.contact,
-      name: consultation.name,
-      id: consultation.id
-    })
-  }).catch((error) => {
-    console.error('AUTO KAKAO SEND ERROR:', error);
-  });
-}
-
 return res.status(201).json({
   ok: true,
   consultation,
@@ -785,19 +771,21 @@ app.post('/api/admin/consultations/:id/paid', requireAdmin, async (req, res) => 
 
     await writeJsonArray(CONSULTATION_FILE, items);
 
-    if (item.finalReading) {
-      fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: item.contact,
-          name: item.name,
-          id: item.id
-        })
-      }).catch((error) => {
-        console.error('PAID KAKAO SEND ERROR:', error);
-      });
-    }
+   if (item.finalReading) {
+  fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      phone: item.contact,
+      name: item.name,
+      id: item.id
+    })
+  }).catch((error) => {
+    console.error('PAID KAKAO SEND ERROR:', error);
+  });
+
+  item.status = 'sent'; // 🔥 이 한 줄 추가
+}
 
     return res.json({ ok: true, consultation: item });
   } catch (error) {
