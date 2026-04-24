@@ -767,7 +767,7 @@ app.get('/api/admin/consultations/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/consultations/:id/recommendation/generate', requireAdmin, async (req, res) => {
+app.post('/api/admin/consultations/:id/paid', requireAdmin, async (req, res) => {
   try {
     const items = await readJsonArray(CONSULTATION_FILE);
     const idx = items.findIndex((x) => x.id === req.params.id);
@@ -776,17 +776,33 @@ app.post('/api/admin/consultations/:id/recommendation/generate', requireAdmin, a
       return res.status(404).json({ ok: false, error: '해당 접수를 찾지 못했어요.' });
     }
 
-    const { recommendation, setup, plan } = await generateRecommendationText(items[idx]);
-    items[idx].readingPlan = plan;
-    items[idx].recommendation = recommendation;
-    items[idx].updated_at = new Date().toISOString();
+    const item = items[idx];
+
+    item.payment_status = 'paid';
+    item.status = item.finalReading ? 'sent_ready' : 'paid_waiting_reading';
+    item.paid_at = new Date().toISOString();
+    item.updated_at = new Date().toISOString();
 
     await writeJsonArray(CONSULTATION_FILE, items);
 
-    return res.status(200).json({ ok: true, recommendation, setup, plan });
+    if (item.finalReading) {
+      fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: item.contact,
+          name: item.name,
+          id: item.id
+        })
+      }).catch((error) => {
+        console.error('PAID KAKAO SEND ERROR:', error);
+      });
+    }
+
+    return res.json({ ok: true, consultation: item });
   } catch (error) {
-    console.error('recommendation generate error:', error);
-    return res.status(500).json({ ok: false, error: '추천 생성에 실패했어요.' });
+    console.error('paid confirm error:', error);
+    return res.status(500).json({ ok: false, error: '입금 확인 처리 실패' });
   }
 });
 
