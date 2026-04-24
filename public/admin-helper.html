@@ -312,9 +312,10 @@ return `**레노먼드**: ${pick2.join(', ')}`;
     }
 
     if (type === 'petitEtteilla') {
-      const petit = ['성공', '변화', '위험', '기회', '이동', '연결', '지연', '소식', '갈등', '조력', '계약', '정리'];
-      return `**Petit Etteilla**: ${pickOne(petit)}`;
-    }
+  const petit = ['성공', '변화', '위험', '기회', '이동', '연결', '지연', '소식', '갈등', '조력', '계약', '정리'];
+  const direction = Math.random() < 0.5 ? '정방향' : '역방향';
+  return `**Petit Etteilla**: ${pickOne(petit)} (${direction})`;
+}
 
     if (type === 'baekje') {
       const list = await loadJsonList('/data/baekje_incense_oracle_auxiliary.json', ['木 一 창룡 (蒼龍)', '火 一 봉황 (鳳凰)', '水 三 산군 (山君)']);
