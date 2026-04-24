@@ -106,10 +106,34 @@ function drawCards() {
 
   let extra = [];
 
-  // 🔥 오라클
+  // 🔥 오라클 덱 목록
+  const ORACLE_DECKS = [
+    "스타시드 오라클",
+    "힐링 워터 오라클",
+    "세이크리드 크리에이터즈 오라클",
+    "보이스 오브 더 소울스 오라클",
+    "샤먼 위즈덤 오라클",
+    "더 엔젤 가이드 오라클",
+    "BUDDHA WISDOM SHAKTI POWER Oracle",
+    "엔젤릭 라이트워크 힐링 오라클",
+    "러브 플라워 오라클",
+    "하트 로맨틱 오라클",
+    "네이키드 트루",
+    "오션 오브 위즈덤 오라클",
+    "로맨스 엔젤 오라클"
+  ];
+
+  // 🔥 오라클 (덱 이름까지 반영)
   if (/오라클/i.test(rec)) {
-    const oracle = ["희망", "회복", "균형", "전환", "기회"];
-    extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
+    let matchedDeck = ORACLE_DECKS.find(d => rec.includes(d));
+    if (!matchedDeck) {
+      matchedDeck = ORACLE_DECKS[Math.floor(Math.random() * ORACLE_DECKS.length)];
+    }
+
+    const oracleMsg = ["희망", "회복", "균형", "전환", "기회"];
+    const msg = oracleMsg[Math.floor(Math.random() * oracleMsg.length)];
+
+    extra.push(`**오라클**: ${matchedDeck} - ${msg}`);
   }
 
   // 🔥 레노먼드
@@ -124,7 +148,7 @@ function drawCards() {
     extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
   }
 
-  // 🔥 아이칭 / 주역 / 육효 (통합 처리)
+  // 🔥 주역 / 아이칭 / 육효
   if (/아이칭|주역|육효/i.test(rec)) {
     const iching = ["건(乾)", "곤(坤)", "수뢰둔", "화수미제", "천풍구"];
     extra.push(`**주역**: ${iching[Math.floor(Math.random()*iching.length)]}`);
