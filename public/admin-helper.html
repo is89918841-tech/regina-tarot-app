@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -52,26 +53,29 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 async function loadConsultation() {
   if (!consultationId) return;
 
-  const res = await fetch(`/api/admin/consultations/${consultationId}`);
+  const res = await fetch(`/api/admin/consultations/${consultationId}`, {
+    credentials: 'include'
+  });
   const data = await res.json();
 
-  const item = data.consultation || {};
+  const item = data.consultation || data.item || {};
 
   document.getElementById('recommendationText').value = item.recommendation || '';
-  document.getElementById('drawResultText').value = item.drawResult || '';
-  document.getElementById('finalReadingText').value = item.finalReading || '';
+  document.getElementById('drawResultText').value = item.drawResult || item.draw_result || '';
+  document.getElementById('finalReadingText').value = item.finalReading || item.final_reading || '';
 }
 
 // 추천 생성
 async function generateRecommendation() {
   const res = await fetch(`/api/admin/consultations/${consultationId}/recommendation/generate`, {
-    method:'POST'
+    method:'POST',
+    credentials: 'include'
   });
   const data = await res.json();
   document.getElementById('recommendationText').value = data.recommendation || '';
 }
 
-// 🔥 자동 드로우 (최종)
+// 자동 드로우
 function drawCards() {
   const rec = document.getElementById('recommendationText').value || '';
 
@@ -95,7 +99,7 @@ function drawCards() {
     ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
     : 3;
 
-  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+  const cards = ["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 
   let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
 
@@ -103,31 +107,44 @@ function drawCards() {
     result += `- 카드 ${i + 1}: ${cards[Math.floor(Math.random() * cards.length)]}\n`;
   }
 
-  // 🔥 보조도구
   let extra = [];
 
-  // 오라클
+  // 오라클 + 오라클 덱명 자동
   if (/오라클/i.test(rec)) {
-    const oracle = ["희망","회복","균형","전환","기회"];
-    extra.push(`**오라클**: ${oracle[Math.floor(Math.random()*oracle.length)]}`);
+    let oracleDeck = "오라클";
+    const oracleDeckMatch =
+      rec.match(/([가-힣A-Za-z\s]+오라클)/i);
+
+    if (oracleDeckMatch) {
+      oracleDeck = oracleDeckMatch[1].trim();
+    }
+
+    const oracle = ["희망","회복","균형","전환","기회","보호","정화","용기","기다림","흐름"];
+    extra.push(`**오라클**: ${oracleDeck} - ${oracle[Math.floor(Math.random()*oracle.length)]}`);
   }
 
   // 레노먼드
   if (/레노먼드/i.test(rec)) {
-    const leno = ["1 라이더","2 클로버","3 배","4 집"];
+    const leno = ["1 라이더","2 클로버","3 배","4 집","5 나무","6 구름","11 채찍","24 하트","25 반지","30 백합"];
     extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
   }
 
   // 룬
-  if (/룬/i.test(rec)) {
-    const rune = ["Fehu","Uruz","Jera","Ehwaz"];
+  if (/룬|룬스톤/i.test(rec)) {
+    const rune = ["Fehu","Uruz","Jera","Ehwaz","Ansuz","Raidho","Laguz","Othala"];
     extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
   }
 
-  // 🔥 주역 + 아이칭 (핵심 추가)
+  // 주역 + 아이칭
   if (/주역|아이칭/i.test(rec)) {
-    const iching = ["건(乾)","곤(坤)","둔(屯)","몽(蒙)","수뢰둔","산택손"];
+    const iching = ["건(乾)","곤(坤)","둔(屯)","몽(蒙)","수뢰둔","산택손","화천대유","지산겸"];
     extra.push(`**주역**: ${iching[Math.floor(Math.random()*iching.length)]}`);
+  }
+
+  // 주역육효괘
+  if (/육효|주역육효/i.test(rec)) {
+    const yukyo = ["건위천 — 시작 / 주도", "곤위지 — 수용 / 기반", "산택손 — 덜어냄 / 조정", "화천대유 — 성취 / 확장", "수뢰둔 — 막힘 속 시작"];
+    extra.push(`주역육효괘: ${yukyo[Math.floor(Math.random()*yukyo.length)]}`);
   }
 
   // 오간기
@@ -142,6 +159,19 @@ function drawCards() {
     extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
   }
 
+  // 귀문방
+  if (/귀문방/i.test(rec)) {
+    const gwimun = ["목귀","화귀","수귀","우물귀","독각귀","무명귀"];
+    const dir = Math.random() < 0.5 ? "정방향" : "역방향";
+    extra.push(`귀문방: ${gwimun[Math.floor(Math.random()*gwimun.length)]} (${dir})`);
+  }
+
+  // 갑골영패
+  if (/갑골영패/i.test(rec)) {
+    const gapgol = ["열림","닫힘","기다림","경계","결단","회복"];
+    extra.push(`갑골영패: ${gapgol[Math.floor(Math.random()*gapgol.length)]}`);
+  }
+
   if (extra.length > 0) {
     result += "\n" + extra.join("\n");
   }
@@ -154,6 +184,7 @@ function drawCards() {
 async function saveDraw(draw) {
   await fetch(`/api/admin/consultations/${consultationId}/draw`, {
     method:'POST',
+    credentials: 'include',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({ drawResult: draw })
   });
@@ -163,6 +194,7 @@ async function saveDraw(draw) {
 async function generateReading() {
   const res = await fetch(`/api/admin/consultations/${consultationId}/reading/generate`, {
     method:'POST',
+    credentials: 'include',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       recommendation: document.getElementById('recommendationText').value,
@@ -171,7 +203,7 @@ async function generateReading() {
   });
 
   const data = await res.json();
-  document.getElementById('finalReadingText').value = data.reading || '';
+  document.getElementById('finalReadingText').value = data.reading || data.finalReading || '';
 }
 
 // 전체 자동 흐름
