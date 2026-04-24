@@ -8,7 +8,7 @@
 <style>
 body { background:#0b1020; color:#fff; font-family:sans-serif; margin:0; }
 .app { padding:20px; max-width:900px; margin:auto; }
-.btn { padding:10px 14px; border-radius:10px; background:#1a2440; color:#fff; border:none; cursor:pointer; }
+.btn { padding:10px 14px; border-radius:10px; background:#1a2440; color:#fff; border:none; cursor:pointer; margin-right:6px; margin-bottom:6px; }
 .btn.primary { background:#8b5cf6; }
 textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; box-sizing:border-box; }
 .panel { border:1px solid #333; padding:16px; border-radius:12px; margin-top:16px; }
@@ -37,6 +37,13 @@ textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:
 <div class="panel">
   <h3>최종 리딩</h3>
   <textarea id="finalReadingText"></textarea>
+</div>
+
+<div class="panel">
+  <h3>카톡 발송용 메시지</h3>
+  <button class="btn primary" onclick="makeKakaoMessage()">카톡 발송용 생성</button>
+  <button class="btn" onclick="copyKakaoMessage()">복사</button>
+  <textarea id="kakaoMessageText"></textarea>
 </div>
 
 </div>
@@ -177,8 +184,6 @@ function getRequestedSupportTypes(rec) {
   if (/오리엔탈\s*판타지|색채\s*카드|색채/i.test(rec)) add('orientalColor');
   if (/Petit\s*Etteilla|쁘띠\s*에테일라|에테일라/i.test(rec)) add('petitEtteilla');
   if (/백제금동대향로|백제\s*금동\s*대향로|백제/i.test(rec)) add('baekje');
-
-  // 추천문에 “오라클”만 있고 구체 덱이 없을 때 기본 오라클 후보
   if (/오라클/i.test(rec)) add('oracle');
 
   return pool;
@@ -264,23 +269,31 @@ async function drawSupport(type, rec) {
       return `**주역육효괘**: ${pickOne(list)}`;
     }
 
-   if (type === 'rune') {
-  const rune = [
-    "Fehu","Uruz","Thurisaz","Ansuz","Raidho","Kenaz",
-    "Gebo","Wunjo","Hagalaz","Nauthiz","Isa","Jera",
-    "Eihwaz","Perthro","Algiz","Sowilo","Tiwaz",
-    "Berkano","Ehwaz","Mannaz","Laguz","Ingwaz",
-    "Dagaz","Othala","Wyrd"
-  ];
+    if (type === 'rune') {
+      const rune = [
+        'Fehu','Uruz','Thurisaz','Ansuz','Raidho','Kenaz',
+        'Gebo','Wunjo','Hagalaz','Nauthiz','Isa','Jera',
+        'Eihwaz','Perthro','Algiz','Sowilo','Tiwaz',
+        'Berkano','Ehwaz','Mannaz','Laguz','Ingwaz',
+        'Dagaz','Othala','Wyrd'
+      ];
 
-  const pickRune = shuffle([...rune]).slice(0, 2);
-  return `**룬**: ${pickRune.join(', ')}`;
-}
-    
+      const pickRune = shuffle([...rune]).slice(0, 2);
+      return `**룬**: ${pickRune.join(', ')}`;
+    }
+
     if (type === 'lenormand') {
-      const lenormand = ['1 라이더','2 클로버','3 배','4 집','5 나무','6 구름','7 뱀','8 관','9 꽃다발','10 낫','11 채찍','12 새','13 아이','14 여우','15 곰','16 별','17 황새','18 개','19 탑','20 정원','21 산','22 갈림길','23 쥐','24 하트','25 반지','26 책','27 편지','28 남자','29 여자','30 백합','31 태양','32 달','33 열쇠','34 물고기','35 닻','36 십자가'];
+      const lenormand = [
+        '1 라이더','2 클로버','3 배','4 집','5 나무','6 구름',
+        '7 뱀','8 관','9 꽃다발','10 낫','11 채찍','12 새',
+        '13 아이','14 여우','15 곰','16 별','17 황새','18 개',
+        '19 탑','20 정원','21 산','22 갈림길','23 쥐','24 하트',
+        '25 반지','26 책','27 편지','28 남자','29 여자','30 백합',
+        '31 태양','32 달','33 열쇠','34 물고기','35 닻','36 십자가'
+      ];
+
       const pick2 = shuffle([...lenormand]).slice(0, 2);
-return `**레노먼드**: ${pick2.join(', ')}`;
+      return `**레노먼드**: ${pick2.join(', ')}`;
     }
 
     if (type === 'ogangi') {
@@ -313,10 +326,10 @@ return `**레노먼드**: ${pick2.join(', ')}`;
     }
 
     if (type === 'petitEtteilla') {
-  const petit = ['성공', '변화', '위험', '기회', '이동', '연결', '지연', '소식', '갈등', '조력', '계약', '정리'];
-  const direction = Math.random() < 0.5 ? '정방향' : '역방향';
-  return `**Petit Etteilla**: ${pickOne(petit)} (${direction})`;
-}
+      const petit = ['성공', '변화', '위험', '기회', '이동', '연결', '지연', '소식', '갈등', '조력', '계약', '정리'];
+      const direction = Math.random() < 0.5 ? '정방향' : '역방향';
+      return `**Petit Etteilla**: ${pickOne(petit)} (${direction})`;
+    }
 
     if (type === 'baekje') {
       const list = await loadJsonList('/data/baekje_incense_oracle_auxiliary.json', ['木 一 창룡 (蒼龍)', '火 一 봉황 (鳳凰)', '水 三 산군 (山君)']);
@@ -392,6 +405,33 @@ async function generateReading() {
 
   const data = await res.json();
   document.getElementById('finalReadingText').value = data.reading || data.finalReading || '';
+}
+
+// 카톡 발송용 생성
+function makeKakaoMessage() {
+  const reading = document.getElementById('finalReadingText').value || '';
+
+  const msg = `🔮 레지나타로썰 리딩 결과
+
+내담자님, 리딩 결과 정리해드려요.
+
+────────────
+
+${reading}
+
+────────────
+
+필요하시면 이어서 더 깊게도 볼 수 있어요.`;
+
+  document.getElementById('kakaoMessageText').value = msg;
+}
+
+async function copyKakaoMessage() {
+  const text = document.getElementById('kakaoMessageText').value || '';
+  if (!text.trim()) return;
+
+  await navigator.clipboard.writeText(text);
+  alert('카톡 발송용 메시지를 복사했어요.');
 }
 
 // 전체 자동 흐름
