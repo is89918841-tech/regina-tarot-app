@@ -88,23 +88,50 @@ async function drawCards() {
 
   if (deckMatch) deckName = deckMatch[1].trim();
 
-  const cards = ["The Fool","The Magician","The Lovers","The Star","The Moon","The Sun"];
+  // 🔥 타로 78장 실데이터 로드
+let tarotCards = [];
 
-  const countMatch =
-    rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
-    rec.match(/(\d+)\s*장/i);
+try {
+  const res = await fetch("/data/universal.json");
+  const data = await res.json();
+  tarotCards = Array.isArray(data) ? data : Object.values(data).flat();
+} catch (e) {
+  console.error("타로 로딩 실패");
+}
 
-  const count = countMatch
-    ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
-    : 3;
+// 🔥 fallback (필수)
+if (!tarotCards.length) {
+  tarotCards = ["The Fool", "The Magician", "The Lovers"];
+}
 
-  let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
-
-  for (let i = 0; i < count; i++) {
-    result += `- 카드 ${i + 1}: ${cards[Math.floor(Math.random() * cards.length)]}\n`;
+// 🔥 셔플 함수
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
+}
 
-  let extra = [];
+// 카드 수 계산
+const countMatch =
+  rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
+  rec.match(/(\d+)\s*장/i);
+
+const count = countMatch
+  ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
+  : 3;
+
+let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
+
+// 🔥 진짜 랜덤 셔플
+const picked = shuffle([...tarotCards]).slice(0, count);
+
+// 출력
+picked.forEach((card, i) => {
+  const isReversed = Math.random() < 0.3;
+  result += `- 카드 ${i + 1}: ${card}${isReversed ? " (역방향)" : ""}\n`;
+});
 
   // 🔥 오라클 덱 목록
   const ORACLE_DECKS = [
