@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>리딩 결과</title>
+  <style>
+    body {
+      background:#0b1020;
+      color:#fff;
+      font-family:sans-serif;
+      padding:40px;
+      line-height:1.6;
+    }
+    .box {
+      max-width:700px;
+      margin:auto;
+      background:#111733;
+      padding:30px;
+      border-radius:12px;
+    }
+    h1 { margin-bottom:20px; }
+    pre {
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h1>🔮 레지나타로썰 리딩 결과</h1>
+  <pre id="result">불러오는 중...</pre>
+</div>
+
+<script>
+async function loadResult() {
+  const url = new URL(window.location.href);
+  const id = url.searchParams.get("id");
+
+  if (!id) {
+    document.getElementById('result').innerText = "잘못된 접근입니다.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/consultations/${id}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById('result').innerText = "결과 없음";
+      return;
+    }
+
+    document.getElementById('result').innerText =
+      data.consultation.finalReading || "리딩이 아직 준비되지 않았어요.";
+
+  } catch (e) {
+    document.getElementById('result').innerText = "불러오기 실패";
+  }
+}
+
+loadResult();
+</script>
+
+</body>
+</html>
