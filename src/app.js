@@ -641,14 +641,28 @@ app.post('/api/consultations', async (req, res) => {
     }
 
     items.unshift(consultation);
-    await writeJsonArray(CONSULTATION_FILE, items);
+await writeJsonArray(CONSULTATION_FILE, items);
 
-    return res.status(201).json({
-      ok: true,
-      consultation,
-      recommended,
-      autoReading
-    });
+if (consultation.status === 'ready_to_send') {
+  fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      phone: consultation.contact,
+      name: consultation.name,
+      id: consultation.id
+    })
+  }).catch((error) => {
+    console.error('AUTO KAKAO SEND ERROR:', error);
+  });
+}
+
+return res.status(201).json({
+  ok: true,
+  consultation,
+  recommended,
+  autoReading
+});
   } catch (error) {
     console.error('POST /api/consultations error:', error);
     return res.status(500).json({
@@ -983,9 +997,10 @@ app.get('/admin', (_, res) => {
 
 app.post('/api/send-kakao', async (req, res) => {
   try {
-    const { phone, name } = req.body;
+    const { phone, name, id } = req.body;
 
     const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+    const resultUrl = `https://regina-tarot-app.onrender.com/result.html?id=${id}`;
 
     const result = await fetch('https://alimtalk-api.bizmsg.kr/v2/sender/send', {
       method: 'POST',
@@ -999,8 +1014,21 @@ app.post('/api/send-kakao', async (req, res) => {
           phn: cleanPhone,
           profile: process.env.BIZM_PROFILE_KEY,
           tmplId: process.env.BIZM_TEMPLATE_ID,
-          msg: `[레지나타로썰]\n안녕하세요, ${name || '고객'}님.\n리딩 접수가 완료되었습니다.`,
-          reserveDt: '00000000000000'
+          msg: `[레지나타로썰]
+
+안녕하세요, ${name || '고객'}님.
+
+요청하신 타로 리딩 결과가 준비되었습니다.
+아래 버튼을 눌러 결과를 확인해주세요.
+
+감사합니다.`,
+          reserveDt: '00000000000000',
+          button1: {
+            type: 'WL',
+            name: '리딩 보기',
+            url_mobile: resultUrl,
+            url_pc: resultUrl
+          }
         }
       ])
     });
