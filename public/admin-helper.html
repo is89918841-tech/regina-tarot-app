@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,7 +10,7 @@ body { background:#0b1020; color:#fff; font-family:sans-serif; margin:0; }
 .app { padding:20px; max-width:900px; margin:auto; }
 .btn { padding:10px 14px; border-radius:10px; background:#1a2440; color:#fff; border:none; cursor:pointer; }
 .btn.primary { background:#8b5cf6; }
-textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; }
+textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; box-sizing:border-box; }
 .panel { border:1px solid #333; padding:16px; border-radius:12px; margin-top:16px; }
 </style>
 </head>
@@ -47,7 +46,74 @@ const qs = new URLSearchParams(location.search);
 const consultationId = qs.get('id');
 const shouldAutorun = qs.get('autorun') === '1';
 
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function shuffle(array) {
+  const next = [...array];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
+function pickOne(list) {
+  if (!Array.isArray(list) || !list.length) return '';
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function flattenData(data) {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object') return Object.values(data).flat().filter(Boolean);
+  return [];
+}
+
+function cardToText(card) {
+  if (card == null) return '';
+  if (typeof card === 'string') return card;
+  if (typeof card === 'number') return String(card);
+
+  const title =
+    card.name ||
+    card.title ||
+    card.card ||
+    card.keyword ||
+    card.message ||
+    card.괘명 ||
+    card.한글 ||
+    card.hanzi ||
+    card.ko ||
+    card.meaning ||
+    card.의미 ||
+    '';
+
+  const extraParts = [
+    card.한글,
+    card.의미,
+    card.meaning,
+    card.message,
+    card.desc,
+    card.description,
+    card.상괘 ? `상:${card.상괘}` : '',
+    card.하괘 ? `하:${card.하괘}` : ''
+  ].filter(Boolean);
+
+  const extra = extraParts.filter(v => String(v) !== String(title)).join(' / ');
+  return extra ? `${title} — ${extra}` : (title || JSON.stringify(card));
+}
+
+async function loadJsonList(path, fallback = []) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`${path} ${res.status}`);
+    const data = await res.json();
+    const list = flattenData(data).map(cardToText).filter(Boolean);
+    return list.length ? list : fallback;
+  } catch (e) {
+    console.warn('JSON 로딩 실패:', path, e);
+    return fallback;
+  }
+}
 
 // 상담 불러오기
 async function loadConsultation() {
@@ -75,211 +141,217 @@ async function generateRecommendation() {
   document.getElementById('recommendationText').value = data.recommendation || '';
 }
 
-// 자동 드로우
-async function drawCards() {
-  const rec = document.getElementById('recommendationText').value || '';
-
-  let deckName = "유니버셜 타로";
-
+function getDeckName(rec) {
+  let deckName = '유니버셜 타로';
   const deckMatch =
     rec.match(/메인\s*덱\s*[:：]?\s*([^\n]+)/i) ||
     rec.match(/추천\s*덱\s*[:：]?\s*([^\n]+)/i) ||
     rec.match(/덱\s*[:：]?\s*([^\n]+)/i);
-
   if (deckMatch) deckName = deckMatch[1].trim();
-
-  // 🔥 타로 78장 실데이터 로드
-let tarotCards = [];
-
-try {
-  const res = await fetch("/data/universal.json");
-  const data = await res.json();
-  tarotCards = Array.isArray(data) ? data : Object.values(data).flat();
-} catch (e) {
-  console.error("타로 로딩 실패");
+  return deckName;
 }
 
-// 🔥 fallback (필수)
-if (!tarotCards.length) {
-  tarotCards = ["The Fool", "The Magician", "The Lovers"];
+function getCardCount(rec) {
+  const countMatch =
+    rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
+    rec.match(/cardCount\s*[:：]?\s*(\d+)/i) ||
+    rec.match(/(\d+)\s*장/i) ||
+    rec.match(/(\d+)\s*카드/i);
+
+  return countMatch ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10))) : 3;
 }
 
-// 🔥 셔플 함수
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+function getRequestedSupportTypes(rec) {
+  const pool = [];
+  const add = (key) => { if (!pool.includes(key)) pool.push(key); };
+
+  if (/아이칭|아이칭\s*카드|I\s*Ching|주역/i.test(rec)) add('iching');
+  if (/주역육효|주역\s*육효|육효/i.test(rec)) add('yukyo');
+  if (/룬|룬스톤/i.test(rec)) add('rune');
+  if (/레노먼드|Lenormand/i.test(rec)) add('lenormand');
+  if (/오간기/i.test(rec)) add('ogangi');
+  if (/오방기/i.test(rec)) add('obanggi');
+  if (/귀문방/i.test(rec)) add('gwimunbang');
+  if (/갑골영패/i.test(rec)) add('gapgol');
+  if (/문올로지|Moonology/i.test(rec)) add('moonology');
+  if (/오리엔탈\s*판타지|색채\s*카드|색채/i.test(rec)) add('orientalColor');
+  if (/Petit\s*Etteilla|쁘띠\s*에테일라|에테일라/i.test(rec)) add('petitEtteilla');
+  if (/백제금동대향로|백제\s*금동\s*대향로|백제/i.test(rec)) add('baekje');
+
+  // 추천문에 “오라클”만 있고 구체 덱이 없을 때 기본 오라클 후보
+  if (/오라클/i.test(rec)) add('oracle');
+
+  return pool;
 }
 
-// 카드 수 계산
-const countMatch =
-  rec.match(/장수\s*[:：]?\s*(\d+)/i) ||
-  rec.match(/cardCount\s*[:：]?\s*(\d+)/i) ||
-  rec.match(/(\d+)\s*장/i) ||
-  rec.match(/(\d+)\s*카드/i);
+function selectSupportTypes(rec) {
+  const requested = getRequestedSupportTypes(rec);
 
-const count = countMatch
-  ? Math.min(13, Math.max(1, parseInt(countMatch[1], 10)))
-  : 3;
-
-let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
-
-// 🔥 진짜 랜덤 셔플
-const picked = shuffle([...tarotCards]).slice(0, count);
-
-// 출력
-picked.forEach((card, i) => {
-  const isReversed = Math.random() < 0.3;
-  result += `- 카드 ${i + 1}: ${card}${isReversed ? " (역방향)" : ""}\n`;
-});
-
-  // 🔥 오라클 덱 목록
-  const ORACLE_DECKS = [
-    "스타시드 오라클",
-    "힐링 워터 오라클",
-    "세이크리드 크리에이터즈 오라클",
-    "보이스 오브 더 소울스 오라클",
-    "샤먼 위즈덤 오라클",
-    "더 엔젤 가이드 오라클",
-    "BUDDHA WISDOM SHAKTI POWER Oracle",
-    "엔젤릭 라이트워크 힐링 오라클",
-    "러브 플라워 오라클",
-    "하트 로맨틱 오라클",
-    "네이키드 트루",
-    "오션 오브 위즈덤 오라클",
-    "로맨스 엔젤 오라클",
-    "자두의 해결카드",
-"자두의 대답카드"
+  const defaultPool = [
+    'ogangi',
+    'obanggi',
+    'iching',
+    'rune',
+    'lenormand',
+    'gwimunbang',
+    'gapgol',
+    'moonology',
+    'orientalColor',
+    'petitEtteilla',
+    'baekje',
+    'oracle'
   ];
 
-  // 🔥 오라클 (덱 이름까지 반영)
-  // 🔥 오라클 / 커스텀 오라클 / 자두 카드
-{
+  const merged = [...requested];
+  for (const item of shuffle(defaultPool)) {
+    if (merged.length >= 3) break;
+    if (!merged.includes(item)) merged.push(item);
+  }
+
+  const targetCount = merged.length >= 3 ? (Math.random() < 0.5 ? 2 : 3) : merged.length;
+  return shuffle(merged).slice(0, Math.max(2, targetCount));
+}
+
+async function drawOracleFromRecommendation(rec) {
   const recCompact = rec.replace(/\s/g, '');
 
-  const ORACLE_ALIASES = {
-    "엔젤 가이드 오라클": "더 엔젤 가이드 오라클",
-    "더 엔젤 가이드 오라클": "더 엔젤 가이드 오라클",
-    "자두 해결카드": "자두의 해결카드",
-    "자두의 해결카드": "자두의 해결카드",
-    "자두 대답카드": "자두의 대답카드",
-    "자두의 대답카드": "자두의 대답카드"
-  };
-
-  let matchedDeck = ORACLE_DECKS.find(d =>
-    recCompact.includes(d.replace(/\s/g, ''))
-  );
-
-  if (!matchedDeck) {
-    const aliasKey = Object.keys(ORACLE_ALIASES).find(k =>
-      recCompact.includes(k.replace(/\s/g, ''))
-    );
-    if (aliasKey) matchedDeck = ORACLE_ALIASES[aliasKey];
-  }
-
   const ORACLE_FILES = {
-    "스타시드 오라클": "/data/starseed.json",
-    "힐링 워터 오라클": "/data/healing_water.json",
-    "세이크리드 크리에이터즈 오라클": "/data/sacred_creators.json",
-    "보이스 오브 더 소울스 오라클": "/data/voice_souls.json",
-    "샤먼 위즈덤 오라클": "/data/shaman_wisdom_oracle_simple.json",
-    "더 엔젤 가이드 오라클": "/data/angel_guide.json",
-    "BUDDHA WISDOM SHAKTI POWER Oracle": "/data/buddha_wisdom_shakti_power_oracle_simple.json",
-    "엔젤릭 라이트워크 힐링 오라클": "/data/angelic_lightwork.json",
-    "러브 플라워 오라클": "/data/love_flower.json",
-    "하트 로맨틱 오라클": "/data/heart_romantic_oracle_simple.json",
-    "네이키드 트루": "/data/naked_truth_oracle_simple.json",
-    "오션 오브 위즈덤 오라클": "/data/ocean_of_the_wisdom_oracle_simple.json",
-    "로맨스 엔젤 오라클": "/data/romance_angels_oracle.json",
-    "자두의 해결카드": "/data/jadu_answer_oracle.json",
-    "자두의 대답카드": "/data/jadu_answer_oracle.json"
+    '스타시드 오라클': '/data/starseed.json',
+    '힐링 워터 오라클': '/data/healing_water.json',
+    '세이크리드 크리에이터즈 오라클': '/data/sacred_creators.json',
+    '보이스 오브 더 소울스 오라클': '/data/voice_souls.json',
+    '샤먼 위즈덤 오라클': '/data/shaman_wisdom_oracle_simple.json',
+    '더 엔젤 가이드 오라클': '/data/angel_guide.json',
+    'BUDDHA WISDOM SHAKTI POWER Oracle': '/data/buddha_wisdom_shakti_power_oracle_simple.json',
+    '엔젤릭 라이트워크 힐링 오라클': '/data/angelic_lightwork.json',
+    '러브 플라워 오라클': '/data/love_flower.json',
+    '하트 로맨틱 오라클': '/data/heart_romantic_oracle_simple.json',
+    '네이키드 트루': '/data/naked_truth_oracle_simple.json',
+    '오션 오브 위즈덤 오라클': '/data/ocean_of_the_wisdom_oracle_simple.json',
+    '로맨스 엔젤 오라클': '/data/romance_angels_oracle.json',
+    '자두의 해결카드': '/data/gomin_solution_answer_oracle.json',
+    '자두의 대답카드': '/data/gomin_solution_answer_oracle.json'
   };
 
-  if (matchedDeck && ORACLE_FILES[matchedDeck]) {
-    try {
-      const res = await fetch(ORACLE_FILES[matchedDeck]);
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : Object.values(data).flat();
-      const card = list[Math.floor(Math.random() * list.length)];
+  const ORACLE_ALIASES = {
+    '엔젤 가이드 오라클': '더 엔젤 가이드 오라클',
+    '자두 해결카드': '자두의 해결카드',
+    '자두 대답카드': '자두의 대답카드',
+    '고민해결 대답카드': '자두의 해결카드'
+  };
 
-      const msg =
-        card.name ||
-        card.title ||
-        card.card ||
-        card.keyword ||
-        card.message ||
-        String(card);
-
-      extra.push(`**오라클**: ${matchedDeck} - ${msg}`);
-    } catch(e) {
-      extra.push(`**오라클**: ${matchedDeck} - 로딩 실패`);
-    }
+  let matchedDeck = Object.keys(ORACLE_FILES).find(name => recCompact.includes(name.replace(/\s/g, '')));
+  if (!matchedDeck) {
+    const alias = Object.keys(ORACLE_ALIASES).find(name => recCompact.includes(name.replace(/\s/g, '')));
+    if (alias) matchedDeck = ORACLE_ALIASES[alias];
   }
-}
-  // 🔥 레노먼드
-  if (/레노먼드/i.test(rec)) {
-    const leno = ["1 라이더","2 클로버","3 배","4 집"];
-    extra.push(`**레노먼드**: ${leno[Math.floor(Math.random()*leno.length)]}`);
-  }
+  if (!matchedDeck) matchedDeck = '하트 로맨틱 오라클';
 
-  // 🔥 룬
-  if (/룬/i.test(rec)) {
-    const rune = ["Fehu","Uruz","Jera","Ehwaz"];
-    extra.push(`**룬**: ${rune[Math.floor(Math.random()*rune.length)]}`);
-  }
-
-  // 🔥 주역 / 아이칭 / 육효 (실데이터)
-{
-  const useIching = /아이칭|아이칭\s*카드|I\s*Ching|주역/i.test(rec);
-const useYukyo = /주역육효|주역\s*육효|육효/i.test(rec);
-
-  // 1️⃣ 주역 64괘
-  if (useIching) {
-    try {
-      const res = await fetch("/data/iching.json");
-      const data = await res.json();
-
-      const list = Array.isArray(data) ? data : Object.values(data).flat();
-      const pick = list[Math.floor(Math.random() * list.length)];
-
-      extra.push(`**주역**: ${pick}`);
-    } catch (e) {
-      extra.push(`**주역**: 로딩 실패`);
-    }
-  }
-
-  // 2️⃣ 주역육효괘
-  if (useYukyo) {
-    try {
-      const res = await fetch("/data/주역육효_simple.json");
-      const data = await res.json();
-
-      const list = Array.isArray(data) ? data : Object.values(data).flat();
-      const pick = list[Math.floor(Math.random() * list.length)];
-
-      extra.push(`**주역육효괘**: ${pick}`);
-    } catch (e) {
-      extra.push(`**주역육효괘**: 로딩 실패`);
-    }
-  }
+  const fallback = ['경계', '정화', '회복', '소통', '결단', '균형', '기회', '전환', '안정', '선택', '실행'];
+  const list = await loadJsonList(ORACLE_FILES[matchedDeck], fallback);
+  return `**오라클**: ${matchedDeck} - ${pickOne(list)}`;
 }
 
-  // 🔥 오간기
-  if (/오간기/i.test(rec)) {
-    const ogangi = ["목(木)","화(火)","토(土)","금(金)","수(水)"];
-    extra.push(`오간기: ${ogangi[Math.floor(Math.random()*ogangi.length)]}`);
-  }
+async function drawSupport(type, rec) {
+  try {
+    if (type === 'iching') {
+      const list = await loadJsonList('/data/iching.json', ['乾(건) – 하늘 / 창조 / 시작', '坤(곤) – 땅 / 수용 / 받아들임']);
+      return `**주역**: ${pickOne(list)}`;
+    }
 
-  // 🔥 오방기
-  if (/오방기/i.test(rec)) {
-    const obang = ["동","서","남","북","중앙"];
-    extra.push(`오방기: ${obang[Math.floor(Math.random()*obang.length)]}`);
+    if (type === 'yukyo') {
+      const list = await loadJsonList('/data/주역육효_simple.json', ['乾爲天 — 시작 / 창조 / 주도', '坤爲地 — 수용 / 기반 / 축적']);
+      return `**주역육효괘**: ${pickOne(list)}`;
+    }
+
+    if (type === 'rune') {
+      const runes = ['Fehu','Uruz','Thurisaz','Ansuz','Raidho','Kenaz','Gebo','Wunjo','Hagalaz','Nauthiz','Isa','Jera','Eihwaz','Perthro','Algiz','Sowilo','Tiwaz','Berkano','Ehwaz','Mannaz','Laguz','Ingwaz','Othala','Dagaz'];
+      return `**룬**: ${pickOne(runes)}`;
+    }
+
+    if (type === 'lenormand') {
+      const lenormand = ['1 라이더','2 클로버','3 배','4 집','5 나무','6 구름','7 뱀','8 관','9 꽃다발','10 낫','11 채찍','12 새','13 아이','14 여우','15 곰','16 별','17 황새','18 개','19 탑','20 정원','21 산','22 갈림길','23 쥐','24 하트','25 반지','26 책','27 편지','28 남자','29 여자','30 백합','31 태양','32 달','33 열쇠','34 물고기','35 닻','36 십자가'];
+      return `**레노먼드**: ${pickOne(lenormand)}`;
+    }
+
+    if (type === 'ogangi') {
+      return `**오간기**: ${pickOne(['목(木)','화(火)','토(土)','금(金)','수(水)'])}`;
+    }
+
+    if (type === 'obanggi') {
+      return `**오방기**: ${pickOne(['동','서','남','북','중앙'])}`;
+    }
+
+    if (type === 'gwimunbang') {
+      const list = await loadJsonList('/data/gwimunbang_titles.json', ['무명귀', '우물귀', '사자귀', '호귀']);
+      const direction = Math.random() < 0.5 ? '정방향' : '역방향';
+      return `**귀문방**: ${pickOne(list)} (${direction})`;
+    }
+
+    if (type === 'gapgol') {
+      const list = await loadJsonList('/data/gapgol_simple.json', ['虎 (범 호)', '明 (밝을 명)', '競 (겨룰 경)']);
+      return `**갑골영패**: ${pickOne(list)}`;
+    }
+
+    if (type === 'moonology') {
+      const moonology = ['New Moon — 시작 / 의도 설정', 'Full Moon — 완성 / 드러남', 'Waxing Moon — 성장 / 확장', 'Waning Moon — 정리 / 비움', 'First Quarter — 결단 / 행동', 'Last Quarter — 재조정 / 마무리'];
+      return `**문올로지 오라클**: ${pickOne(moonology)}`;
+    }
+
+    if (type === 'orientalColor') {
+      const colors = ['적색 — 추진 / 열정 / 노출', '청색 — 성장 / 소통 / 확장', '황색 — 중심 / 안정 / 조율', '백색 — 정리 / 기준 / 결단', '흑색 — 깊이 / 보류 / 관찰', '보라 — 직감 / 신비 / 전환', '금색 — 성취 / 가치 / 결과'];
+      return `**오리엔탈 판타지 타로 색채 카드**: ${pickOne(colors)}`;
+    }
+
+    if (type === 'petitEtteilla') {
+      const petit = ['성공', '변화', '위험', '기회', '이동', '연결', '지연', '소식', '갈등', '조력', '계약', '정리'];
+      return `**Petit Etteilla**: ${pickOne(petit)}`;
+    }
+
+    if (type === 'baekje') {
+      const list = await loadJsonList('/data/baekje_incense_oracle_auxiliary.json', ['木 一 창룡 (蒼龍)', '火 一 봉황 (鳳凰)', '水 三 산군 (山君)']);
+      return `**백제금동대향로 오라클 카드**: ${pickOne(list)}`;
+    }
+
+    if (type === 'oracle') {
+      return await drawOracleFromRecommendation(rec);
+    }
+
+    return '';
+  } catch (e) {
+    console.warn('보조도구 드로우 실패:', type, e);
+    return `**${type}**: 로딩 실패`;
+  }
+}
+
+// 자동 드로우
+async function drawCards() {
+  const rec = document.getElementById('recommendationText').value || '';
+  const deckName = getDeckName(rec);
+  const count = getCardCount(rec);
+
+  let tarotCards = await loadJsonList('/data/universal.json', ['The Fool', 'The Magician', 'The Lovers']);
+  if (!tarotCards.length) tarotCards = ['The Fool', 'The Magician', 'The Lovers'];
+
+  let result = `**덱**: ${deckName}\n**장수**: ${count}\n\n**포지션별 드로우**\n`;
+
+  const picked = shuffle(tarotCards).slice(0, count);
+
+  picked.forEach((card, i) => {
+    const isReversed = Math.random() < 0.3;
+    result += `- 카드 ${i + 1}: ${card}${isReversed ? ' (역방향)' : ''}\n`;
+  });
+
+  const selectedSupportTypes = selectSupportTypes(rec);
+  const extra = [];
+
+  for (const type of selectedSupportTypes) {
+    const line = await drawSupport(type, rec);
+    if (line) extra.push(line);
   }
 
   if (extra.length > 0) {
-    result += "\n" + extra.join("\n");
+    result += '\n' + extra.join('\n');
   }
 
   document.getElementById('drawResultText').value = result;
@@ -324,10 +396,11 @@ async function autorun() {
 }
 
 // 버튼
-document.getElementById('runBtn').addEventListener('click', autorun);
+const runBtn = document.getElementById('runBtn');
+if (runBtn) runBtn.addEventListener('click', autorun);
 
 // 초기
-window.addEventListener('load', async ()=>{
+window.addEventListener('load', async () => {
   await loadConsultation();
 
   if (shouldAutorun && consultationId) {
