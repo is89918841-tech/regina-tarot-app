@@ -367,7 +367,30 @@ router.post('/consultations/:id/reading/generate', async (req, res, next) => {
     const recommendation = req.body?.recommendation || consultation.recommendation || '';
     const drawResult = req.body?.drawResult || consultation.drawResult || '';
 
-    const system = `
+    const menuText = `${consultation.menuTitle || consultation.menu || ''}`;
+
+const isShortMenu =
+  menuText.includes('3,000') ||
+  menuText.includes('3000') ||
+  menuText.includes('한 줄') ||
+  menuText.includes('한줄');
+
+const outputRule = isShortMenu
+  ? `
+[출력 분량 규칙]
+- 반드시 하나의 문단으로만 작성
+- 줄바꿈 금지
+- 500자 내외로 핵심만 정리
+- 마지막 결론까지 같은 문단 안에 포함
+`
+  : `
+[출력 분량 규칙]
+- 7,000원 이상 리딩은 2~4문단으로 작성
+- 현재 상태 / 흐름 / 조언 / 결론이 자연스럽게 나뉘어야 함
+- 너무 짧게 끝내지 말고 충분히 밀도 있게 작성
+`;
+
+const system = `
 당신은 레지나타로썰의 타로 리더입니다.
 
 [말투 규칙]
@@ -407,8 +430,9 @@ router.post('/consultations/:id/reading/generate', async (req, res, next) => {
 - 반드시 확정적으로 말할 것
 
 [출력 규칙]
-- 한 문단 이상
 - 읽고 나면 “정리됐다”는 느낌이 들게 작성
+
+${outputRule}
 
 [금지]
 - 카드 이름 언급 금지
@@ -417,7 +441,6 @@ router.post('/consultations/:id/reading/generate', async (req, res, next) => {
 
 이 기준으로 “결정 내릴 수 있게 정리해주는 리딩”을 작성하세요.
 `;
-
     const user = `
 이름: ${consultation.name || '-'}
 메뉴: ${consultation.menuTitle || consultation.menu || '-'}
