@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 const express = require('express');
 const fs = require('fs/promises');
 const path = require('path');
@@ -573,6 +574,32 @@ router.delete('/files/:id', async (req, res, next) => {
     return res.json({ ok: true, file: removed });
   } catch (error) {
     return next(error);
+  }
+});
+
+router.post('/consultations/:id/send', async (req, res) => {
+  try {
+    const { message, phone } = req.body;
+
+    const result = await fetch('https://api.bizmsg.kr/v2/message/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.BIZM_API_KEY}`
+      },
+      body: JSON.stringify({
+        to: phone,
+        message: message,
+        from: process.env.BIZM_SENDER
+      })
+    });
+
+    const data = await result.json();
+
+    return res.json({ ok: true, data });
+
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
 
