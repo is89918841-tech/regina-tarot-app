@@ -626,6 +626,8 @@
     $('uploadBtn').addEventListener('click', uploadFile);
     $('logoutBtn').addEventListener('click', logout);
 
+    ensureSession();
+
     async function confirmPaid(id) {
   if (!confirm('입금 확인하고 알림톡 발송할까요?')) return;
 
@@ -643,7 +645,6 @@
   }
 }
     
-    ensureSession();
   </script>
 </body>
 </html>
