@@ -214,8 +214,8 @@
   <div class="wrap">
     <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
     <p class="sub">
-      선택한 메뉴에 따라 진행 방식이 달라져요.
-      간단 리딩은 접수 후 바로 이어지고, 심층 리딩은 일정 안내가 따로 진행됩니다.
+      3천원 / 7천원 리딩은 접수 후 빠르게 진행되며,
+18,000원 / 30,000원 심층 리딩은 예약 상담 일정 안내 후 진행됩니다.
     </p>
 
     <div class="card">
@@ -226,7 +226,7 @@
 
         <div class="field">
           <label for="name">성함 / 닉네임</label>
-          <input id="name" name="name" type="text" placeholder="예: 강율리 / 파국" />
+          <input id="name" name="name" type="text" placeholder="예: 홍길동" />
         </div>
 
         <div class="field">
@@ -235,42 +235,42 @@
           <p class="hint">※ 010-0000-0000 형식으로 입력해주세요 (- 포함)</p>
         </div>
 
-        <div class="field">
-          <label>상담 메뉴 선택</label>
-          <div class="menu-group">
-            <div class="choice" data-target="menu1">
-              <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" data-kind="simple" />
-              <div>
-                <div class="choice-title">3천원 리딩</div>
-                <div class="choice-desc">짧고 빠르게 핵심 방향만 확인하는 리딩</div>
-              </div>
-            </div>
+      <div class="field">
+  <label>상담 메뉴 선택</label>
+  <div class="menu-group">
+    <div class="choice" data-target="menu1">
+      <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" data-kind="simple" />
+      <div>
+        <div class="choice-title">3천원 리딩</div>
+        <div class="choice-desc">짧고 빠르게 현재 흐름과 방향성을 확인하는 즉답 리딩</div>
+      </div>
+    </div>
 
-            <div class="choice" data-target="menu2">
-              <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" data-kind="standard" />
-              <div>
-                <div class="choice-title">7천원 리딩</div>
-                <div class="choice-desc">조금 더 자세하게 흐름을 정리하는 리딩</div>
-              </div>
-            </div>
+    <div class="choice" data-target="menu2">
+      <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" data-kind="standard" />
+      <div>
+        <div class="choice-title">7천원 리딩</div>
+        <div class="choice-desc">현재 상황 + 이유 + 앞으로의 흐름까지 정리하는 심화 즉답 리딩</div>
+      </div>
+    </div>
 
-            <div class="choice" data-target="menu3">
-              <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" data-kind="booking" />
-              <div>
-                <div class="choice-title">18,000원 리딩</div>
-                <div class="choice-desc">선택지 비교와 방향 정리를 포함한 리딩</div>
-              </div>
-            </div>
+    <div class="choice" data-target="menu3">
+      <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" data-kind="booking" />
+      <div>
+        <div class="choice-title">18,000원 리딩</div>
+        <div class="choice-desc">예약 상담 | 선택지 비교·현실 조언·심층 흐름 분석 포함</div>
+      </div>
+    </div>
 
-            <div class="choice" data-target="menu4">
-              <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" data-kind="booking" />
-              <div>
-                <div class="choice-title">30,000원 리딩</div>
-                <div class="choice-desc">상황 전체 흐름을 깊게 분석하는 심층 리딩</div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="choice" data-target="menu4">
+      <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" data-kind="booking" />
+      <div>
+        <div class="choice-title">30,000원 리딩</div>
+        <div class="choice-desc">예약 상담 | 장기 흐름·인생 방향·맞춤 PDF 심층 분석</div>
+      </div>
+    </div>
+  </div>
+</div>
 
         <div class="field">
           <label for="question">질문 내용</label>
