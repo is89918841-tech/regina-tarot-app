@@ -1020,8 +1020,11 @@ app.post('/api/send-kakao', async (req, res) => {
       ? process.env.BIZM_LOTTERY_TEMPLATE_ID
       : process.env.BIZM_TEMPLATE_ID;
 
-    const resultUrl = isLottery
-      ? `https://regina-tarot-app.onrender.com/lottery-result.html?id=${id}`
+    const resultUrl =
+  consultation.product_kind === 'lottery'
+    ? `https://regina-tarot-app.onrender.com/lottery-result.html?id=${id}`
+    : consultation.product_kind === 'personality'
+      ? `https://regina-tarot-app.onrender.com/personality-result.html?id=${id}`
       : `https://regina-tarot-app.onrender.com/result.html?id=${id}`;
 
     const lotterySource = [
