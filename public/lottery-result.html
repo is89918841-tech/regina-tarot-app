@@ -1,1 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>복권 구매 추천일 결과 | 레지나타로썰</title>
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --panel:#151922;
+      --line:#2b3242;
+      --text:#f3f4f6;
+      --muted:#aeb6c7;
+      --accent:#d2b06b;
+      --danger:#ffb4b4;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(34,41,68,.45) 0%, rgba(11,13,18,0) 35%),
+        linear-gradient(180deg,#090b10 0%,#0b0d12 100%);
+      line-height:1.7;
+    }
+    .wrap{width:min(100%,760px);margin:0 auto;padding:32px 16px 56px}
+    .card{
+      background:rgba(21,25,34,.96);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 18px 60px rgba(0,0,0,.28);
+    }
+    .eyebrow{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(210,176,107,.35);
+      color:#ffe8ac;
+      background:rgba(210,176,107,.08);
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:14px;
+    }
+    h1{margin:0 0 10px;font-size:29px;letter-spacing:-0.04em;line-height:1.25}
+    .sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+    .result-box{
+      margin-top:18px;
+      padding:18px;
+      border-radius:16px;
+      background:#0f131b;
+      border:1px solid #333b4d;
+      white-space:pre-line;
+      font-size:15px;
+    }
+    .loading,.error{
+      padding:18px;
+      border-radius:16px;
+      background:#0f131b;
+      border:1px solid #333b4d;
+      color:var(--muted);
+      text-align:center;
+    }
+    .error{color:#ffe0e0;border-color:rgba(255,180,180,.3)}
+    .notice{
+      margin-top:16px;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(210,176,107,.28);
+      background:rgba(210,176,107,.08);
+      color:#f7e7bd;
+      font-size:13px;
+    }
+    .btns{display:grid;gap:10px;margin-top:18px}
+    .btn{
+      display:block;
+      text-align:center;
+      border-radius:14px;
+      padding:14px 16px;
+      font-weight:900;
+      text-decoration:none;
+      color:#16120a;
+      background:linear-gradient(180deg,#dbbe7e 0%,#c8a45c 100%);
+    }
+    .btn.ghost{
+      color:#ffe8ac;
+      background:#111827;
+      border:1px solid rgba(210,176,107,.32);
+    }
+    .foot{margin-top:16px;text-align:center;font-size:12px;color:#7e8798}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <span class="eyebrow">🍀 레지나타로썰</span>
+      <h1>복권 구매 추천일 분석 결과</h1>
+      <p class="sub">내담자님의 이번 달 복권 구매 추천일 리딩 결과입니다.</p>
 
+      <div id="content">
+        <div class="loading">결과를 불러오는 중입니다...</div>
+      </div>
+
+      <div class="notice">
+        본 리딩은 복권 당첨을 보장하는 내용이 아니라, 개인 흐름상 가볍게 시도하기 좋은 날짜를 정리한 참고용 분석입니다.
+      </div>
+
+      <div class="btns">
+        <a class="btn" href="/consultation.html">추가 상담 신청하기</a>
+        <a class="btn ghost" href="/">메인으로 돌아가기</a>
+      </div>
+
+      <div class="foot">레지나타로썰 · 복권 구매 추천일 결과</div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const content = document.getElementById('content');
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    async function fetchResult() {
+      if (!id) {
+        content.innerHTML = '<div class="error">접수번호가 없습니다. 카톡으로 받은 링크를 다시 확인해주세요.</div>';
+        return;
+      }
+
+      try {
+        const urls = [
+          `/api/consultations/${encodeURIComponent(id)}/result`,
+          `/api/consultations/${encodeURIComponent(id)}`,
+          `/api/admin/consultations/${encodeURIComponent(id)}`
+        ];
+
+        let data = null;
+
+        for (const url of urls) {
+          try {
+            const res = await fetch(url, { credentials: 'include' });
+            if (!res.ok) continue;
+            const json = await res.json();
+            if (json && (json.consultation || json.item || json.result || json.ok)) {
+              data = json;
+              break;
+            }
+          } catch {}
+        }
+
+        if (!data) {
+          throw new Error('결과를 찾을 수 없습니다.');
+        }
+
+        const item = data.consultation || data.item || data.result || data;
+        const name = item.name || item.nickname || '내담자님';
+        const reading =
+          item.finalReading ||
+          item.final_reading ||
+          item.reading ||
+          item.result ||
+          item.drawResult ||
+          item.draw_result ||
+          '';
+
+        if (!reading) {
+          content.innerHTML = `
+            <div class="error">
+              아직 리딩 결과가 준비되지 않았습니다.<br>
+              입금 확인 및 분석 완료 후 다시 확인해주세요.
+            </div>
+          `;
+          return;
+        }
+
+        content.innerHTML = `
+          <div class="result-box">
+<strong>${escapeHtml(name)} 리딩 결과</strong>
+
+${escapeHtml(reading)}
+          </div>
+        `;
+      } catch (error) {
+        content.innerHTML = `
+          <div class="error">
+            결과를 불러오지 못했어요.<br>
+            링크가 맞는지 확인해주세요.
+          </div>
+        `;
+      }
+    }
+
+    fetchResult();
+  </script>
+</body>
+</html>
