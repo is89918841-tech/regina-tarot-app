@@ -474,7 +474,10 @@
             ${escapeHtml((item.question || '').slice(0, 140) || '질문 없음')}
           </div>
           <div class="toolbar" style="margin-top:10px;">
-  <a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary">자동 실행</a>
+  ${item.product_kind === 'lottery'
+  ? `<a href="/admin-helper.html?id=${encodeURIComponent(item.id)}&autorun=1&mode=lottery" target="_blank" rel="noopener noreferrer" class="btn primary">복권 자동 실행</a>`
+  : `<a href="${helperUrl}" target="_blank" rel="noopener noreferrer" class="btn primary">자동 실행</a>`
+}
 
   <button class="btn danger" onclick="confirmPaid('${item.id}')">
     입금 확인 후 발송
