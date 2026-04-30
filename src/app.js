@@ -991,7 +991,7 @@ app.get('/admin/grand-tableau', requireAdmin, async (_, res) => {
   return res.sendFile(path.join(PRIVATE_DIR, 'admin-grand-tableau.html'));
 });
 
-app.get('/', (_, res) => {
+app.get('/consultation', (_, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'consultation.html'));
 });
 
@@ -1080,6 +1080,9 @@ app.get('/api/consultations/:id', async (req, res) => {
 
 // static pages
 app.use(express.static(PUBLIC_DIR));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
 
 ensureDataFiles()
   .then(() => {
