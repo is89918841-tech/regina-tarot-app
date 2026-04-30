@@ -672,27 +672,97 @@ app.post('/api/consultations', async (req, res) => {
 
     const items = await readJsonArray(CONSULTATION_FILE);
 
-    const consultation = {
-      id: makeConsultationId(),
-      name: name.trim(),
-      contact: contact.trim(),
-      question: question.trim(),
-      product_name: product_name.trim(),
-      product_price: Number(product_price || 0),
-      product_kind: product_kind || '',
-      payment_status,
-      status: product_kind === 'booking' ? 'waiting_booking' : 'waiting_payment_check',
-      created_at: new Date().toISOString(),
+   const birthInput = makeBirthInput(req.body || {});
 
-      recommendation: '',
-      drawResult: '',
-      finalReading: '',
-      kakaoText: '',
-      readingPlan: null,
-    };
+const consultation = {
+  id: makeConsultationId(),
+  name: name.trim(),
+  contact: contact.trim(),
+  question: question.trim(),
+  product_name: product_name.trim(),
+  product_price: Number(product_price || 0),
+  product_kind: product_kind || '',
+  payment_status,
+  status: product_kind === 'booking' ? 'waiting_booking' : 'waiting_payment_check',
+  created_at: new Date().toISOString(),
 
-    let autoReading = null;
-    let recommended = null;
+  recommendation: '',
+  drawResult: '',
+  finalReading: '',
+  kakaoText: '',
+  readingPlan: null,
+
+  birthInput,
+  birthProfile: null,
+  birthContext: '',
+};
+
+let autoReading = null;
+let recommended = null;
+
+if (product_kind === 'lottery') {
+  const birthContext = buildLotteryContext(birthInput);
+  const birthProfile = buildBirthProfile(birthInput);
+
+  const finalReading = await generateLotteryReadingText(
+    consultation,
+    birthContext
+  );
+
+  consultation.birthProfile = birthProfile;
+  consultation.birthContext = birthContext;
+  consultation.drawResult = birthContext;
+  consultation.finalReading = finalReading;
+
+  consultation.kakaoText = [
+    `${consultation.name}님 안녕하세요.`,
+    '',
+    '복권 구매 추천일 분석이 완료되었어요.',
+    '',
+    finalReading
+  ].join('\n');
+
+  consultation.status = 'ready_to_send';
+  consultation.reading_completed_at = new Date().toISOString();
+
+  autoReading = finalReading;
+  recommended = {
+    type: 'lottery',
+    birthProfile
+  };
+}
+
+if (product_kind === 'personality') {
+  const birthContext = buildReadingContext(birthInput);
+  const birthProfile = buildBirthProfile(birthInput);
+
+  const finalReading = await generatePersonalityReadingText(
+    consultation,
+    birthContext
+  );
+
+  consultation.birthProfile = birthProfile;
+  consultation.birthContext = birthContext;
+  consultation.drawResult = birthContext;
+  consultation.finalReading = finalReading;
+
+  consultation.kakaoText = [
+    `${consultation.name}님 안녕하세요.`,
+    '',
+    '성향 분석 결과가 준비되었어요.',
+    '',
+    finalReading
+  ].join('\n');
+
+  consultation.status = 'ready_to_send';
+  consultation.reading_completed_at = new Date().toISOString();
+
+  autoReading = finalReading;
+  recommended = {
+    type: 'personality',
+    birthProfile
+  };
+}
 
     if (product_kind === 'simple' || product_kind === 'standard') {
       const plan = await generateReadingPlan({
