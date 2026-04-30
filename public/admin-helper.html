@@ -472,7 +472,32 @@ async function saveDraw(draw) {
 }
 
 // 리딩 생성
+// 리딩 생성
 async function generateReading() {
+  if (mode === 'personality') {
+    const recommendation = document.getElementById('recommendationText').value || '';
+    const drawResult = document.getElementById('drawResultText').value || '';
+
+    const text = `내담자님, 이번 성향 분석은 사주 · 자미두수 · 점성술 기반의 출생정보와 드로우 흐름을 함께 참고해 기본 기질과 방향성을 정리하는 구조예요.
+
+${drawResult}
+
+위 흐름을 바탕으로 최종 리딩에서는 아래 내용을 중심으로 정리하면 좋습니다.
+
+- 타고난 기본 기질
+- 강점
+- 주의할 약점
+- 인간관계 방식
+- 돈과 일을 대하는 방식
+- 잘 맞는 방향
+- 지금부터 활용하면 좋은 조언
+
+성향 분석은 내담자님을 단정하는 것이 아니라, 자신을 더 잘 이해하고 선택의 방향을 잡기 위한 참고용 리딩으로 보면 좋아요.`;
+
+    document.getElementById('finalReadingText').value = text;
+    return;
+  }
+
   const res = await fetch(`/api/admin/consultations/${consultationId}/reading/generate`, {
     method:'POST',
     credentials: 'include',
@@ -491,9 +516,12 @@ async function generateReading() {
 function makeKakaoMessage() {
   const reading = document.getElementById('finalReadingText').value || '';
 
-  const title = mode === 'lottery'
+  const title =
+  mode === 'lottery'
     ? '🍀 레지나타로썰 복권 구매 추천일'
-    : '🔮 레지나타로썰 리딩 결과';
+    : mode === 'personality'
+      ? '🌌 레지나타로썰 성향 분석 결과'
+      : '🔮 레지나타로썰 리딩 결과';
 
   const msg = `${title}
 
