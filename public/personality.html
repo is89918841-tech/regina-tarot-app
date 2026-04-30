@@ -122,6 +122,7 @@
         <input type="hidden" id="product_name" value="성향 분석" />
         <input type="hidden" id="product_price" value="5000" />
         <input type="hidden" id="product_kind" value="personality" />
+        <input type="hidden" id="analysis_type" value="saju_ziwei_astrology_personality" />
 
         <div class="price-box">
           <strong>🌌 성향 분석 · 5,000원</strong>
@@ -140,8 +141,18 @@
         </div>
 
         <div class="field">
+          <label for="calendarType">양력 / 음력</label>
+          <select id="calendarType">
+            <option value="">선택해주세요</option>
+            <option value="양력">양력</option>
+            <option value="음력">음력</option>
+          </select>
+          <p class="hint">※ 실제 태어난 날짜가 양력인지 음력인지 선택해주세요.</p>
+        </div>
+
+        <div class="field">
           <label for="birth">생년월일</label>
-          <input id="birth" type="text" placeholder="예: 1993-01-25 / 양력 기준" />
+          <input id="birth" type="text" placeholder="예: 1993-01-25" />
         </div>
 
         <div class="field">
@@ -151,7 +162,7 @@
 
         <div class="field">
           <label for="birthCity">태어난 도시</label>
-          <input id="birthCity" type="text" placeholder="예: 서울특별시" />
+          <input id="birthCity" type="text" placeholder="예: 서울특별시, 대한민국" />
         </div>
 
         <div class="field">
@@ -198,6 +209,7 @@
 
     const nameInput = document.getElementById("name");
     const contactInput = document.getElementById("contact");
+    const calendarTypeInput = document.getElementById("calendarType");
     const birthInput = document.getElementById("birth");
     const birthTimeInput = document.getElementById("birthTime");
     const birthCityInput = document.getElementById("birthCity");
@@ -238,7 +250,13 @@
 
       if (!phonePattern.test(contactInput.value.trim())) {
         contactInput.focus();
-        showStatus("연락처를 정확히 입력해주세요.", "error");
+        showStatus("연락처를 010-0000-0000 형식으로 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!calendarTypeInput.value.trim()) {
+        calendarTypeInput.focus();
+        showStatus("양력 / 음력을 선택해주세요.", "error");
         return false;
       }
 
@@ -281,6 +299,8 @@
 
       const fullQuestion = [
         "[성향 분석]",
+        "분석 기준: 사주 · 자미두수 · 점성술 기반",
+        "양력/음력: " + calendarTypeInput.value.trim(),
         "생년월일: " + birthInput.value.trim(),
         "태어난 시간: " + (birthTimeInput.value.trim() || "시간 모름"),
         "태어난 도시: " + birthCityInput.value.trim(),
@@ -296,6 +316,7 @@
           product_name: "성향 분석",
           product_price: 5000,
           product_kind: "personality",
+          analysis_type: "saju_ziwei_astrology_personality",
           payment_status: "pending_manual_check"
         };
 
