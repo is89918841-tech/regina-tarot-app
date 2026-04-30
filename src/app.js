@@ -103,6 +103,16 @@ function makeConsultationId() {
   return `CONS-${y}${m}${d}-${t}`;
 }
 
+function makeBirthInput(body = {}) {
+  return {
+    birthDate: body.birthDate || body.birth_date || body.birth || '',
+    birthTime: body.birthTime || body.birth_time || body.time || '',
+    calendarType: body.calendarType || body.calendar_type || body.calendar || 'solar',
+    gender: body.gender || body.sex || '',
+    birthPlace: body.birthPlace || body.birth_place || body.city || ''
+  };
+}
+
 function makeFileId() {
   return `FILE-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -394,38 +404,31 @@ async function generateFinalReadingText(item, recommendation, drawResult) {
 반드시 지킬 것:
 - 내담자님이라고 부르기
 - 한국어 존댓말(~요)
-- 자연스럽고 사람 말투 (기계 느낌 금지)
-- 감정과 현실 흐름을 같이 보기
-- 카드 이름은 본문에서 반복 나열하지 말고 흐름 중심으로 해석
+- 자연스럽고 사람 말투
+- 카드 이름 반복 나열 금지
+- 흐름 중심 해석
 - 공포 조장 금지
-- 불필요한 면책 문구 금지
-
-크몽 채팅용 최적화:
-- 너무 길게 늘어지지 않게 작성
-- 읽기 편하게 문단 구분
-- 말투는 부드럽고 자연스럽게
-- 상담 느낌으로 이어지게 작성
+- 위로보다 정리와 결정 중심
 
 출력 방식:
-- ${compact ? '1문단으로 핵심만 정리' : '2~3문단으로 상황 → 흐름 → 정리 구조'}
-- 처음 보는 사람도 이해할 수 있게 쓰기
-- 위로보다 정리와 결정을 돕는 방향으로 쓰기
-- 마지막에 이어서 할 수 있는 질문 1~2개 제안
+- ${compact ? '1문단 핵심형' : '2~3문단 구조형'}
+- 상황 → 흐름 → 현실 조언
+- 마지막에 추가 질문 1~2개 제안
       `.trim(),
     },
     {
       role: 'user',
       content: `
-내담자님 질문:
+질문:
 ${item.question || ''}
 
-추천 내용:
-${recommendation || '없음'}
+추천:
+${recommendation || ''}
 
-드로우 결과:
-${drawResult || '없음'}
+드로우:
+${drawResult || ''}
 
-이 정보를 바탕으로 최종 리딩을 작성해주세요.
+최종 리딩 작성
       `.trim(),
     },
   ];
@@ -433,6 +436,86 @@ ${drawResult || '없음'}
   return callOpenAI(messages, 0.9);
 }
 
+async function generateLotteryReadingText(item, birthContext) {
+  const messages = [
+    {
+      role: 'system',
+      content: `
+당신은 레지나타로썰의 복권 구매 추천일 분석 작성자입니다.
+
+반드시 지킬 것:
+- 내담자님 호칭
+- 한국어 존댓말(~요)
+- 당첨 보장 금지
+- 과소비 금지
+- 이번 달 추천일 3개
+- 재물 흐름 중심
+- 소액 구매/재미/참고용 강조
+- 마지막에 무리한 소비 주의
+
+출력 구조:
+1. 재물 흐름 요약
+2. 추천일 3개
+3. 날짜별 이유
+4. 주의사항
+      `.trim(),
+    },
+    {
+      role: 'user',
+      content: `
+질문:
+${item.question || ''}
+
+출생정보:
+${birthContext}
+
+복권 구매 추천일 리딩 작성
+      `.trim(),
+    },
+  ];
+
+  return callOpenAI(messages, 0.8);
+}
+
+async function generatePersonalityReadingText(item, birthContext) {
+  const messages = [
+    {
+      role: 'system',
+      content: `
+당신은 레지나타로썰의 성향 분석 작성자입니다.
+
+반드시 지킬 것:
+- 내담자님 호칭
+- 한국어 존댓말(~요)
+- 사주 기반 현실형 분석
+- 성향/강점/패턴/직업 방향 정리
+- 초보자도 이해 가능
+- 구조적 분석
+
+출력 구조:
+1. 핵심 성향
+2. 강점
+3. 반복 패턴
+4. 커리어/관계 방향
+5. 조언
+      `.trim(),
+    },
+    {
+      role: 'user',
+      content: `
+질문:
+${item.question || ''}
+
+출생정보:
+${birthContext}
+
+성향 분석 리딩 작성
+      `.trim(),
+    },
+  ];
+
+  return callOpenAI(messages, 0.8);
+}
 const storage = multer.diskStorage({
   destination: async (_, __, cb) => {
     try {
