@@ -53,7 +53,11 @@ const shouldAutorun = qs.get('autorun') === '1';
 const mode = qs.get('mode') || 'normal';
 
 document.getElementById('modeBadge').textContent =
-  mode === 'lottery' ? '복권 구매 추천일 모드' : '일반 리딩 모드';
+  mode === 'lottery'
+    ? '복권 구매 추천일 모드'
+    : mode === 'personality'
+      ? '성향 분석 모드'
+      : '일반 리딩 모드';
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
@@ -163,6 +167,33 @@ async function generateRecommendation() {
     return;
   }
 
+  if (mode === 'personality') {
+    const text = `질문 요약: 사주 · 자미두수 · 점성술 기반 기본 성향 분석
+
+추천 덱: 세피로트 타로
+스프레드: 성향 구조 분석 7장
+장수: 7
+보조도구: 오간기, 오방기, 주역
+
+분석 목적:
+내담자님의 출생정보를 기준으로 타고난 기질, 사고방식, 강점, 약점, 인간관계 성향, 직업/돈의 방향성을 정리합니다.
+
+출력 방향:
+- 기본 기질
+- 강점
+- 약점 또는 주의점
+- 인간관계 성향
+- 일/돈을 대하는 방식
+- 잘 맞는 방향
+- 앞으로 활용하면 좋은 조언
+
+주의:
+성향 분석은 단정이 아니라 내담자님이 자신을 이해하고 방향을 정리하기 위한 참고용 리딩으로 작성합니다.`;
+
+    document.getElementById('recommendationText').value = text;
+    return;
+  }
+
   const res = await fetch(`/api/admin/consultations/${consultationId}/recommendation/generate`, {
     method:'POST',
     credentials: 'include'
@@ -170,7 +201,6 @@ async function generateRecommendation() {
   const data = await res.json();
   document.getElementById('recommendationText').value = data.recommendation || '';
 }
-
 function getDeckName(rec) {
   let deckName = '유니버셜 타로';
   const deckMatch =
@@ -390,6 +420,13 @@ ${luckyDays.map((v, i) => `${i + 1}. 이번 달 ${v}일`).join('\n')}
 async function drawCards() {
   if (mode === 'lottery') {
     return drawLotteryCards();
+  }
+
+  if (mode === 'personality') {
+    document.getElementById('recommendationText').value = `추천 덱: 세피로트 타로
+스프레드: 성향 구조 분석 7장
+장수: 7
+보조도구: 오간기, 오방기, 주역`;
   }
 
   const rec = document.getElementById('recommendationText').value || '';
