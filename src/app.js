@@ -10,6 +10,12 @@ const OpenAI = require('openai');
 const fetch = require('node-fetch');
 const { generateReadingPlan } = require('./services/readingService');
 
+const {
+  buildBirthProfile,
+  buildReadingContext,
+  buildLotteryContext
+} = require('./lib/birthCalculator');
+
 const app = express();
 
 const ROOT_DIR = path.resolve(__dirname, '..');
