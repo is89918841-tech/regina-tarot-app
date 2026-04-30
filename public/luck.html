@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>복권 사기 좋은 날 | 레지나타로썰</title>
+  <title>복권 구매 추천일 | 레지나타로썰</title>
   <style>
     :root{
       --bg:#0b0d12;
@@ -36,7 +36,7 @@
     }
     .field{margin-bottom:14px}
     label{display:block;margin-bottom:7px;font-size:13px;font-weight:700;color:#f8f7f3}
-    input, textarea, select{
+    input, select{
       width:100%;
       border:1px solid #333b4d;
       background:#0d1017;
@@ -46,12 +46,11 @@
       font-size:14px;
       outline:none;
     }
-    input:focus, textarea:focus, select:focus{
+    input:focus, select:focus{
       border-color:rgba(210,176,107,.9);
       box-shadow:0 0 0 4px rgba(210,176,107,.12);
       background:#0f131c;
     }
-    textarea{min-height:110px;resize:vertical;line-height:1.6}
     .hint{margin-top:6px;font-size:12px;color:#8f98aa;line-height:1.55}
     .price-box{
       margin:16px 0;
@@ -112,20 +111,21 @@
   <div class="wrap">
     <a class="home-link" href="/">← 메인으로 돌아가기</a>
 
-    <h1>복권 사기 좋은 날 분석 신청</h1>
+    <h1>복권 구매 추천일 분석</h1>
     <p class="sub">
-      사주 · 자미두수 · 점성술 기반으로 이번 달 복권/재물운 흐름이 비교적 열리는 날짜를 가볍게 분석합니다.
+      사주 · 자미두수 · 점성술 기반으로 이번 달 복권 구매 추천일을 분석해드립니다.
     </p>
 
     <div class="card">
       <form id="questionForm" novalidate>
-        <input type="hidden" id="product_name" name="product_name" value="복권 사기 좋은 날" />
+        <input type="hidden" id="product_name" name="product_name" value="복권 구매 추천일" />
         <input type="hidden" id="product_price" name="product_price" value="1000" />
         <input type="hidden" id="product_kind" name="product_kind" value="lottery" />
+        <input type="hidden" id="analysis_type" name="analysis_type" value="saju_ziwei_astrology_lottery" />
 
         <div class="price-box">
-          <strong>🍀 복권 사기 좋은 날 · 1,000원</strong>
-          <p>이번 달 기준으로 소액 행운 테스트에 좋은 날짜를 정리해드려요.</p>
+          <strong>🍀 복권 구매 추천일 · 1,000원</strong>
+          <p>개인 출생정보를 바탕으로 이번 달 기준 복권 구매 추천일을 정리해드려요.</p>
         </div>
 
         <div class="field">
@@ -140,8 +140,17 @@
         </div>
 
         <div class="field">
+          <label for="calendarType">양력 / 음력</label>
+          <select id="calendarType" name="calendarType">
+            <option value="">선택해주세요</option>
+            <option value="양력">양력</option>
+            <option value="음력">음력</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="birth">생년월일</label>
-          <input id="birth" name="birth" type="text" placeholder="예: 1993-01-25 / 양력 기준" />
+          <input id="birth" name="birth" type="text" placeholder="예: 1993-01-25" />
         </div>
 
         <div class="field">
@@ -151,7 +160,7 @@
 
         <div class="field">
           <label for="birthCity">태어난 도시</label>
-          <input id="birthCity" name="birthCity" type="text" placeholder="예: 서울특별시" />
+          <input id="birthCity" name="birthCity" type="text" placeholder="예: 서울특별시, 대한민국" />
         </div>
 
         <div class="field">
@@ -164,16 +173,11 @@
           </select>
         </div>
 
-        <div class="field">
-          <label for="question">추가로 보고 싶은 내용</label>
-          <textarea id="question" name="question" placeholder="예: 이번 달 중 복권 사기 좋은 날을 알고 싶어요. 피해야 할 날도 같이 알려주세요."></textarea>
-        </div>
-
-        <button type="button" class="btn" id="step1">복권운 분석 신청하기</button>
+        <button type="button" class="btn" id="step1">복권 구매 추천일 신청하기</button>
 
         <div class="payment-box hidden" id="paymentBox">
           <strong>결제 안내</strong>
-          <p>선택한 메뉴: 복권 사기 좋은 날</p>
+          <p>선택한 메뉴: 복권 구매 추천일</p>
           <p>금액: 1,000원</p>
           <p>입금 확인 후 순차적으로 분석이 진행됩니다.</p>
           <p class="payment-acct">카카오뱅크 3333-24-8160180 강율리</p>
@@ -182,10 +186,12 @@
 
         <div id="statusBox" class="status"></div>
 
-        <p class="important">복권 당첨을 보장하는 상품이 아니라, 개인 명식 흐름상 가볍게 시도하기 좋은 날짜를 보는 분석입니다.</p>
+        <p class="important">
+          복권 당첨을 보장하는 상품이 아니라, 개인 명식 흐름상 복권 구매를 시도하기 좋은 날짜를 보는 분석입니다.
+        </p>
       </form>
 
-      <div class="foot">레지나타로썰 · 복권운 분석 전용</div>
+      <div class="foot">레지나타로썰 · 복권 구매 추천일 분석</div>
     </div>
   </div>
 
@@ -198,11 +204,11 @@
 
     const nameInput = document.getElementById("name");
     const contactInput = document.getElementById("contact");
+    const calendarTypeInput = document.getElementById("calendarType");
     const birthInput = document.getElementById("birth");
     const birthTimeInput = document.getElementById("birthTime");
     const birthCityInput = document.getElementById("birthCity");
     const genderInput = document.getElementById("gender");
-    const questionInput = document.getElementById("question");
 
     function showStatus(message, type = "ok") {
       statusBox.className = "status show " + type;
@@ -239,6 +245,12 @@
       if (!phonePattern.test(contactInput.value.trim())) {
         contactInput.focus();
         showStatus("연락처를 010-0000-0000 형식으로 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!calendarTypeInput.value.trim()) {
+        calendarTypeInput.focus();
+        showStatus("양력 / 음력을 선택해주세요.", "error");
         return false;
       }
 
@@ -280,12 +292,14 @@
       finalSubmitBtn.textContent = "접수 저장 중...";
 
       const fullQuestion = [
-        "[복권 사기 좋은 날 분석]",
+        "[복권 구매 추천일 분석]",
+        "요청 내용: 이번 달 기준 복권 구매 추천일을 알고 싶어요.",
+        "분석 기준: 사주 · 자미두수 · 점성술 기반",
+        "양력/음력: " + calendarTypeInput.value.trim(),
         "생년월일: " + birthInput.value.trim(),
         "태어난 시간: " + (birthTimeInput.value.trim() || "시간 모름"),
         "태어난 도시: " + birthCityInput.value.trim(),
-        "성별: " + genderInput.value.trim(),
-        "추가 요청: " + (questionInput.value.trim() || "이번 달 복권 사기 좋은 날과 피해야 할 날을 알고 싶어요.")
+        "성별: " + genderInput.value.trim()
       ].join("\\n");
 
       try {
@@ -293,9 +307,10 @@
           name: nameInput.value.trim(),
           contact: contactInput.value.trim(),
           question: fullQuestion,
-          product_name: "복권 사기 좋은 날",
+          product_name: "복권 구매 추천일",
           product_price: 1000,
           product_kind: "lottery",
+          analysis_type: "saju_ziwei_astrology_lottery",
           payment_status: "pending_manual_check"
         };
 
