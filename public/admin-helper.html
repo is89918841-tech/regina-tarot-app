@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>레지나 리딩 보조앱</title>
-
 <style>
 body { background:#0b1020; color:#fff; font-family:sans-serif; margin:0; }
 .app { padding:20px; max-width:900px; margin:auto; }
@@ -12,46 +11,49 @@ body { background:#0b1020; color:#fff; font-family:sans-serif; margin:0; }
 .btn.primary { background:#8b5cf6; }
 textarea { width:100%; min-height:140px; background:#111827; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; box-sizing:border-box; }
 .panel { border:1px solid #333; padding:16px; border-radius:12px; margin-top:16px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:999px; background:#1f2937; color:#fcd34d; font-size:13px; margin-left:8px; }
 </style>
 </head>
 
 <body>
 <div class="app">
+  <h1>레지나 리딩 보조앱 <span id="modeBadge" class="badge"></span></h1>
 
-<h1>레지나 리딩 보조앱</h1>
+  <div class="panel">
+    <button id="runBtn" class="btn primary">자동 실행</button>
+  </div>
 
-<div class="panel">
-  <button id="runBtn" class="btn primary">자동 실행</button>
-</div>
+  <div class="panel">
+    <h3>추천</h3>
+    <textarea id="recommendationText"></textarea>
+  </div>
 
-<div class="panel">
-  <h3>추천</h3>
-  <textarea id="recommendationText"></textarea>
-</div>
+  <div class="panel">
+    <h3>드로우 결과</h3>
+    <textarea id="drawResultText"></textarea>
+  </div>
 
-<div class="panel">
-  <h3>드로우 결과</h3>
-  <textarea id="drawResultText"></textarea>
-</div>
+  <div class="panel">
+    <h3>최종 리딩</h3>
+    <textarea id="finalReadingText"></textarea>
+  </div>
 
-<div class="panel">
-  <h3>최종 리딩</h3>
-  <textarea id="finalReadingText"></textarea>
-</div>
-
-<div class="panel">
-  <h3>카톡 발송용 메시지</h3>
-  <button class="btn primary" onclick="makeKakaoMessage()">카톡 발송용 생성</button>
-  <button class="btn" onclick="copyKakaoMessage()">복사</button>
-  <textarea id="kakaoMessageText"></textarea>
-</div>
-
+  <div class="panel">
+    <h3>카톡 발송용 메시지</h3>
+    <button class="btn primary" onclick="makeKakaoMessage()">카톡 발송용 생성</button>
+    <button class="btn" onclick="copyKakaoMessage()">복사</button>
+    <textarea id="kakaoMessageText"></textarea>
+  </div>
 </div>
 
 <script>
 const qs = new URLSearchParams(location.search);
 const consultationId = qs.get('id');
 const shouldAutorun = qs.get('autorun') === '1';
+const mode = qs.get('mode') || 'normal';
+
+document.getElementById('modeBadge').textContent =
+  mode === 'lottery' ? '복권 구매 추천일 모드' : '일반 리딩 모드';
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
@@ -140,6 +142,27 @@ async function loadConsultation() {
 
 // 추천 생성
 async function generateRecommendation() {
+  if (mode === 'lottery') {
+    const text = `질문 요약: 이번 달 기준 복권 구매 추천일 분석
+
+추천 방식: 사주 · 자미두수 · 점성술 기반 재물 타이밍 분석
+
+분석 목적:
+내담자님의 출생정보를 기준으로 이번 달 복권 구매를 시도하기 좋은 날짜를 정리합니다.
+
+출력 방향:
+- 복권 구매 추천일 3개
+- 각 날짜별 짧은 이유
+- 무리하지 말아야 할 주의 문장
+- 소액 시도 중심의 현실적 조언
+
+주의:
+복권 당첨을 보장하지 않고, 개인 명식 흐름상 시도하기 좋은 타이밍만 안내합니다.`;
+
+    document.getElementById('recommendationText').value = text;
+    return;
+  }
+
   const res = await fetch(`/api/admin/consultations/${consultationId}/recommendation/generate`, {
     method:'POST',
     credentials: 'include'
@@ -277,9 +300,7 @@ async function drawSupport(type, rec) {
         'Berkano','Ehwaz','Mannaz','Laguz','Ingwaz',
         'Dagaz','Othala','Wyrd'
       ];
-
-      const pickRune = shuffle([...rune]).slice(0, 2);
-      return `**룬**: ${pickRune.join(', ')}`;
+      return `**룬**: ${shuffle([...rune]).slice(0, 2).join(', ')}`;
     }
 
     if (type === 'lenormand') {
@@ -291,18 +312,11 @@ async function drawSupport(type, rec) {
         '25 반지','26 책','27 편지','28 남자','29 여자','30 백합',
         '31 태양','32 달','33 열쇠','34 물고기','35 닻','36 십자가'
       ];
-
-      const pick2 = shuffle([...lenormand]).slice(0, 2);
-      return `**레노먼드**: ${pick2.join(', ')}`;
+      return `**레노먼드**: ${shuffle([...lenormand]).slice(0, 2).join(', ')}`;
     }
 
-    if (type === 'ogangi') {
-      return `**오간기**: ${pickOne(['목(木)','화(火)','토(土)','금(金)','수(水)'])}`;
-    }
-
-    if (type === 'obanggi') {
-      return `**오방기**: ${pickOne(['동','서','남','북','중앙'])}`;
-    }
+    if (type === 'ogangi') return `**오간기**: ${pickOne(['목(木)','화(火)','토(土)','금(金)','수(水)'])}`;
+    if (type === 'obanggi') return `**오방기**: ${pickOne(['동','서','남','북','중앙'])}`;
 
     if (type === 'gwimunbang') {
       const list = await loadJsonList('/data/gwimunbang_titles.json', ['무명귀', '우물귀', '사자귀', '호귀']);
@@ -336,9 +350,7 @@ async function drawSupport(type, rec) {
       return `**백제금동대향로 오라클 카드**: ${pickOne(list)}`;
     }
 
-    if (type === 'oracle') {
-      return await drawOracleFromRecommendation(rec);
-    }
+    if (type === 'oracle') return await drawOracleFromRecommendation(rec);
 
     return '';
   } catch (e) {
@@ -347,8 +359,39 @@ async function drawSupport(type, rec) {
   }
 }
 
+// 복권 전용 드로우
+async function drawLotteryCards() {
+  const luckyDays = [];
+  while (luckyDays.length < 3) {
+    const day = Math.floor(Math.random() * 28) + 1;
+    if (!luckyDays.includes(day)) luckyDays.push(day);
+  }
+  luckyDays.sort((a, b) => a - b);
+
+  const result = `**복권 구매 추천일 분석**
+
+**추천일**
+${luckyDays.map((v, i) => `${i + 1}. 이번 달 ${v}일`).join('\n')}
+
+**분석 기준**
+사주 · 자미두수 · 점성술 기반 재물 타이밍 분석
+
+**흐름 요약**
+이번 달은 큰 기대를 걸고 무리하기보다, 소액으로 가볍게 시도하는 쪽이 더 안정적인 흐름입니다.
+
+**주의**
+복권 당첨을 보장하는 분석이 아니라, 개인 명식 흐름상 시도하기 좋은 날짜를 정리한 참고용 리딩입니다.`;
+
+  document.getElementById('drawResultText').value = result;
+  return result;
+}
+
 // 자동 드로우
 async function drawCards() {
+  if (mode === 'lottery') {
+    return drawLotteryCards();
+  }
+
   const rec = document.getElementById('recommendationText').value || '';
   const deckName = getDeckName(rec);
   const count = getCardCount(rec);
@@ -411,7 +454,11 @@ async function generateReading() {
 function makeKakaoMessage() {
   const reading = document.getElementById('finalReadingText').value || '';
 
-  const msg = `🔮 레지나타로썰 리딩 결과
+  const title = mode === 'lottery'
+    ? '🍀 레지나타로썰 복권 구매 추천일'
+    : '🔮 레지나타로썰 리딩 결과';
+
+  const msg = `${title}
 
 내담자님, 리딩 결과 정리해드려요.
 
