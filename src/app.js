@@ -1003,8 +1003,95 @@ app.post('/api/send-kakao', async (req, res) => {
   try {
     const { phone, name, id } = req.body;
 
+    const items = await readJsonArray(CONSULTATION_FILE);
+    const consultation = items.find((x) => x.id === id);
+
+    if (!consultation) {
+      return res.status(404).json({
+        ok: false,
+        error: '상담 정보를 찾지 못했어요.'
+      });
+    }
+
     const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
-    const resultUrl = `https://regina-tarot-app.onrender.com/result.html?id=${id}`;
+    const isLottery = consultation.product_kind === 'lottery';
+
+    const templateId = isLottery
+      ? process.env.BIZM_LOTTERY_TEMPLATE_ID
+      : process.env.BIZM_TEMPLATE_ID;
+
+    const resultUrl = isLottery
+      ? `https://regina-tarot-app.onrender.com/lottery-result.html?id=${id}`
+      : `https://regina-tarot-app.onrender.com/result.html?id=${id}`;
+
+    const lotterySource = [
+      consultation.drawResult || '',
+      consultation.finalReading || ''
+    ].join('\n');
+
+    function extractLotteryDays(text) {
+      const match = String(text).match(/추천일[\s\S]*?(\d{1,2}일[\s\S]*?\d{1,2}일[\s\S]*?\d{1,2}일)/);
+      if (match) {
+        return match[1]
+          .replace(/\n+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      const days = [...String(text).matchAll(/(\d{1,2})일/g)]
+        .map((m) => `${m[1]}일`)
+        .filter((v, i, arr) => arr.indexOf(v) === i)
+        .slice(0, 3);
+
+      return days.length ? days.join(' / ') : '상세 페이지에서 확인해주세요';
+    }
+
+    function extractLotterySummary(text) {
+      const match =
+        String(text).match(/흐름 요약[\s\S]*?\n([\s\S]*?)(\n\*\*|$)/) ||
+        String(text).match(/재물 흐름 요약[\s\S]*?\n([\s\S]*?)(\n\*\*|$)/);
+
+      if (match && match[1]) {
+        return match[1]
+          .replace(/\n+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 80);
+      }
+
+      return '이번 달은 무리한 기대보다 소액으로 가볍게 시도하는 흐름이 더 안정적입니다.';
+    }
+
+    const lotteryDays = extractLotteryDays(lotterySource);
+    const lotterySummary = extractLotterySummary(lotterySource);
+
+    const messageText = isLottery
+      ? `[레지나타로썰]
+
+내담자님의 복권 구매 추천일 분석이 완료되었어요 🍀
+
+이번 달 추천일
+${lotteryDays}
+
+재물 흐름 요약
+${lotterySummary}
+
+상세 리딩 확인
+${resultUrl}
+
+※ 본 분석은 개인 흐름을 바탕으로 한 참고용 리딩이며, 과도한 구매보다는 가벼운 재미와 흐름 확인용으로 활용하시길 추천드립니다.`
+      : `[레지나타로썰]
+
+안녕하세요, ${name || '고객'}님.
+
+요청하신 타로 리딩 결과가 준비되었습니다.
+아래 버튼을 눌러 결과를 확인해주세요.
+
+감사합니다.`;
+
+    const buttonName = isLottery
+      ? '복권 리딩 확인하기'
+      : '리딩 보기';
 
     const result = await fetch('https://alimtalk-api.bizmsg.kr/v2/sender/send', {
       method: 'POST',
@@ -1017,19 +1104,12 @@ app.post('/api/send-kakao', async (req, res) => {
           message_type: 'AT',
           phn: cleanPhone,
           profile: process.env.BIZM_PROFILE_KEY,
-          tmplId: process.env.BIZM_TEMPLATE_ID,
-          msg: `[레지나타로썰]
-
-안녕하세요, ${name || '고객'}님.
-
-요청하신 타로 리딩 결과가 준비되었습니다.
-아래 버튼을 눌러 결과를 확인해주세요.
-
-감사합니다.`,
+          tmplId: templateId,
+          msg: messageText,
           reserveDt: '00000000000000',
           button1: {
             type: 'WL',
-            name: '리딩 보기',
+            name: buttonName,
             url_mobile: resultUrl,
             url_pc: resultUrl
           }
@@ -1042,7 +1122,10 @@ app.post('/api/send-kakao', async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({
+      ok: false,
+      error: err.message
+    });
   }
 });
 
