@@ -1,1 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>성향 분석 | 레지나타로썰</title>
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --panel:#151922;
+      --line:#2b3242;
+      --text:#f3f4f6;
+      --muted:#aeb6c7;
+      --accent:#d2b06b;
+      --danger:#ffb4b4;
+      --ok:#86efac;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(34,41,68,.45) 0%, rgba(11,13,18,0) 35%),
+        linear-gradient(180deg,#090b10 0%,#0b0d12 100%);
+    }
+    .wrap{width:min(100%,760px);margin:0 auto;padding:32px 16px 56px}
+    h1{margin:0 0 10px;font-size:30px;line-height:1.25;letter-spacing:-0.03em}
+    .sub{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.7}
+    .card{
+      background:rgba(21,25,34,.96);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 18px 60px rgba(0,0,0,.28);
+    }
+    .field{margin-bottom:14px}
+    label{display:block;margin-bottom:7px;font-size:13px;font-weight:700;color:#f8f7f3}
+    input, textarea, select{
+      width:100%;
+      border:1px solid #333b4d;
+      background:#0d1017;
+      color:var(--text);
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:14px;
+      outline:none;
+    }
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(210,176,107,.9);
+      box-shadow:0 0 0 4px rgba(210,176,107,.12);
+      background:#0f131c;
+    }
+    textarea{min-height:110px;resize:vertical;line-height:1.6}
+    .hint{margin-top:6px;font-size:12px;color:#8f98aa;line-height:1.55}
+    .price-box{
+      margin:16px 0;
+      padding:16px;
+      border-radius:14px;
+      border:1px solid rgba(210,176,107,.35);
+      background:rgba(210,176,107,.08);
+    }
+    .price-box strong{display:block;color:#fff3d2;font-size:17px;margin-bottom:6px}
+    .price-box p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+    .btn{
+      width:100%;
+      border:0;
+      border-radius:13px;
+      background:linear-gradient(180deg,#dbbe7e 0%,#c8a45c 100%);
+      color:#16120a;
+      padding:15px 16px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btn:disabled{opacity:.65;cursor:default}
+    .payment-box{
+      margin-top:16px;
+      padding:16px;
+      border-radius:14px;
+      border:1px solid #333b4d;
+      background:#0f131b;
+    }
+    .payment-box strong{display:block;margin-bottom:10px;font-size:15px;color:#fff3d2}
+    .payment-box p{margin:0 0 8px;color:var(--muted);font-size:14px;line-height:1.65}
+    .payment-acct{
+      margin-top:10px;
+      font-size:16px!important;
+      color:#fff4d7!important;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+    .hidden{display:none!important}
+    .status{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:13px;
+      line-height:1.6;
+      display:none;
+      white-space:pre-line;
+    }
+    .status.show{display:block}
+    .status.ok{background:rgba(134,239,172,.08);border:1px solid rgba(134,239,172,.25);color:#dcfce7}
+    .status.error{background:rgba(255,180,180,.08);border:1px solid rgba(255,180,180,.22);color:#ffe0e0}
+    .important{margin-top:10px;font-size:12px;color:var(--danger);line-height:1.55}
+    .foot{margin-top:16px;text-align:center;font-size:12px;color:#7e8798}
+    .home-link{display:inline-block;margin-bottom:18px;color:#d2b06b;font-size:13px;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="home-link" href="/">← 메인으로 돌아가기</a>
 
+    <h1>성향 분석 신청</h1>
+    <p class="sub">
+      사주 · 자미두수 · 점성술 기반으로 기본 성향, 기질, 사고방식 흐름을 분석합니다.
+    </p>
+
+    <div class="card">
+      <form id="questionForm" novalidate>
+        <input type="hidden" id="product_name" value="성향 분석" />
+        <input type="hidden" id="product_price" value="5000" />
+        <input type="hidden" id="product_kind" value="personality" />
+
+        <div class="price-box">
+          <strong>🌌 성향 분석 · 5,000원</strong>
+          <p>기본 성향과 기질을 중심으로 나의 흐름을 가볍지만 밀도 있게 정리합니다.</p>
+        </div>
+
+        <div class="field">
+          <label for="name">성함 / 닉네임</label>
+          <input id="name" type="text" placeholder="예: 강율리 / 파국" />
+        </div>
+
+        <div class="field">
+          <label for="contact">연락처</label>
+          <input id="contact" type="text" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" />
+          <p class="hint">※ 010-0000-0000 형식으로 입력해주세요 (- 포함)</p>
+        </div>
+
+        <div class="field">
+          <label for="birth">생년월일</label>
+          <input id="birth" type="text" placeholder="예: 1993-01-25 / 양력 기준" />
+        </div>
+
+        <div class="field">
+          <label for="birthTime">태어난 시간</label>
+          <input id="birthTime" type="text" placeholder="예: 오전 9시 30분 / 모르면 시간 모름" />
+        </div>
+
+        <div class="field">
+          <label for="birthCity">태어난 도시</label>
+          <input id="birthCity" type="text" placeholder="예: 서울특별시" />
+        </div>
+
+        <div class="field">
+          <label for="gender">성별</label>
+          <select id="gender">
+            <option value="">선택해주세요</option>
+            <option value="여자">여자</option>
+            <option value="남자">남자</option>
+            <option value="기타/미기재">기타/미기재</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="question">특히 알고 싶은 부분</label>
+          <textarea id="question" placeholder="예: 저는 어떤 성향이 강한지, 직업적으로 어떤 방향이 맞는지 궁금해요."></textarea>
+        </div>
+
+        <button type="button" class="btn" id="step1">성향 분석 신청하기</button>
+
+        <div class="payment-box hidden" id="paymentBox">
+          <strong>결제 안내</strong>
+          <p>선택한 메뉴: 성향 분석</p>
+          <p>금액: 5,000원</p>
+          <p>입금 확인 후 순차적으로 분석이 진행됩니다.</p>
+          <p class="payment-acct">카카오뱅크 3333-24-8160180 강율리</p>
+          <button type="submit" class="btn" id="finalSubmitBtn" style="margin-top:14px;">입금 완료 후 최종 접수하기</button>
+        </div>
+
+        <div id="statusBox" class="status"></div>
+
+        <p class="important">기본 성향 분석 상품이며, 연애·재물·직업·대운 심층 분석은 프리미엄 상품에서 더 깊게 진행됩니다.</p>
+      </form>
+
+      <div class="foot">레지나타로썰 · 성향 분석 전용</div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("questionForm");
+    const step1 = document.getElementById("step1");
+    const paymentBox = document.getElementById("paymentBox");
+    const statusBox = document.getElementById("statusBox");
+    const finalSubmitBtn = document.getElementById("finalSubmitBtn");
+
+    const nameInput = document.getElementById("name");
+    const contactInput = document.getElementById("contact");
+    const birthInput = document.getElementById("birth");
+    const birthTimeInput = document.getElementById("birthTime");
+    const birthCityInput = document.getElementById("birthCity");
+    const genderInput = document.getElementById("gender");
+    const questionInput = document.getElementById("question");
+
+    function showStatus(message, type = "ok") {
+      statusBox.className = "status show " + type;
+      statusBox.textContent = message;
+    }
+
+    function clearStatus() {
+      statusBox.className = "status";
+      statusBox.textContent = "";
+    }
+
+    contactInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/[^0-9]/g, "");
+      if (value.length > 11) value = value.slice(0, 11);
+
+      if (value.length < 4) {
+        e.target.value = value;
+      } else if (value.length < 8) {
+        e.target.value = value.slice(0, 3) + "-" + value.slice(3);
+      } else {
+        e.target.value = value.slice(0, 3) + "-" + value.slice(3, 7) + "-" + value.slice(7, 11);
+      }
+    });
+
+    function validateBaseFields() {
+      const phonePattern = /^010-\d{4}-\d{4}$/;
+
+      if (!nameInput.value.trim()) {
+        nameInput.focus();
+        showStatus("성함 / 닉네임을 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!phonePattern.test(contactInput.value.trim())) {
+        contactInput.focus();
+        showStatus("연락처를 정확히 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!birthInput.value.trim()) {
+        birthInput.focus();
+        showStatus("생년월일을 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!birthCityInput.value.trim()) {
+        birthCityInput.focus();
+        showStatus("태어난 도시를 입력해주세요.", "error");
+        return false;
+      }
+
+      if (!genderInput.value.trim()) {
+        genderInput.focus();
+        showStatus("성별을 선택해주세요.", "error");
+        return false;
+      }
+
+      return true;
+    }
+
+    step1.addEventListener("click", () => {
+      clearStatus();
+      if (!validateBaseFields()) return;
+      paymentBox.classList.remove("hidden");
+      paymentBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearStatus();
+
+      if (!validateBaseFields()) return;
+
+      finalSubmitBtn.disabled = true;
+      finalSubmitBtn.textContent = "접수 저장 중...";
+
+      const fullQuestion = [
+        "[성향 분석]",
+        "생년월일: " + birthInput.value.trim(),
+        "태어난 시간: " + (birthTimeInput.value.trim() || "시간 모름"),
+        "태어난 도시: " + birthCityInput.value.trim(),
+        "성별: " + genderInput.value.trim(),
+        "추가 요청: " + (questionInput.value.trim() || "기본 성향과 강점을 알고 싶어요.")
+      ].join("\n");
+
+      try {
+        const payload = {
+          name: nameInput.value.trim(),
+          contact: contactInput.value.trim(),
+          question: fullQuestion,
+          product_name: "성향 분석",
+          product_price: 5000,
+          product_kind: "personality",
+          payment_status: "pending_manual_check"
+        };
+
+        const res = await fetch("/api/consultations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "접수 저장에 실패했어요.");
+        }
+
+        showStatus(
+          "접수가 저장되었어요.\n입금 확인 후 분석을 진행할게요.\n접수번호: " + data.consultation.id,
+          "ok"
+        );
+
+        form.reset();
+        paymentBox.classList.add("hidden");
+      } catch (error) {
+        showStatus(error.message || "서버 연결 중 오류가 발생했어요.", "error");
+      } finally {
+        finalSubmitBtn.disabled = false;
+        finalSubmitBtn.textContent = "입금 완료 후 최종 접수하기";
+      }
+    });
+  </script>
+</body>
+</html>
