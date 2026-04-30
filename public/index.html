@@ -3,467 +3,541 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>레지나타로썰 | 상담 접수</title>
+  <title>레지나타로썰 | 프리미엄 리딩</title>
+  <meta name="description" content="타로 오늘의 운세, 복권 사기 좋은 날, 성향 분석, 프리미엄 상담까지 레지나타로썰에서 확인하세요." />
   <style>
-    :root{
-      --bg:#0b0d12;
-      --panel:#151922;
-      --line:#2b3242;
-      --text:#f3f4f6;
-      --muted:#aeb6c7;
-      --accent:#d2b06b;
-      --danger:#ffb4b4;
-      --ok:#86efac;
+    :root {
+      --bg: #08060d;
+      --panel: rgba(20, 15, 29, 0.86);
+      --panel2: rgba(32, 21, 45, 0.82);
+      --line: rgba(230, 194, 118, 0.25);
+      --gold: #e8c879;
+      --gold2: #b68a3d;
+      --purple: #7c3aed;
+      --pink: #d946ef;
+      --text: #fff7e8;
+      --muted: #cfc4d8;
+      --dark: #120c1b;
+      --green: #2f6f4e;
+      --blue: #263f78;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      color:var(--text);
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
       background:
-        radial-gradient(circle at top, rgba(34,41,68,.45) 0%, rgba(11,13,18,0) 35%),
-        linear-gradient(180deg,#090b10 0%,#0b0d12 100%);
+        radial-gradient(circle at 20% 0%, rgba(124,58,237,.32), transparent 32%),
+        radial-gradient(circle at 85% 10%, rgba(232,200,121,.22), transparent 30%),
+        linear-gradient(180deg, #090611 0%, #12091d 45%, #07050b 100%);
+      color: var(--text);
+      line-height: 1.6;
     }
-    .wrap{
-      width:min(100%,760px);
-      margin:0 auto;
-      padding:32px 16px 56px;
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(100%, 1160px);
+      margin: 0 auto;
+      padding: 22px 16px 72px;
     }
-    h1{
-      margin:0 0 10px;
-      font-size:30px;
-      line-height:1.25;
-      letter-spacing:-0.03em;
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0 20px;
     }
-    .sub{
-      margin:0 0 18px;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.7;
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
-    .card{
-      background:rgba(21,25,34,.96);
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:18px;
-      box-shadow:0 18px 60px rgba(0,0,0,.28);
+
+    .brand strong {
+      font-size: 21px;
+      letter-spacing: -0.03em;
     }
-    .field{margin-bottom:14px}
-    label{
-      display:block;
-      margin-bottom:7px;
-      font-size:13px;
-      font-weight:700;
-      color:#f8f7f3;
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
     }
-    input, textarea{
-      width:100%;
-      border:1px solid #333b4d;
-      background:#0d1017;
-      color:var(--text);
-      border-radius:12px;
-      padding:13px 14px;
-      font-size:14px;
-      outline:none;
-      transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+
+    .nav-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    input:focus, textarea:focus{
-      border-color:rgba(210,176,107,.9);
-      box-shadow:0 0 0 4px rgba(210,176,107,.12);
-      background:#0f131c;
+
+    .mini-btn {
+      border: 1px solid rgba(232,200,121,.28);
+      background: rgba(255,255,255,.04);
+      color: #f8e5b4;
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 700;
     }
-    textarea{
-      min-height:130px;
-      resize:vertical;
-      line-height:1.6;
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(232,200,121,.24);
+      border-radius: 30px;
+      background:
+        linear-gradient(90deg, rgba(6,5,10,.94) 0%, rgba(17,10,28,.82) 38%, rgba(17,10,28,.36) 62%, rgba(17,10,28,.12) 100%),
+        url('/images/regina-main-banner.png') right center/cover no-repeat;
+      min-height: 620px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.48);
     }
-    .hint{
-      margin-top:6px;
-      font-size:12px;
-      color:#8f98aa;
-      line-height:1.55;
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 22% 24%, rgba(232,200,121,.18), transparent 20%),
+        radial-gradient(circle at 82% 35%, rgba(255,255,255,.08), transparent 18%),
+        linear-gradient(180deg, transparent 55%, rgba(7,5,11,.92) 100%);
+      pointer-events: none;
     }
-    .menu-group{
-      display:grid;
-      gap:10px;
-      margin-top:6px;
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 700px);
+      padding: 54px 38px 310px;
     }
-    .choice{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      padding:16px 14px;
-      border:1px solid #31384a;
-      background:linear-gradient(180deg, rgba(19,24,34,.98) 0%, rgba(15,19,27,.98) 100%);
-      border-radius:14px;
-      cursor:pointer;
-      transition:border-color .18s ease, transform .18s ease, background .18s ease, box-shadow .18s ease;
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid rgba(232,200,121,.3);
+      border-radius: 999px;
+      background: rgba(232,200,121,.08);
+      color: #f6d993;
+      font-size: 13px;
+      font-weight: 800;
     }
-    .choice:hover{
-      border-color:rgba(210,176,107,.55);
-      transform:translateY(-1px);
-      box-shadow:0 8px 20px rgba(0,0,0,.18);
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: 1.05;
+      letter-spacing: -0.075em;
+      text-shadow: 0 0 28px rgba(232,200,121,.22);
     }
-    .choice.active{
-      border-color:rgba(210,176,107,.95);
-      box-shadow:0 0 0 1px rgba(210,176,107,.28) inset;
-      background:linear-gradient(180deg, rgba(26,31,43,.98) 0%, rgba(16,20,29,.98) 100%);
+
+    .hero-title-small {
+      display: block;
+      font-size: clamp(24px, 4.4vw, 42px);
+      letter-spacing: -0.05em;
+      color: #fbe9bb;
+      margin-bottom: 8px;
     }
-    .choice input[type="radio"]{
-      margin-top:3px;
-      width:18px;
-      height:18px;
-      accent-color:#d2b06b;
-      flex:0 0 auto;
-      cursor:pointer;
+
+    .hero-desc {
+      margin: 0;
+      color: #e7d9c4;
+      font-size: 17px;
+      max-width: 560px;
     }
-    .choice-title{
-      font-size:15px;
-      font-weight:800;
-      color:#fff8e8;
-      margin-bottom:4px;
+
+    .hero-cta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 26px;
     }
-    .choice-desc{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.55;
+
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(232,200,121,.26);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .18s ease, filter .18s ease, border-color .18s ease;
     }
-    .btn{
-      width:100%;
-      border:0;
-      border-radius:13px;
-      background:linear-gradient(180deg,#dbbe7e 0%,#c8a45c 100%);
-      color:#16120a;
-      padding:15px 16px;
-      font-size:15px;
-      font-weight:800;
-      cursor:pointer;
-      transition:filter .18s ease, transform .18s ease;
+
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .btn.primary {
+      background: linear-gradient(180deg, #f0d18b, #b88a3e);
+      color: #211404;
+      border-color: transparent;
+      box-shadow: 0 12px 28px rgba(184,138,62,.28);
     }
-    .btn:hover{
-      filter:brightness(1.03);
-      transform:translateY(-1px);
+    .btn.ghost {
+      background: rgba(255,255,255,.06);
+      color: #ffe6aa;
     }
-    .btn:disabled{
-      opacity:.65;
-      cursor:default;
-      transform:none;
+
+    .quick-cards {
+      position: absolute;
+      z-index: 2;
+      left: 22px;
+      right: 22px;
+      bottom: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
-    .payment-box{
-      margin-top:16px;
-      padding:16px;
-      border-radius:14px;
-      border:1px solid #333b4d;
-      background:#0f131b;
+
+    .service-card {
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(232,200,121,.28);
+      background: rgba(12,8,19,.78);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 50px rgba(0,0,0,.32);
     }
-    .payment-box strong{
-      display:block;
-      margin-bottom:10px;
-      font-size:15px;
-      color:#fff3d2;
+
+    .service-card.free { background: linear-gradient(180deg, rgba(80,28,112,.84), rgba(30,12,47,.84)); }
+    .service-card.luck { background: linear-gradient(180deg, rgba(24,72,48,.86), rgba(10,30,24,.86)); }
+    .service-card.destiny { background: linear-gradient(180deg, rgba(31,52,110,.86), rgba(12,20,48,.86)); }
+    .service-card.premium { background: linear-gradient(180deg, rgba(91,55,12,.86), rgba(35,20,8,.86)); }
+
+    .tag {
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(232,200,121,.16);
+      color: #f8df9b;
+      border: 1px solid rgba(232,200,121,.22);
+      font-size: 12px;
+      font-weight: 900;
     }
-    .payment-box p{
-      margin:0 0 8px;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.65;
+
+    .service-card h3 {
+      margin: 14px 0 8px;
+      font-size: 23px;
+      letter-spacing: -0.05em;
+      line-height: 1.22;
     }
-    .payment-acct{
-      margin-top:10px;
-      font-size:16px !important;
-      color:#fff4d7 !important;
-      font-weight:800;
-      letter-spacing:.01em;
+
+    .service-card p {
+      margin: 0;
+      color: #e4d8c8;
+      font-size: 14px;
     }
-    .hidden{display:none!important}
-    .status{
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:12px;
-      font-size:13px;
-      line-height:1.6;
-      display:none;
-      white-space:pre-line;
+
+    .card-btn {
+      display: block;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-align: center;
+      font-weight: 900;
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(232,200,121,.28);
+      color: #ffe8ac;
     }
-    .status.show{display:block}
-    .status.ok{
-      background:rgba(134,239,172,.08);
-      border:1px solid rgba(134,239,172,.25);
-      color:#dcfce7;
+
+    .section {
+      margin-top: 28px;
+      padding: 26px;
+      border-radius: 28px;
+      background: var(--panel);
+      border: 1px solid rgba(232,200,121,.18);
+      box-shadow: 0 20px 60px rgba(0,0,0,.28);
     }
-    .status.error{
-      background:rgba(255,180,180,.08);
-      border:1px solid rgba(255,180,180,.22);
-      color:#ffe0e0;
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 18px;
     }
-    .important{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--danger);
-      line-height:1.55;
+
+    .section h2 {
+      margin: 0;
+      font-size: 27px;
+      letter-spacing: -0.045em;
     }
-    .foot{
-      margin-top:16px;
-      text-align:center;
-      font-size:12px;
-      color:#7e8798;
+
+    .section .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .daily-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .draw-panel, .result-panel {
+      padding: 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .result-panel {
+      min-height: 230px;
+      white-space: pre-line;
+      color: #f8ead0;
+    }
+
+    .result-panel strong { color: #ffe29a; }
+
+    .draw-btn {
+      width: 100%;
+      border: 0;
+      margin-top: 14px;
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7c3aed, #d946ef);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .input {
+      width: 100%;
+      margin-top: 10px;
+      border: 1px solid rgba(232,200,121,.22);
+      background: rgba(0,0,0,.24);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    .input:focus {
+      border-color: rgba(232,200,121,.65);
+      box-shadow: 0 0 0 4px rgba(232,200,121,.08);
+    }
+
+    .cta-line {
+      margin-top: 16px;
+      display: none;
+    }
+    .cta-line.show { display: block; }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .trust-item {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #eadcc4;
+      font-size: 14px;
+    }
+
+    .trust-item b {
+      display: block;
+      color: #fbe3a8;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .footer-cta {
+      margin-top: 28px;
+      text-align: center;
+      padding: 30px 20px;
+      border-radius: 28px;
+      border: 1px solid rgba(232,200,121,.22);
+      background: linear-gradient(135deg, rgba(124,58,237,.22), rgba(232,200,121,.12));
+    }
+
+    .footer-cta h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: -0.045em;
+    }
+
+    .footer-cta p {
+      margin: 0 auto 18px;
+      color: var(--muted);
+      max-width: 560px;
+    }
+
+    @media (max-width: 980px) {
+      .hero { min-height: auto; background-position: 66% center; }
+      .hero-inner { padding: 42px 24px 24px; }
+      .quick-cards { position: relative; left: auto; right: auto; bottom: auto; padding: 0 18px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .daily-box, .trust-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 14px 12px 52px; }
+      .nav { align-items: flex-start; flex-direction: column; }
+      .nav-actions { width: 100%; justify-content: flex-start; }
+      .hero { border-radius: 22px; background-position: 72% center; }
+      .hero-inner { padding: 34px 18px 20px; }
+      h1 { font-size: 47px; }
+      .hero-desc { font-size: 15px; }
+      .hero-cta .btn { width: 100%; }
+      .quick-cards { grid-template-columns: 1fr; padding: 0 14px 14px; }
+      .service-card { min-height: 0; }
+      .section { padding: 20px 16px; border-radius: 22px; }
+      .section-head { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>상담 메뉴를 선택하고 질문을 남겨주세요</h1>
-    <p class="sub">
-      3천원 / 7천원 리딩은 접수 후 빠르게 진행되며,
-18,000원 / 30,000원 심층 리딩은 예약 상담 일정 안내 후 진행됩니다.
-    </p>
+    <header class="nav">
+      <a href="/" class="brand" aria-label="레지나타로썰 홈">
+        <strong>레지나타로썰</strong>
+        <span>Tarot · Saju · Zi Wei · Astrology</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="mini-btn" href="#daily">무료 운세</a>
+        <a class="mini-btn" href="/consultation">상담 접수</a>
+        <a class="mini-btn" href="/premium">예약 상담</a>
+      </nav>
+    </header>
 
-    <div class="card">
-      <form id="questionForm" novalidate>
-        <input type="hidden" id="product_name" name="product_name" />
-        <input type="hidden" id="product_price" name="product_price" />
-        <input type="hidden" id="product_kind" name="product_kind" />
-
-        <div class="field">
-          <label for="name">성함 / 닉네임</label>
-          <input id="name" name="name" type="text" placeholder="예: 홍길동" />
+    <main>
+      <section class="hero" aria-label="레지나타로썰 메인">
+        <div class="hero-inner">
+          <span class="eyebrow">✦ 타로 · 사주 · 자미두수 · 점성술</span>
+          <h1><span class="hero-title-small">당신의 선택과 흐름을 읽는</span>프리미엄 리딩</h1>
+          <p class="hero-desc">가벼운 오늘의 운세부터, 복권운·성향분석·프리미엄 예약 상담까지. 브랜드 무드는 유지하면서도 더 깊고 현실적인 방향성을 제안합니다.</p>
+          <div class="hero-cta">
+            <a class="btn primary" href="#daily">☀️ 무료 타로 오늘의 운세</a>
+            <a class="btn ghost" href="/consultation">🔮 내 고민 상담 접수</a>
+          </div>
         </div>
 
-        <div class="field">
-          <label for="contact">연락처</label>
-          <input id="contact" name="contact" type="text" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" />
-          <p class="hint">※ 010-0000-0000 형식으로 입력해주세요 (- 포함)</p>
+        <div class="quick-cards" aria-label="서비스 선택">
+          <article class="service-card free">
+            <div>
+              <span class="tag">무료</span>
+              <h3>타로 오늘의 운세</h3>
+              <p>오늘의 흐름과 조언을 타로로 가볍게 확인해보세요.</p>
+            </div>
+            <a class="card-btn" href="#daily">무료로 보기 ›</a>
+          </article>
+
+          <article class="service-card luck">
+            <div>
+              <span class="tag">1,000원</span>
+              <h3>복권 사기 좋은 날</h3>
+              <p>이번 달 복권·재물운이 열리는 날을 사주·자미두수·점성술로 봅니다.</p>
+            </div>
+            <a class="card-btn" href="/consultation?menu=lottery">자세히 보기 ›</a>
+          </article>
+
+          <article class="service-card destiny">
+            <div>
+              <span class="tag">5,000원</span>
+              <h3>성향 분석</h3>
+              <p>사주·자미두수·점성술로 보는 기본 성향과 기질 분석입니다.</p>
+            </div>
+            <a class="card-btn" href="/consultation?menu=personality">분석 받기 ›</a>
+          </article>
+
+          <article class="service-card premium">
+            <div>
+              <span class="tag">예약제</span>
+              <h3>프리미엄 상담</h3>
+              <p>직업·연애·재물·흐름까지 깊게 보는 맞춤형 예약 상담입니다.</p>
+            </div>
+            <a class="card-btn" href="/premium">상담 예약하기 ›</a>
+          </article>
+        </div>
+      </section>
+
+      <section id="daily" class="section" aria-label="무료 타로 오늘의 운세">
+        <div class="section-head">
+          <div>
+            <h2>☀️ 무료 타로 오늘의 운세</h2>
+            <p class="sub">질문을 짧게 적거나, 그냥 버튼을 눌러 오늘의 흐름을 확인해보세요.</p>
+          </div>
+          <a class="mini-btn" href="/consultation">상담 접수로 이동</a>
         </div>
 
-      <div class="field">
-  <label>상담 메뉴 선택</label>
-  <div class="menu-group">
-    <div class="choice" data-target="menu1">
-      <input type="radio" id="menu1" name="menu" value="3천원 리딩" data-price="3000" data-kind="simple" />
-      <div>
-        <div class="choice-title">3천원 리딩</div>
-        <div class="choice-desc">짧고 빠르게 현재 흐름과 방향성을 확인하는 즉답 리딩</div>
-      </div>
-    </div>
+        <div class="daily-box">
+          <div class="draw-panel">
+            <label for="dailyQuestion"><b>오늘 궁금한 것</b></label>
+            <input id="dailyQuestion" class="input" type="text" placeholder="예: 오늘 연락운 어때요? / 오늘 일 흐름은요?" />
+            <button id="drawDailyBtn" class="draw-btn" type="button">오늘의 타로 뽑기</button>
+            <p class="sub" style="margin-top:12px;">무료 운세는 가볍게 흐름만 봅니다. 구체적인 관계·직업·금전 고민은 상담 접수에서 더 깊게 볼 수 있어요.</p>
+          </div>
 
-    <div class="choice" data-target="menu2">
-      <input type="radio" id="menu2" name="menu" value="7천원 리딩" data-price="7000" data-kind="standard" />
-      <div>
-        <div class="choice-title">7천원 리딩</div>
-        <div class="choice-desc">현재 상황 + 이유 + 앞으로의 흐름까지 정리하는 심화 즉답 리딩</div>
-      </div>
-    </div>
-
-    <div class="choice" data-target="menu3">
-      <input type="radio" id="menu3" name="menu" value="18,000원 리딩" data-price="18000" data-kind="booking" />
-      <div>
-        <div class="choice-title">18,000원 리딩</div>
-        <div class="choice-desc">예약 상담 | 선택지 비교·현실 조언·심층 흐름 분석 포함</div>
-      </div>
-    </div>
-
-    <div class="choice" data-target="menu4">
-      <input type="radio" id="menu4" name="menu" value="30,000원 리딩" data-price="30000" data-kind="booking" />
-      <div>
-        <div class="choice-title">30,000원 리딩</div>
-        <div class="choice-desc">예약 상담 | 장기 흐름·인생 방향 심층 분석</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-        <div class="field">
-          <label for="question">질문 내용</label>
-          <textarea id="question" name="question" placeholder="예: 오늘 내로 프로그램을 완료할 수 있을까요? 빠르게 하려면 어떻게 해야 할까요?"></textarea>
+          <div>
+            <div id="dailyResult" class="result-panel">카드를 뽑으면 오늘의 운세가 여기에 표시됩니다.</div>
+            <div id="dailyCta" class="cta-line">
+              <a class="btn primary" style="width:100%;" href="/consultation?from=daily">✨ 지금 내 고민 더 깊게 리딩받기</a>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <button type="button" class="btn" id="step1">질문 접수하기</button>
-
-        <div class="payment-box hidden" id="paymentBox">
-          <strong>결제 안내</strong>
-          <p id="menuText">선택한 메뉴</p>
-          <p id="priceText">0원</p>
-          <p>이 메뉴는 접수 후 결제 확인이 되면 바로 흐름으로 연결되는 상품이에요.</p>
-          <p>이후 질문 내용을 바탕으로 <strong>덱 / 스프레드 / 보조도구 추천</strong>이 먼저 진행되고, 그 다음 <strong>셔플 후 리딩 → 전달</strong> 순서로 이어지게 됩니다.</p>
-          <p class="payment-acct">카카오뱅크 3333-2481-6-0180 강율리(레지나타로썰)</p>
-          <button type="submit" class="btn" id="finalSubmitBtn" style="margin-top:14px;">입금 완료 후 최종 접수하기</button>
+      <section class="section" aria-label="레지나 리딩 특징">
+        <div class="section-head">
+          <div>
+            <h2>레지나 리딩은 이렇게 봅니다</h2>
+            <p class="sub">위로만 하는 리딩보다, 지금 무엇을 정리하고 선택해야 하는지에 초점을 둡니다.</p>
+          </div>
         </div>
+        <div class="trust-grid">
+          <div class="trust-item"><b>🔮 타로 리딩</b>연애·재회·이직·관계 흐름처럼 지금 바로 답이 필요한 고민에 적합합니다.</div>
+          <div class="trust-item"><b>🌌 통합 운세</b>사주·자미두수·점성술을 묶어 성향과 큰 구조를 봅니다.</div>
+          <div class="trust-item"><b>🍀 행운 타이밍</b>복권운·재물운처럼 가볍게 확인하고 싶은 타이밍성 리딩에 좋습니다.</div>
+          <div class="trust-item"><b>📂 프리미엄</b>직업·연애·재물·흐름까지 깊게 보고 싶은 분들을 위한 예약형 상담입니다.</div>
+        </div>
+      </section>
 
-        <div id="statusBox" class="status"></div>
-
-        <p class="important">질문 접수 후 바로 결과가 표시되는 구조는 아니며, 다음 단계 안내에 따라 진행돼요.</p>
-      </form>
-
-      <div class="foot">레지나타로썰 · 상담 접수 전용</div>
-    </div>
+      <section class="footer-cta">
+        <h2>지금 가장 필요한 답을 선택하세요</h2>
+        <p>가볍게는 무료 운세부터, 구체적인 고민은 상담 접수로 이어집니다.</p>
+        <a class="btn primary" href="/consultation">🔮 상담 접수 바로가기</a>
+      </section>
+    </main>
   </div>
 
   <script>
-    const form = document.getElementById("questionForm");
-    const step1 = document.getElementById("step1");
-    const paymentBox = document.getElementById("paymentBox");
-    const menuText = document.getElementById("menuText");
-    const priceText = document.getElementById("priceText");
-    const statusBox = document.getElementById("statusBox");
-    const finalSubmitBtn = document.getElementById("finalSubmitBtn");
+    const DAILY_CARDS = [
+      { card: '태양', tone: '오늘은 생각보다 흐름이 밝게 열리는 날이에요. 너무 복잡하게 계산하기보다, 먼저 움직였을 때 반응이 오는 쪽에 가깝습니다. 작은 연락이나 제안, 가벼운 시도에서 기분 좋은 확인을 얻을 수 있어요.' },
+      { card: '달', tone: '오늘은 확신보다 감정의 출렁임이 먼저 올라올 수 있어요. 보이는 것만으로 단정하기보다, 하루 정도 더 지켜보는 편이 좋습니다. 특히 말의 뉘앙스나 분위기에 예민해질 수 있으니 서두른 판단은 피해주세요.' },
+      { card: '별', tone: '오늘은 무너진 마음을 다시 정리하기 좋은 날이에요. 바로 결과가 나오진 않아도, 내 안에서 방향이 조금씩 회복되는 흐름입니다. 무리해서 결론을 내기보다 희망이 남아 있는 쪽을 조용히 붙잡아보세요.' },
+      { card: '운명의 수레바퀴', tone: '오늘은 상황이 예상과 다르게 움직일 수 있어요. 계획대로만 밀기보다 들어오는 흐름에 맞춰 유연하게 반응하는 게 유리합니다. 우연히 보게 되는 메시지나 제안 안에 힌트가 있을 수 있어요.' },
+      { card: '절제', tone: '오늘은 급하게 결론을 내리기보다 균형을 잡는 것이 중요해요. 감정과 현실 사이에서 중간 지점을 찾으면 생각보다 부드럽게 풀립니다. 대화도 강하게 밀기보다 차분하게 조율하는 쪽이 좋아요.' },
+      { card: '마법사', tone: '오늘은 시작운이 있는 날이에요. 생각만 하던 일을 말로 꺼내거나, 작은 실행으로 옮기기에 좋습니다. 완벽한 준비보다 지금 가진 도구를 어떻게 쓰느냐가 더 중요합니다.' },
+      { card: '은둔자', tone: '오늘은 외부 반응보다 내 판단을 정리해야 하는 날이에요. 사람들과 부딪히며 답을 찾기보다, 조용히 생각을 정돈할수록 방향이 선명해집니다. 잠깐 멈추는 것이 오히려 손해를 줄여줍니다.' },
+      { card: '힘', tone: '오늘은 감정적으로 흔들려도 끝까지 버틸 수 있는 힘이 있어요. 크게 이기는 날이라기보다, 무너지지 않고 중심을 지키는 날에 가깝습니다. 부드럽게 대응하되 내 기준은 놓지 마세요.' }
+    ];
 
-    const productNameInput = document.getElementById("product_name");
-    const productPriceInput = document.getElementById("product_price");
-    const productKindInput = document.getElementById("product_kind");
+    const drawBtn = document.getElementById('drawDailyBtn');
+    const resultEl = document.getElementById('dailyResult');
+    const ctaEl = document.getElementById('dailyCta');
+    const qEl = document.getElementById('dailyQuestion');
 
-    const nameInput = document.getElementById("name");
-    const contactInput = document.getElementById("contact");
-    const questionInput = document.getElementById("question");
-
-    const choices = document.querySelectorAll(".choice");
-    const radios = document.querySelectorAll('input[name="menu"]');
-
-    function showStatus(message, type = "ok") {
-      statusBox.className = "status show " + type;
-      statusBox.textContent = message;
-    }
-
-    function clearStatus() {
-      statusBox.className = "status";
-      statusBox.textContent = "";
-    }
-
-    function updateActiveChoice() {
-      choices.forEach(choice => {
-        const targetId = choice.dataset.target;
-        const radio = document.getElementById(targetId);
-        choice.classList.toggle("active", !!radio?.checked);
-      });
-    }
-
-    choices.forEach(choice => {
-      choice.addEventListener("click", () => {
-        const targetId = choice.dataset.target;
-        const radio = document.getElementById(targetId);
-        if (radio) {
-          radio.checked = true;
-          updateActiveChoice();
-          clearStatus();
-        }
-      });
-    });
-
-    radios.forEach(radio => {
-      radio.addEventListener("change", updateActiveChoice);
-    });
-
-    contactInput.addEventListener("input", (e) => {
-      let value = e.target.value.replace(/[^0-9]/g, "");
-      if (value.length > 11) value = value.slice(0, 11);
-
-      if (value.length < 4) {
-        e.target.value = value;
-      } else if (value.length < 8) {
-        e.target.value = value.slice(0, 3) + "-" + value.slice(3);
-      } else {
-        e.target.value = value.slice(0, 3) + "-" + value.slice(3, 7) + "-" + value.slice(7, 11);
-      }
-    });
-
-    function validateBaseFields() {
-      const menu = document.querySelector('input[name="menu"]:checked');
-      const phonePattern = /^010-\d{4}-\d{4}$/;
-
-      if (!menu) {
-        showStatus("상담 메뉴를 선택해주세요.", "error");
-        return null;
-      }
-
-      if (!nameInput.value.trim()) {
-        nameInput.focus();
-        showStatus("성함 / 닉네임을 입력해주세요.", "error");
-        return null;
-      }
-
-      if (!contactInput.value.trim()) {
-        contactInput.focus();
-        showStatus("연락처를 입력해주세요.", "error");
-        return null;
-      }
-
-      if (!phonePattern.test(contactInput.value.trim())) {
-        contactInput.focus();
-        showStatus("연락처를 010-0000-0000 형식으로 입력해주세요.", "error");
-        return null;
-      }
-
-      if (!questionInput.value.trim()) {
-        questionInput.focus();
-        showStatus("질문 내용을 입력해주세요.", "error");
-        return null;
-      }
-
-      return menu;
-    }
-
-    step1.addEventListener("click", () => {
-      clearStatus();
-      const menu = validateBaseFields();
-      if (!menu) return;
-
-      productNameInput.value = menu.value;
-      productPriceInput.value = menu.dataset.price || "";
-      productKindInput.value = menu.dataset.kind || "";
-
-      menuText.textContent = menu.value;
-      priceText.textContent = Number(menu.dataset.price || 0).toLocaleString() + "원";
-
-      paymentBox.classList.remove("hidden");
-      paymentBox.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      clearStatus();
-
-      const menu = validateBaseFields();
-      if (!menu) return;
-
-      finalSubmitBtn.disabled = true;
-      finalSubmitBtn.textContent = "접수 저장 중...";
-
-      try {
-        const payload = {
-          name: nameInput.value.trim(),
-          contact: contactInput.value.trim(),
-          question: questionInput.value.trim(),
-          product_name: menu.value,
-          product_price: Number(menu.dataset.price || 0),
-          product_kind: menu.dataset.kind || "",
-          payment_status: "pending_manual_check"
-        };
-
-        const res = await fetch("/api/consultations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "접수 저장에 실패했어요.");
-        }
-
-        showStatus(
-          "접수가 저장되었어요.\n입금 확인 후 다음 단계로 안내드릴게요.\n접수번호: " + data.consultation.id,
-          "ok"
-        );
-
-        form.reset();
-        paymentBox.classList.add("hidden");
-        updateActiveChoice();
-      } catch (error) {
-        showStatus(error.message || "서버 연결 중 오류가 발생했어요.", "error");
-      } finally {
-        finalSubmitBtn.disabled = false;
-        finalSubmitBtn.textContent = "입금 완료 후 최종 접수하기";
-      }
+    drawBtn.addEventListener('click', () => {
+      const pick = DAILY_CARDS[Math.floor(Math.random() * DAILY_CARDS.length)];
+      const q = qEl.value.trim();
+      const questionLine = q ? `\n\n질문 흐름: ${q}` : '';
+      resultEl.innerHTML = `<strong>오늘의 카드: ${pick.card}</strong>\n\n${pick.tone}${questionLine}\n\n더 구체적인 관계·직업·금전 흐름은 개인 상담에서 더 깊게 볼 수 있어요.`;
+      ctaEl.classList.add('show');
     });
   </script>
 </body>
