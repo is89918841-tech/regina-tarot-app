@@ -568,32 +568,57 @@
   }
 
   function detectQuestionTheme(question) {
-    const q = String(question || '');
+  const q = String(question || '');
 
-    if (q.includes('연애') || q.includes('사랑') || q.includes('재회') || q.includes('썸') || q.includes('상대') || q.includes('연락')) {
-      return 'relationship';
-    }
+  if (q.includes('재회')) return 'reunion';
+  if (q.includes('결혼')) return 'marriage';
+  if (q.includes('시험') || q.includes('합격')) return 'exam';
+  if (q.includes('사업') || q.includes('창업')) return 'business';
+  if (q.includes('투자') || q.includes('주식')) return 'investment';
 
-    if (q.includes('돈') || q.includes('금전') || q.includes('재물') || q.includes('복권') || q.includes('수입')) {
-      return 'money';
-    }
-
-    if (q.includes('일') || q.includes('회사') || q.includes('직장') || q.includes('이직') || q.includes('취업') || q.includes('사업')) {
-      return 'work';
-    }
-
-    if (q.includes('건강') || q.includes('몸') || q.includes('병원') || q.includes('컨디션')) {
-      return 'health';
-    }
-
-    if (q.includes('언제') || q.includes('시기') || q.includes('타이밍')) {
-      return 'timing';
-    }
-
-    return 'general';
+  if (q.includes('연애') || q.includes('사랑') || q.includes('썸') || q.includes('상대') || q.includes('연락')) {
+    return 'relationship';
   }
 
+  if (q.includes('돈') || q.includes('금전') || q.includes('재물') || q.includes('복권') || q.includes('수입')) {
+    return 'money';
+  }
+
+  if (q.includes('일') || q.includes('회사') || q.includes('직장') || q.includes('이직') || q.includes('취업')) {
+    return 'work';
+  }
+
+  if (q.includes('건강') || q.includes('몸') || q.includes('병원')) {
+    return 'health';
+  }
+
+  if (q.includes('언제') || q.includes('시기') || q.includes('타이밍')) {
+    return 'timing';
+  }
+
+  return 'general';
+}
   function getThemeAdvice(theme, card) {
+if (theme === 'reunion') {
+  return '재회 흐름으로 보면 감정만 앞세우기보다 현재 거리감과 상대의 현실 상태를 함께 봐야 해요. 조급함보다 타이밍이 중요해요.';
+}
+
+if (theme === 'marriage') {
+  return '결혼 흐름으로 보면 감정뿐 아니라 현실 조건과 지속 가능성이 중요해요. 관계의 안정성과 방향성을 함께 점검해보세요.';
+}
+
+if (theme === 'exam') {
+  return '시험 흐름으로 보면 결과보다 현재 준비 상태와 집중력이 중요해요. 불안보다 루틴 관리가 훨씬 큰 영향을 줘요.';
+}
+
+if (theme === 'business') {
+  return '사업 흐름으로 보면 확장보다 구조 안정이 우선이에요. 무리한 추진보다 리스크 점검이 중요해요.';
+}
+
+if (theme === 'investment') {
+  return '투자 흐름으로 보면 기대 수익보다 손실 가능성을 먼저 보는 게 좋아요. 충동보다 분석이 중요해요.';
+}
+    
     if (theme === 'relationship') {
       return '질문 흐름으로 보면 관계에서는 바로 결론을 요구하기보다 상대의 반응과 내 감정의 온도를 함께 봐야 해요. 오늘은 말보다 분위기, 행동보다 반복되는 패턴을 보는 게 더 정확해요.';
     }
@@ -622,18 +647,25 @@
   const ctaEl = document.getElementById('dailyCta');
   const qEl = document.getElementById('dailyQuestion');
 
-  drawBtn.addEventListener('click', () => {
-    const card = DAILY_CARDS[Math.floor(Math.random() * DAILY_CARDS.length)];
+ drawBtn.addEventListener('click', () => {
     const q = qEl.value.trim();
     const theme = detectQuestionTheme(q);
 
-    const baseMessage = CARD_MESSAGES[card] || getSuitMessage(card);
+    const baseCard = DAILY_CARDS[Math.floor(Math.random() * DAILY_CARDS.length)];
+    const isReversed = Math.random() < 0.3;
+    const card = isReversed ? `${baseCard} (역방향)` : baseCard;
+
+    const baseMessage = CARD_MESSAGES[baseCard] || getSuitMessage(baseCard);
+
+const finalMessage = isReversed
+  ? `${baseMessage}\n\n다만 역방향 흐름이라 지연, 혼선, 감정적 소모 가능성도 함께 주의해야 해요.`
+  : baseMessage;
     const themeAdvice = q ? getThemeAdvice(theme, card) : '질문을 따로 적지 않았다면, 오늘은 전체적인 하루 흐름을 가볍게 보는 의미로 받아들이면 좋아요.';
 
     resultEl.innerHTML = `
 <strong>오늘의 카드: ${card}</strong>
 
-${baseMessage}
+${finalMessage}
 
 ${q ? `질문 흐름: ${q}
 
