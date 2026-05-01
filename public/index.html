@@ -386,21 +386,52 @@
     }
 
     @media (max-width: 640px) {
-      .wrap { padding: 14px 12px 52px; }
-      .nav { align-items: flex-start; flex-direction: column; }
-      .nav-actions { width: 100%; justify-content: flex-start; }
-      .hero { border-radius: 22px; background-position: 72% center; }
-      .hero-inner { padding: 34px 18px 20px; }
-      h1 { font-size: 47px; }
-      .hero-desc { font-size: 15px; }
-      .hero-cta .btn { width: 100%; }
-      .quick-cards { grid-template-columns: 1fr; padding: 0 14px 14px; }
-      .service-card { min-height: 0; }
-      .section { padding: 20px 16px; border-radius: 22px; }
-      .section-head { align-items: flex-start; flex-direction: column; }
-    }
-  </style>
+  .wrap { padding: 14px 12px 52px; }
+  .nav { align-items: flex-start; flex-direction: column; }
+  .nav-actions { width: 100%; justify-content: flex-start; }
+  .hero { border-radius: 22px; background-position: 72% center; }
+  .hero-inner { padding: 34px 18px 20px; }
+  h1 { font-size: 47px; }
+  .hero-desc { font-size: 15px; }
+  .hero-cta .btn { width: 100%; }
+  .quick-cards { grid-template-columns: 1fr; padding: 0 14px 14px; }
+  .service-card { min-height: 0; }
+  .section { padding: 20px 16px; border-radius: 22px; }
+  .section-head { align-items: flex-start; flex-direction: column; }
+}
+
+.site-footer {
+  margin-top: 30px;
+  padding: 28px 16px 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  border-top: 1px solid rgba(232,200,121,.12);
+}
+
+.footer-brand {
+  color: #fbe3a8;
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.footer-small {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #9e92aa;
+}
+
+.footer-copy {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #74697f;
+}
+
+</style>
 </head>
+
 <body>
   <div class="wrap">
     <header class="nav">
@@ -508,13 +539,34 @@
         </div>
       </section>
 
-      <section class="footer-cta">
-        <h2>지금 가장 필요한 답을 선택하세요</h2>
-        <p>가볍게는 무료 운세부터, 구체적인 고민은 상담 접수로 이어집니다.</p>
-        <a class="btn primary" href="/consultation">🔮 상담 접수 바로가기</a>
-      </section>
-    </main>
-  </div>
+     <section class="footer-cta">
+  <h2>지금 가장 필요한 답을 선택하세요</h2>
+  <p>가볍게는 무료 운세부터, 구체적인 고민은 상담 접수로 이어집니다.</p>
+  <a class="btn primary" href="/consultation">🔮 상담 접수 바로가기</a>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">레지나타로썰</div>
+
+  <p>
+    타로 · 사주 · 자미두수 · 점성술 기반 프리미엄 리딩 서비스<br>
+    모든 상담은 방향성과 선택 정리를 위한 참고 리딩입니다.
+  </p>
+
+  <p class="footer-small">
+    상호명: 레지나타로썰 · 대표: 강율리<br>
+    사업자등록번호: 441-49-8818-884<br>
+    통신판매업 신고번호: 신고 진행 중<br>
+    사업장 주소: 서울특별시 용산구 한강대로14길 10 (한강로3가)<br>
+    문의: 카카오채널 레지나타로썰
+  </p>
+
+  <p class="footer-copy">
+    © 레지나타로썰. All rights reserved.
+  </p>
+</footer>
+</div>
 
   <script>
   const DAILY_CARDS = [
