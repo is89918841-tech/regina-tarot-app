@@ -397,21 +397,33 @@ function cleanReadingText(text = '') {
 
 async function generateReading({ question, spread, deck, topic, cards = [] }) {
   const intent = detectIntent(question);
+
+  let enhancedTopic = topic || intent;
+  const q = String(question || '');
+
+  if (q.includes('[성향 분석]') || q.includes('[타고난 성향 분석]')) {
+    enhancedTopic = 'personality';
+  }
+
+  if (q.includes('[복권') || q.includes('복권 구매')) {
+    enhancedTopic = 'lottery';
+  }
+
   const knowledge = await retrieveKnowledge({
     question,
     deck,
-    topic,
-    intent: topic || intent,
+    topic: enhancedTopic,
+    intent: enhancedTopic,
   });
 
   if (!openai) {
-    return {
-      intent,
-      knowledge,
-      reading: cleanReadingText(fallbackReading()),
-    };
-  }
-
+  return {
+    intent: enhancedTopic,
+    knowledge,
+    reading: cleanReadingText(fallbackReading()),
+  };
+}
+  
   const cardsText = Array.isArray(cards) && cards.length
     ? `\n\n[카드]\n${cards.join(', ')}`
     : '';
@@ -428,9 +440,9 @@ async function generateReading({ question, spread, deck, topic, cards = [] }) {
             question,
             spread,
             deck,
-            topic,
-            intent,
-            knowledge,
+            topic: enhancedTopic,
+intent: enhancedTopic,
+knowledge,
           }) + cardsText,
       },
     ],
@@ -439,11 +451,11 @@ async function generateReading({ question, spread, deck, topic, cards = [] }) {
   const rawReading = completion.choices?.[0]?.message?.content?.trim() || '';
   const cleanedReading = cleanReadingText(rawReading);
 
-  return {
-    intent,
-    knowledge,
-    reading: cleanedReading,
-  };
+ return {
+  intent: enhancedTopic,
+  knowledge,
+  reading: cleanedReading,
+};
 }
 
 module.exports = { generateReading, generateReadingPlan };
