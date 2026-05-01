@@ -324,51 +324,66 @@
 
         <div class="stack">
           <section class="panel">
-            <h2>지식 파일 업로드</h2>
+  <h2>지식 파일 업로드</h2>
 
-            <div class="field">
-              <label for="uploadFile">파일</label>
-              <input id="uploadFile" class="input" type="file" />
-            </div>
+  <div class="field">
+    <label for="uploadFile">파일</label>
+    <input id="uploadFile" class="input" type="file" />
+  </div>
 
-            <div class="grid-2">
-              <div class="field">
-                <label for="uploadDeck">덱</label>
-                <input id="uploadDeck" class="input" type="text" placeholder="예: 로맨틱 타로" />
-              </div>
-              <div class="field">
-                <label for="uploadTopic">주제</label>
-                <input id="uploadTopic" class="input" type="text" placeholder="예: 연애, 해석 가이드" />
-              </div>
-            </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="uploadDeck">자료 이름 / 덱 이름</label>
+      <input id="uploadDeck" class="input" type="text" placeholder="예: 자미두수 교재, 사주 원국 해설서, 로맨틱 타로" />
+    </div>
 
-            <div class="grid-2">
-              <div class="field">
-                <label for="uploadPriority">우선순위</label>
-                <select id="uploadPriority" class="select">
-                  <option value="core">core</option>
-                  <option value="support">support</option>
-                  <option value="optional">optional</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="uploadType">파일 타입</label>
-                <select id="uploadType" class="select">
-                  <option value="guidebook">guidebook</option>
-                  <option value="interpretation">interpretation</option>
-                  <option value="tone">tone</option>
-                  <option value="rule">rule</option>
-                </select>
-              </div>
-            </div>
+    <div class="field">
+      <label for="uploadTopic">자료 구분</label>
+      <select id="uploadTopic" class="select">
+        <option value="saju">사주</option>
+        <option value="ziwei">자미두수</option>
+        <option value="astrology">점성술</option>
+        <option value="tarot">타로</option>
+        <option value="lottery">복권/재물운</option>
+        <option value="personality">성향 분석</option>
+        <option value="relationship">연애/관계</option>
+        <option value="career">직업/커리어</option>
+        <option value="guide">공통 상담 가이드</option>
+      </select>
+    </div>
+  </div>
 
-            <div class="toolbar">
-              <button id="uploadBtn" class="btn primary" type="button">업로드</button>
-              <button id="refreshFilesBtn" class="btn" type="button">파일 목록 새로고침</button>
-            </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="uploadPriority">우선순위</label>
+      <select id="uploadPriority" class="select">
+        <option value="core">core · 핵심 자료</option>
+        <option value="support">support · 보조 자료</option>
+        <option value="optional">optional · 참고 자료</option>
+      </select>
+    </div>
 
-            <div id="uploadStatus" class="status hidden"></div>
-          </section>
+    <div class="field">
+      <label for="uploadType">파일 타입</label>
+      <select id="uploadType" class="select">
+        <option value="guidebook">guidebook · 책/PDF/원문</option>
+        <option value="interpretation">interpretation · 해석 자료</option>
+        <option value="reference">reference · 참고표</option>
+        <option value="formula">formula · 계산법/공식</option>
+        <option value="tone">tone · 말투/문체</option>
+        <option value="rule">rule · 리딩 규칙</option>
+        <option value="system">system · 시스템 지침</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button id="uploadBtn" class="btn primary" type="button">업로드</button>
+    <button id="refreshFilesBtn" class="btn" type="button">파일 목록 새로고침</button>
+  </div>
+
+  <div id="uploadStatus" class="status hidden"></div>
+</section>
 
           <section class="panel">
             <h2>업로드된 파일</h2>
@@ -609,7 +624,7 @@
 
         $('uploadFile').value = '';
         $('uploadDeck').value = '';
-        $('uploadTopic').value = '';
+        $('uploadTopic').value = 'saju';
         $('uploadPriority').value = 'core';
         $('uploadType').value = 'guidebook';
 
