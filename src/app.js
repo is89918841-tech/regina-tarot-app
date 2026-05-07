@@ -1305,7 +1305,7 @@ const templateId = isLottery
     const buttonName = isLottery
   ? '복권 리딩 확인하기'
   : isPersonality
-    ? '성향 분석 확인하기'
+    ? '성향 분석 결과 보기'
     : '리딩 보기';
 
     const result = await fetch('https://alimtalk-api.bizmsg.kr/v2/sender/send', {
