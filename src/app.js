@@ -710,6 +710,10 @@ app.post('/api/consultations', async (req, res) => {
 
    const birthInput = makeBirthInput(req.body || {});
 
+if (!birthInput.birthDate && (product_kind === 'lottery' || product_kind === 'personality')) {
+  birthInput.birthDate = '1990-01-01';
+}
+
 const consultation = {
   id: makeConsultationId(),
   name: name.trim(),
