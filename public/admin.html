@@ -480,11 +480,12 @@
         div.innerHTML = `
           <div class="item-title">${escapeHtml(item.name || item.nickname || item.contact || '이름 없음')}</div>
           <div class="item-meta">
-            <span class="badge">${escapeHtml(item.menuTitle || item.menu || '메뉴 미지정')}</span>
-            ${getStatusBadge(item.status)}
-            <span>${escapeHtml(item.contact || item.contactChannel || '-')}</span>
-            <span>${formatDate(item.createdAt || item.created_at)}</span>
-          </div>
+  <span class="badge">${escapeHtml(item.menuTitle || item.menu || '메뉴 미지정')}</span>
+  ${getStatusBadge(item.status)}
+  <span>${escapeHtml(item.contact || item.contactChannel || '-')}</span>
+  <span>접수번호: ${escapeHtml(item.id || '-')}</span>
+  <span>${formatDate(item.createdAt || item.created_at)}</span>
+</div>
           <div class="muted" style="margin-top:8px;">
             ${escapeHtml((item.question || '').slice(0, 140) || '질문 없음')}
           </div>
