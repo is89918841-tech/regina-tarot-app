@@ -1326,7 +1326,9 @@ ${resultUrl}
     });
 
     const data = await result.json();
-    return res.json({ ok: true, data });
+console.log('BIZM RESPONSE:', data);
+
+return res.json({ ok: true, data });
 
   } catch (err) {
     console.error(err);
