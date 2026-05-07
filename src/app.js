@@ -104,18 +104,48 @@ function makeConsultationId() {
 }
 
 function makeBirthInput(body = {}) {
+  const year = body.birthYear || body.year || '';
+  const month = body.birthMonth || body.month || '';
+  const day = body.birthDay || body.day || '';
+
+  const birthDate =
+    body.birthDate ||
+    body.birthdate ||
+    body.birth_date ||
+    body.birthday ||
+    body.birth ||
+    (
+      year && month && day
+        ? `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        : ''
+    );
+
   return {
-    birthDate:
-      body.birthDate ||
-      body.birthdate ||
-      body.birth_date ||
-      body.birthday ||
-      body.birth ||
+    birthDate,
+    birthTime:
+      body.birthTime ||
+      body.birthtime ||
+      body.birth_time ||
+      body.time ||
+      body.hour ||
       '',
-    birthTime: body.birthTime || body.birth_time || body.time || '',
-    calendarType: body.calendarType || body.calendar_type || body.calendar || 'solar',
-    gender: body.gender || body.sex || '',
-    birthPlace: body.birthPlace || body.birth_place || body.city || ''
+    calendarType:
+      body.calendarType ||
+      body.calendar_type ||
+      body.calendar ||
+      body.calendar_type_value ||
+      'solar',
+    gender:
+      body.gender ||
+      body.sex ||
+      '',
+    birthPlace:
+      body.birthPlace ||
+      body.birthplace ||
+      body.birth_place ||
+      body.city ||
+      body.place ||
+      ''
   };
 }
 
@@ -1180,11 +1210,14 @@ app.post('/api/send-kakao', async (req, res) => {
 
     const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
     const isLottery = consultation.product_kind === 'lottery';
+const isPersonality = consultation.product_kind === 'personality';
 
-    const templateId = isLottery
-      ? process.env.BIZM_LOTTERY_TEMPLATE_ID
-      : process.env.BIZM_TEMPLATE_ID;
-
+const templateId = isLottery
+  ? process.env.BIZM_LOTTERY_TEMPLATE_ID
+  : isPersonality
+    ? process.env.BIZM_PERSONALITY_TEMPLATE_ID
+    : process.env.BIZM_TEMPLATE_ID;
+    
     const resultUrl =
   consultation.product_kind === 'lottery'
     ? `https://regina-tarot-app.onrender.com/lottery-result.html?id=${id}`
