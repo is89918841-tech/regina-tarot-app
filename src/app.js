@@ -1273,22 +1273,27 @@ const templateId = isLottery
     const lotteryDays = extractLotteryDays(lotterySource);
     const lotterySummary = extractLotterySummary(lotterySource);
 
-    const messageText = isLottery
-      ? `[레지나타로썰]
+ const messageText = isLottery
+  ? `[레지나타로썰]
 
 내담자님의 복권 구매 추천일 분석이 완료되었어요 🍀
 
-이번 달 추천일
-${lotteryDays}
-
-재물 흐름 요약
-${lotterySummary}
-
-상세 리딩 확인
-${resultUrl}
+버튼을 눌러 확인해주세요.
 
 ※ 본 분석은 개인 흐름을 바탕으로 한 참고용 리딩이며, 과도한 구매보다는 가벼운 재미와 흐름 확인용으로 활용하시길 추천드립니다.`
-      : `[레지나타로썰]
+
+  : isPersonality
+    ? `[레지나타로썰]
+
+내담자님의 성향 분석 결과가 준비되었어요 🌌
+
+기본 성향과 강점, 방향성을 정리해드렸습니다.
+
+버튼을 눌러 확인해주세요.
+
+※ 본 분석은 자기 이해와 방향성 정리를 위한 참고용 리딩입니다.`
+
+    : `[레지나타로썰]
 
 안녕하세요, ${name || '고객'}님.
 
@@ -1296,10 +1301,12 @@ ${resultUrl}
 아래 버튼을 눌러 결과를 확인해주세요.
 
 감사합니다.`;
-
+    
     const buttonName = isLottery
-      ? '복권 리딩 확인하기'
-      : '리딩 보기';
+  ? '복권 리딩 확인하기'
+  : isPersonality
+    ? '성향 분석 확인하기'
+    : '리딩 보기';
 
     const result = await fetch('https://alimtalk-api.bizmsg.kr/v2/sender/send', {
       method: 'POST',
