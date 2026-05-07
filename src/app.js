@@ -970,7 +970,9 @@ app.post('/api/admin/consultations/:id/paid', requireAdmin, async (req, res) => 
 
     await writeJsonArray(CONSULTATION_FILE, items);
 
-   if (item.finalReading) {
+ if (item.finalReading) {
+  console.log('KAKAO SEND START:', item.id, item.contact, item.product_kind);
+
   fetch('https://regina-tarot-app.onrender.com/api/send-kakao', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1200,6 +1202,7 @@ app.get('/admin', (_, res) => {
 
 app.post('/api/send-kakao', async (req, res) => {
   try {
+    console.log('SEND KAKAO API CALLED:', req.body);
     const { phone, name, id } = req.body;
 
     const items = await readJsonArray(CONSULTATION_FILE);
