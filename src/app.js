@@ -762,7 +762,7 @@ if (product_kind === 'lottery') {
     finalReading
   ].join('\n');
 
-  consultation.status = 'ready_to_send';
+  consultation.status = 'waiting_payment_check';
   consultation.reading_completed_at = new Date().toISOString();
 
   autoReading = finalReading;
@@ -794,7 +794,7 @@ if (product_kind === 'personality') {
     finalReading
   ].join('\n');
 
-  consultation.status = 'ready_to_send';
+  consultation.status = 'waiting_payment_check';
   consultation.reading_completed_at = new Date().toISOString();
 
   autoReading = finalReading;
@@ -832,7 +832,7 @@ if (product_kind === 'personality') {
         '추가 질문이 있으시면 이어서 남겨주세요.'
       ].join('\n');
 
-      consultation.status = 'ready_to_send';
+      consultation.status = 'waiting_payment_check';
       consultation.reading_completed_at = new Date().toISOString();
 
       autoReading = finalReading;
