@@ -160,16 +160,18 @@
           throw new Error('결과를 찾을 수 없습니다.');
         }
 
-        const item = data.consultation || data.item || data.result || data;
-        const name = item.name || item.nickname || '내담자님';
-        const reading =
-          item.finalReading ||
-          item.final_reading ||
-          item.reading ||
-          item.result ||
-          item.drawResult ||
-          item.draw_result ||
-          '';
+const item = data.consultation || data;
+
+const name = item.name || '내담자님';
+
+const reading =
+  item.finalReading ||
+  item.final_reading ||
+  item.reading ||
+  item.result ||
+  item.drawResult ||
+  item.draw_result ||
+  '';
 
         if (!reading) {
           content.innerHTML = `
