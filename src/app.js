@@ -484,7 +484,9 @@ async function generateLotteryReadingText(item, birthContext) {
 - 한국어 존댓말(~요)
 - 당첨 보장 금지
 - 과소비 금지
-- 이번 달 추천일 3개
+- 현재 기준 날짜 이후의 추천일 3개
+- 이미 지난 날짜는 절대 추천하지 않기
+- 현재 월에 남은 날짜가 부족하면 다음 달 날짜로 추천하기
 - 재물 흐름 중심
 - 소액 구매/재미/참고용 강조
 - 마지막에 무리한 소비 주의
@@ -494,7 +496,7 @@ async function generateLotteryReadingText(item, birthContext) {
 2. 추천일 3개
 3. 날짜별 이유
 4. 주의사항
-      `.trim(),
+`.trim(),
     },
     {
       role: 'user',
@@ -741,7 +743,21 @@ let autoReading = null;
 let recommended = null;
 
 if (product_kind === 'lottery') {
-  const birthContext = buildLotteryContext(birthInput);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const today = now.getDate();
+
+  let birthContext = buildLotteryContext(birthInput);
+
+  birthContext += `
+
+현재 기준 날짜: ${currentYear}년 ${currentMonth}월 ${today}일
+반드시 현재 날짜 기준으로 이번 달 또는 다음 유효 기간만 분석하세요.
+이미 지난 날짜는 절대 추천하지 마세요.
+과거 예시 날짜 사용 금지.
+`;
+
   const birthProfile = buildBirthProfile(birthInput);
 
   const finalReading = await generateLotteryReadingText(
