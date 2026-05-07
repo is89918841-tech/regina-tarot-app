@@ -105,7 +105,13 @@ function makeConsultationId() {
 
 function makeBirthInput(body = {}) {
   return {
-    birthDate: body.birthDate || body.birth_date || body.birth || '',
+    birthDate:
+      body.birthDate ||
+      body.birthdate ||
+      body.birth_date ||
+      body.birthday ||
+      body.birth ||
+      '',
     birthTime: body.birthTime || body.birth_time || body.time || '',
     calendarType: body.calendarType || body.calendar_type || body.calendar || 'solar',
     gender: body.gender || body.sex || '',
